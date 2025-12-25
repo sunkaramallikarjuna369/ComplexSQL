@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCL - Data Control Language - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>DCL - Data Control Language</h1>
+            <p class="subtitle">GRANT, REVOKE - Managing Database Permissions</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">SQL Fundamentals</a>
+            <span>›</span>
+            <span>DCL</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT is DCL?</span>
+                </div>
+                <div class="section-content">
+                    <p>DCL (Data Control Language) consists of SQL commands used to control access to data in a database. These commands manage user permissions and security, determining who can perform what operations on database objects.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">DCL Commands Overview</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">GRANT</div>
+                                    <table>
+                                        <tr><th>Grants Permission To</th></tr>
+                                        <tr><td>SELECT (Read)</td></tr>
+                                        <tr><td>INSERT (Create)</td></tr>
+                                        <tr><td>UPDATE (Modify)</td></tr>
+                                        <tr><td>DELETE (Remove)</td></tr>
+                                        <tr><td>EXECUTE (Run)</td></tr>
+                                        <tr><td>ALL PRIVILEGES</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">REVOKE</div>
+                                    <table>
+                                        <tr><th>Removes Permission From</th></tr>
+                                        <tr><td>SELECT (Read)</td></tr>
+                                        <tr><td>INSERT (Create)</td></tr>
+                                        <tr><td>UPDATE (Modify)</td></tr>
+                                        <tr><td>DELETE (Remove)</td></tr>
+                                        <tr><td>EXECUTE (Run)</td></tr>
+                                        <tr><td>ALL PRIVILEGES</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Permission Levels</div>
+                                    <table>
+                                        <tr><th>Level</th></tr>
+                                        <tr><td>Database Level</td></tr>
+                                        <tr><td>Schema Level</td></tr>
+                                        <tr><td>Table Level</td></tr>
+                                        <tr><td>Column Level</td></tr>
+                                        <tr><td>Row Level (RLS)</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use DCL?</span>
+                </div>
+                <div class="section-content">
+                    <p>DCL is essential for database security:</p>
+                    <ul>
+                        <li><strong>Access Control:</strong> Restrict who can access sensitive data</li>
+                        <li><strong>Principle of Least Privilege:</strong> Give users only the permissions they need</li>
+                        <li><strong>Audit Compliance:</strong> Meet regulatory requirements (GDPR, HIPAA, SOX)</li>
+                        <li><strong>Data Protection:</strong> Prevent unauthorized modifications or deletions</li>
+                        <li><strong>Role-Based Security:</strong> Manage permissions through roles instead of individual users</li>
+                    </ul>
+
+                    <div class="info-box warning">
+                        <span class="icon">⚠️</span>
+                        <div>
+                            <strong>Security Best Practice:</strong> Never grant more permissions than necessary. Use roles to manage permissions for groups of users, and regularly audit access rights.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHEN Section -->
+            <section class="section-4wh when">
+                <div class="section-header">
+                    <span class="icon">⏰</span>
+                    <span>WHEN to use DCL?</span>
+                </div>
+                <div class="section-content">
+                    <div class="flow-diagram">
+                        <div class="flow-step">New User</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step">GRANT Permissions</div>
+                    </div>
+                    <div class="flow-diagram">
+                        <div class="flow-step">Role Change</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step">Modify Permissions</div>
+                    </div>
+                    <div class="flow-diagram">
+                        <div class="flow-step">User Leaves</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step">REVOKE Permissions</div>
+                    </div>
+                    <div class="flow-diagram">
+                        <div class="flow-step">Security Audit</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step">Review & Adjust</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHERE Section -->
+            <section class="section-4wh where">
+                <div class="section-header">
+                    <span class="icon">🌍</span>
+                    <span>WHERE - RDBMS Syntax Differences</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>SQL Server</th>
+                                <th>Oracle</th>
+                                <th>PostgreSQL</th>
+                                <th>MySQL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Create User</td>
+                                <td>CREATE LOGIN/USER</td>
+                                <td>CREATE USER</td>
+                                <td>CREATE USER/ROLE</td>
+                                <td>CREATE USER</td>
+                            </tr>
+                            <tr>
+                                <td>Create Role</td>
+                                <td>CREATE ROLE</td>
+                                <td>CREATE ROLE</td>
+                                <td>CREATE ROLE</td>
+                                <td>CREATE ROLE</td>
+                            </tr>
+                            <tr>
+                                <td>Grant to Public</td>
+                                <td>GRANT TO public</td>
+                                <td>GRANT TO PUBLIC</td>
+                                <td>GRANT TO PUBLIC</td>
+                                <td>Not supported</td>
+                            </tr>
+                            <tr>
+                                <td>Column-level</td>
+                                <td>Supported</td>
+                                <td>Supported</td>
+                                <td>Supported</td>
+                                <td>Supported</td>
+                            </tr>
+                            <tr>
+                                <td>Row-level Security</td>
+                                <td>RLS Policies</td>
+                                <td>VPD/RLS</td>
+                                <td>RLS Policies</td>
+                                <td>Views/Triggers</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use DCL?</span>
+                </div>
+                <div class="section-content">
+                    <h3>1. GRANT Permissions</h3>
+                    <div class="db-tabs-container">
+                        <div class="db-tabs">
+                            <button class="db-tab active" data-db="sqlserver">SQL Server</button>
+                            <button class="db-tab" data-db="oracle">Oracle</button>
+                            <button class="db-tab" data-db="postgresql">PostgreSQL</button>
+                            <button class="db-tab" data-db="mysql">MySQL</button>
+                        </div>
+
+                        <div class="db-content active" data-db="sqlserver">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>GRANT - SQL Server</span>
+                                    <span class="db-badge">SQL Server</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Create a login and user</span>
+<span class="keyword">CREATE LOGIN</span> john_doe <span class="keyword">WITH PASSWORD</span> = <span class="string">'SecurePass123!'</span>;
+<span class="keyword">CREATE USER</span> john_doe <span class="keyword">FOR LOGIN</span> john_doe;
+
+<span class="comment">-- Grant SELECT on a table</span>
+<span class="keyword">GRANT SELECT ON</span> employees <span class="keyword">TO</span> john_doe;
+
+<span class="comment">-- Grant multiple permissions</span>
+<span class="keyword">GRANT SELECT</span>, <span class="keyword">INSERT</span>, <span class="keyword">UPDATE ON</span> employees <span class="keyword">TO</span> john_doe;
+
+<span class="comment">-- Grant with GRANT OPTION (user can grant to others)</span>
+<span class="keyword">GRANT SELECT ON</span> employees <span class="keyword">TO</span> john_doe <span class="keyword">WITH GRANT OPTION</span>;
+
+<span class="comment">-- Grant EXECUTE on stored procedure</span>
+<span class="keyword">GRANT EXECUTE ON</span> sp_GetEmployees <span class="keyword">TO</span> john_doe;
+
+<span class="comment">-- Grant column-level permission</span>
+<span class="keyword">GRANT SELECT ON</span> employees(first_name, last_name) <span class="keyword">TO</span> john_doe;
+
+<span class="comment">-- Create and use a role</span>
+<span class="keyword">CREATE ROLE</span> hr_staff;
+<span class="keyword">GRANT SELECT</span>, <span class="keyword">INSERT</span>, <span class="keyword">UPDATE ON</span> employees <span class="keyword">TO</span> hr_staff;
+<span class="keyword">ALTER ROLE</span> hr_staff <span class="keyword">ADD MEMBER</span> john_doe;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="oracle">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>GRANT - Oracle</span>
+                                    <span class="db-badge">Oracle</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Create a user</span>
+<span class="keyword">CREATE USER</span> john_doe <span class="keyword">IDENTIFIED BY</span> <span class="string">'SecurePass123'</span>;
+<span class="keyword">GRANT CREATE SESSION TO</span> john_doe;
+
+<span class="comment">-- Grant SELECT on a table</span>
+<span class="keyword">GRANT SELECT ON</span> hr.employees <span class="keyword">TO</span> john_doe;
+
+<span class="comment">-- Grant multiple permissions</span>
+<span class="keyword">GRANT SELECT</span>, <span class="keyword">INSERT</span>, <span class="keyword">UPDATE ON</span> hr.employees <span class="keyword">TO</span> john_doe;
+
+<span class="comment">-- Grant with GRANT OPTION</span>
+<span class="keyword">GRANT SELECT ON</span> hr.employees <span class="keyword">TO</span> john_doe <span class="keyword">WITH GRANT OPTION</span>;
+
+<span class="comment">-- Grant system privileges</span>
+<span class="keyword">GRANT CREATE TABLE</span>, <span class="keyword">CREATE VIEW TO</span> john_doe;
+
+<span class="comment">-- Grant EXECUTE on procedure</span>
+<span class="keyword">GRANT EXECUTE ON</span> hr.get_employees <span class="keyword">TO</span> john_doe;
+
+<span class="comment">-- Create and use a role</span>
+<span class="keyword">CREATE ROLE</span> hr_staff;
+<span class="keyword">GRANT SELECT</span>, <span class="keyword">INSERT</span>, <span class="keyword">UPDATE ON</span> hr.employees <span class="keyword">TO</span> hr_staff;
+<span class="keyword">GRANT</span> hr_staff <span class="keyword">TO</span> john_doe;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="postgresql">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>GRANT - PostgreSQL</span>
+                                    <span class="db-badge">PostgreSQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Create a user (role with login)</span>
+<span class="keyword">CREATE USER</span> john_doe <span class="keyword">WITH PASSWORD</span> <span class="string">'SecurePass123'</span>;
+
+<span class="comment">-- Grant SELECT on a table</span>
+<span class="keyword">GRANT SELECT ON</span> employees <span class="keyword">TO</span> john_doe;
+
+<span class="comment">-- Grant multiple permissions</span>
+<span class="keyword">GRANT SELECT</span>, <span class="keyword">INSERT</span>, <span class="keyword">UPDATE ON</span> employees <span class="keyword">TO</span> john_doe;
+
+<span class="comment">-- Grant all privileges on a table</span>
+<span class="keyword">GRANT ALL PRIVILEGES ON</span> employees <span class="keyword">TO</span> john_doe;
+
+<span class="comment">-- Grant with GRANT OPTION</span>
+<span class="keyword">GRANT SELECT ON</span> employees <span class="keyword">TO</span> john_doe <span class="keyword">WITH GRANT OPTION</span>;
+
+<span class="comment">-- Grant on all tables in schema</span>
+<span class="keyword">GRANT SELECT ON ALL TABLES IN SCHEMA</span> public <span class="keyword">TO</span> john_doe;
+
+<span class="comment">-- Grant column-level permission</span>
+<span class="keyword">GRANT SELECT</span>(first_name, last_name) <span class="keyword">ON</span> employees <span class="keyword">TO</span> john_doe;
+
+<span class="comment">-- Create and use a role</span>
+<span class="keyword">CREATE ROLE</span> hr_staff;
+<span class="keyword">GRANT SELECT</span>, <span class="keyword">INSERT</span>, <span class="keyword">UPDATE ON</span> employees <span class="keyword">TO</span> hr_staff;
+<span class="keyword">GRANT</span> hr_staff <span class="keyword">TO</span> john_doe;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="mysql">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>GRANT - MySQL</span>
+                                    <span class="db-badge">MySQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Create a user</span>
+<span class="keyword">CREATE USER</span> <span class="string">'john_doe'</span>@<span class="string">'localhost'</span> 
+    <span class="keyword">IDENTIFIED BY</span> <span class="string">'SecurePass123'</span>;
+
+<span class="comment">-- Grant SELECT on a table</span>
+<span class="keyword">GRANT SELECT ON</span> company.employees <span class="keyword">TO</span> <span class="string">'john_doe'</span>@<span class="string">'localhost'</span>;
+
+<span class="comment">-- Grant multiple permissions</span>
+<span class="keyword">GRANT SELECT</span>, <span class="keyword">INSERT</span>, <span class="keyword">UPDATE ON</span> company.employees 
+    <span class="keyword">TO</span> <span class="string">'john_doe'</span>@<span class="string">'localhost'</span>;
+
+<span class="comment">-- Grant all privileges on database</span>
+<span class="keyword">GRANT ALL PRIVILEGES ON</span> company.* 
+    <span class="keyword">TO</span> <span class="string">'john_doe'</span>@<span class="string">'localhost'</span>;
+
+<span class="comment">-- Grant with GRANT OPTION</span>
+<span class="keyword">GRANT SELECT ON</span> company.employees 
+    <span class="keyword">TO</span> <span class="string">'john_doe'</span>@<span class="string">'localhost'</span> <span class="keyword">WITH GRANT OPTION</span>;
+
+<span class="comment">-- Grant column-level permission</span>
+<span class="keyword">GRANT SELECT</span>(first_name, last_name) <span class="keyword">ON</span> company.employees 
+    <span class="keyword">TO</span> <span class="string">'john_doe'</span>@<span class="string">'localhost'</span>;
+
+<span class="comment">-- Create and use a role (MySQL 8.0+)</span>
+<span class="keyword">CREATE ROLE</span> hr_staff;
+<span class="keyword">GRANT SELECT</span>, <span class="keyword">INSERT</span>, <span class="keyword">UPDATE ON</span> company.employees <span class="keyword">TO</span> hr_staff;
+<span class="keyword">GRANT</span> hr_staff <span class="keyword">TO</span> <span class="string">'john_doe'</span>@<span class="string">'localhost'</span>;
+
+<span class="comment">-- Apply changes</span>
+<span class="keyword">FLUSH PRIVILEGES</span>;
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>2. REVOKE Permissions</h3>
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>REVOKE - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Revoke SELECT permission</span>
+<span class="keyword">REVOKE SELECT ON</span> employees <span class="keyword">FROM</span> john_doe;
+
+<span class="comment">-- Revoke multiple permissions</span>
+<span class="keyword">REVOKE INSERT</span>, <span class="keyword">UPDATE</span>, <span class="keyword">DELETE ON</span> employees <span class="keyword">FROM</span> john_doe;
+
+<span class="comment">-- Revoke all privileges</span>
+<span class="keyword">REVOKE ALL PRIVILEGES ON</span> employees <span class="keyword">FROM</span> john_doe;
+
+<span class="comment">-- Revoke GRANT OPTION only (SQL Server, PostgreSQL)</span>
+<span class="keyword">REVOKE GRANT OPTION FOR SELECT ON</span> employees <span class="keyword">FROM</span> john_doe;
+
+<span class="comment">-- Revoke role from user</span>
+<span class="keyword">REVOKE</span> hr_staff <span class="keyword">FROM</span> john_doe;
+                        </pre>
+                    </div>
+
+                    <div class="info-box note">
+                        <span class="icon">📝</span>
+                        <div>
+                            <strong>CASCADE vs RESTRICT:</strong>
+                            <ul>
+                                <li><strong>CASCADE:</strong> Also revokes permissions from users who received them through GRANT OPTION</li>
+                                <li><strong>RESTRICT:</strong> Fails if the user has granted permissions to others</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Permission Hierarchy Visualization -->
+            <section class="visualization-3d">
+                <div class="title">Permission Hierarchy</div>
+                <div class="table-3d">
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">DBA (Admin)</div>
+                            <table>
+                                <tr><th>All Permissions</th></tr>
+                                <tr class="highlight"><td>GRANT ANY</td></tr>
+                                <tr class="highlight"><td>CREATE ANY</td></tr>
+                                <tr class="highlight"><td>DROP ANY</td></tr>
+                                <tr class="highlight"><td>ALTER ANY</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">Developer Role</div>
+                            <table>
+                                <tr><th>Limited Permissions</th></tr>
+                                <tr class="highlight-blue"><td>SELECT</td></tr>
+                                <tr class="highlight-blue"><td>INSERT</td></tr>
+                                <tr class="highlight-blue"><td>UPDATE</td></tr>
+                                <tr class="highlight-blue"><td>EXECUTE</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">Read-Only Role</div>
+                            <table>
+                                <tr><th>Minimal Permissions</th></tr>
+                                <tr class="highlight-yellow"><td>SELECT only</td></tr>
+                                <tr><td>No INSERT</td></tr>
+                                <tr><td>No UPDATE</td></tr>
+                                <tr><td>No DELETE</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

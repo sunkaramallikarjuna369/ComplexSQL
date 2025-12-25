@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filtering Data - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Filtering Data</h1>
+            <p class="subtitle">IN, BETWEEN, LIKE, IS NULL, and Pattern Matching</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Filtering Data</a>
+            <span>›</span>
+            <span>Overview</span>
+        </nav>
+
+        <main class="content">
+            <!-- IN Operator Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>IN Operator</span>
+                </div>
+                <div class="section-content">
+                    <p>The IN operator allows you to specify multiple values in a WHERE clause. It's a shorthand for multiple OR conditions.</p>
+                    
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>IN Operator - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- IN with list of values</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> department_id <span class="keyword">IN</span> (<span class="number">10</span>, <span class="number">20</span>, <span class="number">30</span>);
+
+<span class="comment">-- Equivalent to:</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> department_id = <span class="number">10</span> 
+   <span class="keyword">OR</span> department_id = <span class="number">20</span> 
+   <span class="keyword">OR</span> department_id = <span class="number">30</span>;
+
+<span class="comment">-- IN with subquery</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> department_id <span class="keyword">IN</span> (
+    <span class="keyword">SELECT</span> department_id 
+    <span class="keyword">FROM</span> departments 
+    <span class="keyword">WHERE</span> location_id = <span class="number">1700</span>
+);
+
+<span class="comment">-- NOT IN</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> department_id <span class="keyword">NOT IN</span> (<span class="number">10</span>, <span class="number">20</span>);
+
+<span class="comment">-- IN with strings</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> job_id <span class="keyword">IN</span> (<span class="string">'IT_PROG'</span>, <span class="string">'SA_REP'</span>, <span class="string">'FI_ACCOUNT'</span>);
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BETWEEN Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>BETWEEN Operator</span>
+                </div>
+                <div class="section-content">
+                    <p>BETWEEN selects values within a given range. The values can be numbers, text, or dates. BETWEEN is inclusive (includes both boundary values).</p>
+                    
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>BETWEEN - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Numeric range</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> salary <span class="keyword">BETWEEN</span> <span class="number">50000</span> <span class="keyword">AND</span> <span class="number">100000</span>;
+
+<span class="comment">-- Equivalent to:</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> salary >= <span class="number">50000</span> <span class="keyword">AND</span> salary <= <span class="number">100000</span>;
+
+<span class="comment">-- Date range</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> orders 
+<span class="keyword">WHERE</span> order_date <span class="keyword">BETWEEN</span> <span class="string">'2024-01-01'</span> <span class="keyword">AND</span> <span class="string">'2024-12-31'</span>;
+
+<span class="comment">-- NOT BETWEEN</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> salary <span class="keyword">NOT BETWEEN</span> <span class="number">50000</span> <span class="keyword">AND</span> <span class="number">100000</span>;
+
+<span class="comment">-- Text range (alphabetical)</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> last_name <span class="keyword">BETWEEN</span> <span class="string">'A'</span> <span class="keyword">AND</span> <span class="string">'M'</span>;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LIKE Section -->
+            <section class="section-4wh when">
+                <div class="section-header">
+                    <span class="icon">⏰</span>
+                    <span>LIKE Operator (Pattern Matching)</span>
+                </div>
+                <div class="section-content">
+                    <p>LIKE is used for pattern matching with wildcards. % matches any sequence of characters, _ matches any single character.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">LIKE Wildcards</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Wildcards</div>
+                                    <table>
+                                        <tr><th>Pattern</th><th>Matches</th></tr>
+                                        <tr class="highlight"><td>%</td><td>Any sequence (0+)</td></tr>
+                                        <tr class="highlight-blue"><td>_</td><td>Single character</td></tr>
+                                        <tr><td>[abc]</td><td>Any char in set (SQL Server)</td></tr>
+                                        <tr><td>[^abc]</td><td>Not in set (SQL Server)</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>LIKE - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Starts with</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> first_name <span class="keyword">LIKE</span> <span class="string">'J%'</span>;
+
+<span class="comment">-- Ends with</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> last_name <span class="keyword">LIKE</span> <span class="string">'%son'</span>;
+
+<span class="comment">-- Contains</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> email <span class="keyword">LIKE</span> <span class="string">'%@gmail%'</span>;
+
+<span class="comment">-- Single character wildcard</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> first_name <span class="keyword">LIKE</span> <span class="string">'J_hn'</span>; <span class="comment">-- John, Jahn, etc.</span>
+
+<span class="comment">-- Combine wildcards</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> phone <span class="keyword">LIKE</span> <span class="string">'555-___-____'</span>;
+
+<span class="comment">-- NOT LIKE</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> email <span class="keyword">NOT LIKE</span> <span class="string">'%@test.com'</span>;
+
+<span class="comment">-- Case-insensitive (varies by RDBMS and collation)</span>
+<span class="comment">-- PostgreSQL</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> first_name <span class="keyword">ILIKE</span> <span class="string">'john%'</span>;
+<span class="comment">-- Others</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> <span class="function">LOWER</span>(first_name) <span class="keyword">LIKE</span> <span class="string">'john%'</span>;
+
+<span class="comment">-- Escape special characters</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> products <span class="keyword">WHERE</span> name <span class="keyword">LIKE</span> <span class="string">'%10\%%'</span> <span class="keyword">ESCAPE</span> <span class="string">'\'</span>;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- IS NULL Section -->
+            <section class="section-4wh where">
+                <div class="section-header">
+                    <span class="icon">🌍</span>
+                    <span>IS NULL / IS NOT NULL</span>
+                </div>
+                <div class="section-content">
+                    <p>NULL represents missing or unknown data. You cannot use = or != to compare with NULL; you must use IS NULL or IS NOT NULL.</p>
+                    
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>NULL Handling - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Find NULL values</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> manager_id <span class="keyword">IS NULL</span>;
+
+<span class="comment">-- Find non-NULL values</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> commission <span class="keyword">IS NOT NULL</span>;
+
+<span class="comment">-- WRONG: This won't work!</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> manager_id = <span class="keyword">NULL</span>; <span class="comment">-- Always returns empty!</span>
+
+<span class="comment">-- COALESCE: Return first non-NULL value</span>
+<span class="keyword">SELECT</span> 
+    first_name,
+    <span class="function">COALESCE</span>(commission, <span class="number">0</span>) <span class="keyword">AS</span> commission
+<span class="keyword">FROM</span> employees;
+
+<span class="comment">-- NULLIF: Return NULL if values are equal</span>
+<span class="keyword">SELECT</span> 
+    <span class="function">NULLIF</span>(department_id, <span class="number">0</span>) <span class="keyword">AS</span> dept_id <span class="comment">-- Returns NULL if dept_id is 0</span>
+<span class="keyword">FROM</span> employees;
+
+<span class="comment">-- NVL (Oracle) / ISNULL (SQL Server)</span>
+<span class="comment">-- Oracle</span>
+<span class="keyword">SELECT</span> <span class="function">NVL</span>(commission, <span class="number">0</span>) <span class="keyword">FROM</span> employees;
+<span class="comment">-- SQL Server</span>
+<span class="keyword">SELECT</span> <span class="function">ISNULL</span>(commission, <span class="number">0</span>) <span class="keyword">FROM</span> employees;
+<span class="comment">-- MySQL</span>
+<span class="keyword">SELECT</span> <span class="function">IFNULL</span>(commission, <span class="number">0</span>) <span class="keyword">FROM</span> employees;
+                        </pre>
+                    </div>
+
+                    <div class="info-box warning">
+                        <span class="icon">⚠️</span>
+                        <div>
+                            <strong>NULL Gotchas:</strong>
+                            <ul>
+                                <li>NULL = NULL is NOT true (it's unknown)</li>
+                                <li>NULL in arithmetic: 5 + NULL = NULL</li>
+                                <li>NULL in aggregates: AVG ignores NULLs</li>
+                                <li>NOT IN with NULL: Can return unexpected results</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

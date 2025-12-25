@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORDER BY Clause - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>ORDER BY Clause</h1>
+            <p class="subtitle">Sorting Query Results</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Basic Queries</a>
+            <span>›</span>
+            <span>ORDER BY</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT is ORDER BY?</span>
+                </div>
+                <div class="section-content">
+                    <p>ORDER BY sorts the result set by one or more columns in ascending (ASC) or descending (DESC) order. By default, sorting is ascending. ORDER BY is always the last clause in a SELECT statement (except for LIMIT/OFFSET).</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">ORDER BY Visualization</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Unsorted</div>
+                                    <table>
+                                        <tr><th>name</th><th>salary</th></tr>
+                                        <tr><td>Charlie</td><td>60000</td></tr>
+                                        <tr><td>Alice</td><td>80000</td></tr>
+                                        <tr><td>Bob</td><td>70000</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">ORDER BY name ASC</div>
+                                    <table>
+                                        <tr><th>name</th><th>salary</th></tr>
+                                        <tr class="highlight"><td>Alice</td><td>80000</td></tr>
+                                        <tr class="highlight-blue"><td>Bob</td><td>70000</td></tr>
+                                        <tr class="highlight-yellow"><td>Charlie</td><td>60000</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">ORDER BY salary DESC</div>
+                                    <table>
+                                        <tr><th>name</th><th>salary</th></tr>
+                                        <tr class="highlight"><td>Alice</td><td>80000</td></tr>
+                                        <tr class="highlight-blue"><td>Bob</td><td>70000</td></tr>
+                                        <tr class="highlight-yellow"><td>Charlie</td><td>60000</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use ORDER BY?</span>
+                </div>
+                <div class="section-content">
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>ORDER BY - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Basic ascending sort (default)</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">ORDER BY</span> last_name;
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">ORDER BY</span> last_name <span class="keyword">ASC</span>;
+
+<span class="comment">-- Descending sort</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>;
+
+<span class="comment">-- Multiple columns</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">ORDER BY</span> department_id <span class="keyword">ASC</span>, salary <span class="keyword">DESC</span>;
+
+<span class="comment">-- Sort by column position (not recommended)</span>
+<span class="keyword">SELECT</span> first_name, last_name, salary 
+<span class="keyword">FROM</span> employees 
+<span class="keyword">ORDER BY</span> <span class="number">3</span> <span class="keyword">DESC</span>; <span class="comment">-- Sorts by salary (3rd column)</span>
+
+<span class="comment">-- Sort by expression</span>
+<span class="keyword">SELECT</span> first_name, last_name, salary, salary * <span class="number">12</span> <span class="keyword">AS</span> annual
+<span class="keyword">FROM</span> employees 
+<span class="keyword">ORDER BY</span> salary * <span class="number">12</span> <span class="keyword">DESC</span>;
+
+<span class="comment">-- Sort by alias</span>
+<span class="keyword">SELECT</span> first_name, last_name, salary * <span class="number">12</span> <span class="keyword">AS</span> annual_salary
+<span class="keyword">FROM</span> employees 
+<span class="keyword">ORDER BY</span> annual_salary <span class="keyword">DESC</span>;
+
+<span class="comment">-- NULL handling (varies by RDBMS)</span>
+<span class="comment">-- PostgreSQL, Oracle</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">ORDER BY</span> commission <span class="keyword">NULLS FIRST</span>;
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">ORDER BY</span> commission <span class="keyword">NULLS LAST</span>;
+
+<span class="comment">-- SQL Server, MySQL (use COALESCE or CASE)</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">ORDER BY</span> <span class="keyword">CASE WHEN</span> commission <span class="keyword">IS NULL THEN</span> <span class="number">1</span> <span class="keyword">ELSE</span> <span class="number">0</span> <span class="keyword">END</span>, commission;
+
+<span class="comment">-- Case-insensitive sort</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">ORDER BY</span> <span class="function">LOWER</span>(last_name);
+
+<span class="comment">-- Custom sort order with CASE</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> orders
+<span class="keyword">ORDER BY</span> 
+    <span class="keyword">CASE</span> status
+        <span class="keyword">WHEN</span> <span class="string">'urgent'</span> <span class="keyword">THEN</span> <span class="number">1</span>
+        <span class="keyword">WHEN</span> <span class="string">'high'</span> <span class="keyword">THEN</span> <span class="number">2</span>
+        <span class="keyword">WHEN</span> <span class="string">'normal'</span> <span class="keyword">THEN</span> <span class="number">3</span>
+        <span class="keyword">WHEN</span> <span class="string">'low'</span> <span class="keyword">THEN</span> <span class="number">4</span>
+    <span class="keyword">END</span>;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

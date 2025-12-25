@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RANK and DENSE_RANK - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>RANK() and DENSE_RANK()</h1>
+            <p class="subtitle">Ranking Functions with Tie Handling</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Window Functions</a>
+            <span>›</span>
+            <span>RANK / DENSE_RANK</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT are RANK() and DENSE_RANK()?</span>
+                </div>
+                <div class="section-content">
+                    <p>RANK() and DENSE_RANK() are window functions that assign ranks to rows. Unlike ROW_NUMBER(), they handle ties by giving the same rank to rows with equal values.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">Comparison: ROW_NUMBER vs RANK vs DENSE_RANK</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Sample Data</div>
+                                    <table>
+                                        <tr><th>name</th><th>score</th></tr>
+                                        <tr><td>Alice</td><td>100</td></tr>
+                                        <tr class="highlight-yellow"><td>Bob</td><td>95</td></tr>
+                                        <tr class="highlight-yellow"><td>Carol</td><td>95</td></tr>
+                                        <tr><td>Dave</td><td>90</td></tr>
+                                        <tr><td>Eve</td><td>85</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">All Three Functions</div>
+                                    <table>
+                                        <tr><th>name</th><th>ROW#</th><th>RANK</th><th>DENSE</th></tr>
+                                        <tr><td>Alice</td><td>1</td><td>1</td><td>1</td></tr>
+                                        <tr class="highlight-yellow"><td>Bob</td><td>2</td><td>2</td><td>2</td></tr>
+                                        <tr class="highlight-yellow"><td>Carol</td><td>3</td><td>2</td><td>2</td></tr>
+                                        <tr class="highlight"><td>Dave</td><td>4</td><td>4</td><td>3</td></tr>
+                                        <tr><td>Eve</td><td>5</td><td>5</td><td>4</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-box note">
+                        <span class="icon">📝</span>
+                        <div>
+                            <strong>Key Difference:</strong>
+                            <ul>
+                                <li><strong>RANK():</strong> Skips numbers after ties (1, 2, 2, 4, 5)</li>
+                                <li><strong>DENSE_RANK():</strong> No gaps after ties (1, 2, 2, 3, 4)</li>
+                                <li><strong>ROW_NUMBER():</strong> Always unique (1, 2, 3, 4, 5)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use RANK() vs DENSE_RANK()?</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Use Case</th>
+                                <th>Best Function</th>
+                                <th>Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Olympic medals</td>
+                                <td>RANK()</td>
+                                <td>Two golds = no silver (skip to bronze)</td>
+                            </tr>
+                            <tr>
+                                <td>Top N distinct values</td>
+                                <td>DENSE_RANK()</td>
+                                <td>Get exactly N different values</td>
+                            </tr>
+                            <tr>
+                                <td>Competition standings</td>
+                                <td>RANK()</td>
+                                <td>Shows actual position in standings</td>
+                            </tr>
+                            <tr>
+                                <td>Salary bands</td>
+                                <td>DENSE_RANK()</td>
+                                <td>Consecutive band numbers</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use RANK() and DENSE_RANK()?</span>
+                </div>
+                <div class="section-content">
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>RANK and DENSE_RANK - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Compare all three ranking functions</span>
+<span class="keyword">SELECT</span> 
+    first_name,
+    salary,
+    <span class="function">ROW_NUMBER</span>() <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>) <span class="keyword">AS</span> row_num,
+    <span class="function">RANK</span>() <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>) <span class="keyword">AS</span> rank,
+    <span class="function">DENSE_RANK</span>() <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>) <span class="keyword">AS</span> dense_rank
+<span class="keyword">FROM</span> employees;
+
+<span class="comment">-- RANK with PARTITION BY</span>
+<span class="keyword">SELECT</span> 
+    department_id,
+    first_name,
+    salary,
+    <span class="function">RANK</span>() <span class="keyword">OVER</span> (
+        <span class="keyword">PARTITION BY</span> department_id 
+        <span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>
+    ) <span class="keyword">AS</span> dept_salary_rank
+<span class="keyword">FROM</span> employees;
+
+<span class="comment">-- Get employees with top 3 salaries (including ties)</span>
+<span class="keyword">WITH</span> ranked <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        first_name,
+        salary,
+        <span class="function">DENSE_RANK</span>() <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>) <span class="keyword">AS</span> salary_rank
+    <span class="keyword">FROM</span> employees
+)
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> ranked <span class="keyword">WHERE</span> salary_rank <= <span class="number">3</span>;
+
+<span class="comment">-- Find Nth highest salary</span>
+<span class="keyword">WITH</span> ranked_salaries <span class="keyword">AS</span> (
+    <span class="keyword">SELECT DISTINCT</span> 
+        salary,
+        <span class="function">DENSE_RANK</span>() <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>) <span class="keyword">AS</span> rank
+    <span class="keyword">FROM</span> employees
+)
+<span class="keyword">SELECT</span> salary <span class="keyword">FROM</span> ranked_salaries <span class="keyword">WHERE</span> rank = <span class="number">3</span>; <span class="comment">-- 3rd highest</span>
+
+<span class="comment">-- Percentile ranking</span>
+<span class="keyword">SELECT</span> 
+    first_name,
+    salary,
+    <span class="function">RANK</span>() <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> salary) <span class="keyword">AS</span> rank,
+    <span class="function">COUNT</span>(*) <span class="keyword">OVER</span> () <span class="keyword">AS</span> total,
+    <span class="function">ROUND</span>(
+        <span class="number">100.0</span> * <span class="function">RANK</span>() <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> salary) / <span class="function">COUNT</span>(*) <span class="keyword">OVER</span> (), 
+        <span class="number">2</span>
+    ) <span class="keyword">AS</span> percentile
+<span class="keyword">FROM</span> employees;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Interview Questions - Medium - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>SQL Interview Questions - Medium</h1>
+            <p class="subtitle">Intermediate Level Questions - HackerRank/LeetCode Style</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Interview Questions</a>
+            <span>›</span>
+            <span>Medium</span>
+        </nav>
+
+        <main class="content">
+            <!-- Question 1 -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">❓</span>
+                    <span>Q1: Nth Highest Salary</span>
+                </div>
+                <div class="section-content">
+                    <p><strong>Problem:</strong> Write a SQL query to get the Nth highest salary from the Employee table. If there is no Nth highest salary, return NULL.</p>
+                    
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Solution</span>
+                            <span class="db-badge">All RDBMS</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Solution 1: Using DENSE_RANK</span>
+<span class="keyword">CREATE FUNCTION</span> getNthHighestSalary(N <span class="keyword">INT</span>) <span class="keyword">RETURNS INT</span>
+<span class="keyword">BEGIN</span>
+    <span class="keyword">RETURN</span> (
+        <span class="keyword">SELECT DISTINCT</span> salary
+        <span class="keyword">FROM</span> (
+            <span class="keyword">SELECT</span> salary, <span class="function">DENSE_RANK</span>() <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>) <span class="keyword">AS</span> rnk
+            <span class="keyword">FROM</span> Employee
+        ) ranked
+        <span class="keyword">WHERE</span> rnk = N
+    );
+<span class="keyword">END</span>;
+
+<span class="comment">-- Solution 2: Using LIMIT/OFFSET</span>
+<span class="keyword">CREATE FUNCTION</span> getNthHighestSalary(N <span class="keyword">INT</span>) <span class="keyword">RETURNS INT</span>
+<span class="keyword">BEGIN</span>
+    <span class="keyword">SET</span> N = N - <span class="number">1</span>;
+    <span class="keyword">RETURN</span> (
+        <span class="keyword">SELECT DISTINCT</span> salary
+        <span class="keyword">FROM</span> Employee
+        <span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>
+        <span class="keyword">LIMIT</span> <span class="number">1</span> <span class="keyword">OFFSET</span> N
+    );
+<span class="keyword">END</span>;
+
+<span class="comment">-- Solution 3: Using CTE (PostgreSQL/SQL Server)</span>
+<span class="keyword">WITH</span> ranked_salaries <span class="keyword">AS</span> (
+    <span class="keyword">SELECT DISTINCT</span> salary,
+           <span class="function">DENSE_RANK</span>() <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>) <span class="keyword">AS</span> rank
+    <span class="keyword">FROM</span> Employee
+)
+<span class="keyword">SELECT</span> salary <span class="keyword">FROM</span> ranked_salaries <span class="keyword">WHERE</span> rank = N;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Question 2 -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">❓</span>
+                    <span>Q2: Department Top Three Salaries</span>
+                </div>
+                <div class="section-content">
+                    <p><strong>Problem:</strong> Find employees who earn one of the top three salaries in each department.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">Sample Data</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Employee</div>
+                                    <table>
+                                        <tr><th>id</th><th>name</th><th>salary</th><th>deptId</th></tr>
+                                        <tr><td>1</td><td>Joe</td><td>85000</td><td>1</td></tr>
+                                        <tr><td>2</td><td>Henry</td><td>80000</td><td>2</td></tr>
+                                        <tr><td>3</td><td>Sam</td><td>60000</td><td>2</td></tr>
+                                        <tr><td>4</td><td>Max</td><td>90000</td><td>1</td></tr>
+                                        <tr><td>5</td><td>Janet</td><td>69000</td><td>1</td></tr>
+                                        <tr><td>6</td><td>Randy</td><td>85000</td><td>1</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Solution</span>
+                            <span class="db-badge">All RDBMS</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Solution using DENSE_RANK</span>
+<span class="keyword">SELECT</span> 
+    d.name <span class="keyword">AS</span> Department,
+    e.name <span class="keyword">AS</span> Employee,
+    e.salary <span class="keyword">AS</span> Salary
+<span class="keyword">FROM</span> (
+    <span class="keyword">SELECT</span> 
+        name,
+        salary,
+        departmentId,
+        <span class="function">DENSE_RANK</span>() <span class="keyword">OVER</span> (
+            <span class="keyword">PARTITION BY</span> departmentId 
+            <span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>
+        ) <span class="keyword">AS</span> rnk
+    <span class="keyword">FROM</span> Employee
+) e
+<span class="keyword">JOIN</span> Department d <span class="keyword">ON</span> e.departmentId = d.id
+<span class="keyword">WHERE</span> e.rnk <= <span class="number">3</span>;
+
+<span class="comment">-- Alternative using correlated subquery</span>
+<span class="keyword">SELECT</span> 
+    d.name <span class="keyword">AS</span> Department,
+    e1.name <span class="keyword">AS</span> Employee,
+    e1.salary <span class="keyword">AS</span> Salary
+<span class="keyword">FROM</span> Employee e1
+<span class="keyword">JOIN</span> Department d <span class="keyword">ON</span> e1.departmentId = d.id
+<span class="keyword">WHERE</span> (
+    <span class="keyword">SELECT</span> <span class="function">COUNT</span>(<span class="keyword">DISTINCT</span> e2.salary)
+    <span class="keyword">FROM</span> Employee e2
+    <span class="keyword">WHERE</span> e2.departmentId = e1.departmentId
+      <span class="keyword">AND</span> e2.salary > e1.salary
+) < <span class="number">3</span>;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Question 3 -->
+            <section class="section-4wh when">
+                <div class="section-header">
+                    <span class="icon">❓</span>
+                    <span>Q3: Consecutive Numbers</span>
+                </div>
+                <div class="section-content">
+                    <p><strong>Problem:</strong> Find all numbers that appear at least three times consecutively.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">Sample Data</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Logs</div>
+                                    <table>
+                                        <tr><th>id</th><th>num</th></tr>
+                                        <tr class="highlight"><td>1</td><td>1</td></tr>
+                                        <tr class="highlight"><td>2</td><td>1</td></tr>
+                                        <tr class="highlight"><td>3</td><td>1</td></tr>
+                                        <tr><td>4</td><td>2</td></tr>
+                                        <tr><td>5</td><td>1</td></tr>
+                                        <tr><td>6</td><td>2</td></tr>
+                                        <tr><td>7</td><td>2</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Expected Output</div>
+                                    <table>
+                                        <tr><th>ConsecutiveNums</th></tr>
+                                        <tr class="highlight"><td>1</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Solution</span>
+                            <span class="db-badge">All RDBMS</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Solution 1: Using self-join</span>
+<span class="keyword">SELECT DISTINCT</span> l1.num <span class="keyword">AS</span> ConsecutiveNums
+<span class="keyword">FROM</span> Logs l1
+<span class="keyword">JOIN</span> Logs l2 <span class="keyword">ON</span> l1.id = l2.id - <span class="number">1</span>
+<span class="keyword">JOIN</span> Logs l3 <span class="keyword">ON</span> l2.id = l3.id - <span class="number">1</span>
+<span class="keyword">WHERE</span> l1.num = l2.num <span class="keyword">AND</span> l2.num = l3.num;
+
+<span class="comment">-- Solution 2: Using LAG and LEAD</span>
+<span class="keyword">SELECT DISTINCT</span> num <span class="keyword">AS</span> ConsecutiveNums
+<span class="keyword">FROM</span> (
+    <span class="keyword">SELECT</span> 
+        num,
+        <span class="function">LAG</span>(num) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> id) <span class="keyword">AS</span> prev_num,
+        <span class="function">LEAD</span>(num) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> id) <span class="keyword">AS</span> next_num
+    <span class="keyword">FROM</span> Logs
+) t
+<span class="keyword">WHERE</span> num = prev_num <span class="keyword">AND</span> num = next_num;
+
+<span class="comment">-- Solution 3: Using window function with grouping</span>
+<span class="keyword">WITH</span> grouped <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        num,
+        id - <span class="function">ROW_NUMBER</span>() <span class="keyword">OVER</span> (<span class="keyword">PARTITION BY</span> num <span class="keyword">ORDER BY</span> id) <span class="keyword">AS</span> grp
+    <span class="keyword">FROM</span> Logs
+)
+<span class="keyword">SELECT DISTINCT</span> num <span class="keyword">AS</span> ConsecutiveNums
+<span class="keyword">FROM</span> grouped
+<span class="keyword">GROUP BY</span> num, grp
+<span class="keyword">HAVING</span> <span class="function">COUNT</span>(*) >= <span class="number">3</span>;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Question 4 -->
+            <section class="section-4wh where">
+                <div class="section-header">
+                    <span class="icon">❓</span>
+                    <span>Q4: Employees Earning More Than Their Managers</span>
+                </div>
+                <div class="section-content">
+                    <p><strong>Problem:</strong> Find employees who earn more than their managers.</p>
+                    
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Solution</span>
+                            <span class="db-badge">All RDBMS</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Solution 1: Using self-join</span>
+<span class="keyword">SELECT</span> e.name <span class="keyword">AS</span> Employee
+<span class="keyword">FROM</span> Employee e
+<span class="keyword">JOIN</span> Employee m <span class="keyword">ON</span> e.managerId = m.id
+<span class="keyword">WHERE</span> e.salary > m.salary;
+
+<span class="comment">-- Solution 2: Using correlated subquery</span>
+<span class="keyword">SELECT</span> name <span class="keyword">AS</span> Employee
+<span class="keyword">FROM</span> Employee e
+<span class="keyword">WHERE</span> salary > (
+    <span class="keyword">SELECT</span> salary 
+    <span class="keyword">FROM</span> Employee 
+    <span class="keyword">WHERE</span> id = e.managerId
+);
+
+<span class="comment">-- Solution 3: Using CTE</span>
+<span class="keyword">WITH</span> emp_mgr <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        e.name <span class="keyword">AS</span> emp_name,
+        e.salary <span class="keyword">AS</span> emp_salary,
+        m.salary <span class="keyword">AS</span> mgr_salary
+    <span class="keyword">FROM</span> Employee e
+    <span class="keyword">JOIN</span> Employee m <span class="keyword">ON</span> e.managerId = m.id
+)
+<span class="keyword">SELECT</span> emp_name <span class="keyword">AS</span> Employee
+<span class="keyword">FROM</span> emp_mgr
+<span class="keyword">WHERE</span> emp_salary > mgr_salary;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Question 5 -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">❓</span>
+                    <span>Q5: Rank Scores</span>
+                </div>
+                <div class="section-content">
+                    <p><strong>Problem:</strong> Write a SQL query to rank scores. If there is a tie, both should have the same ranking. After a tie, the next ranking should be the next consecutive integer.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">Sample Data</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Scores</div>
+                                    <table>
+                                        <tr><th>id</th><th>score</th></tr>
+                                        <tr><td>1</td><td>3.50</td></tr>
+                                        <tr><td>2</td><td>3.65</td></tr>
+                                        <tr><td>3</td><td>4.00</td></tr>
+                                        <tr><td>4</td><td>3.85</td></tr>
+                                        <tr><td>5</td><td>4.00</td></tr>
+                                        <tr><td>6</td><td>3.65</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Expected Output</div>
+                                    <table>
+                                        <tr><th>score</th><th>rank</th></tr>
+                                        <tr><td>4.00</td><td>1</td></tr>
+                                        <tr><td>4.00</td><td>1</td></tr>
+                                        <tr><td>3.85</td><td>2</td></tr>
+                                        <tr><td>3.65</td><td>3</td></tr>
+                                        <tr><td>3.65</td><td>3</td></tr>
+                                        <tr><td>3.50</td><td>4</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Solution</span>
+                            <span class="db-badge">All RDBMS</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Solution using DENSE_RANK</span>
+<span class="keyword">SELECT</span> 
+    score,
+    <span class="function">DENSE_RANK</span>() <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> score <span class="keyword">DESC</span>) <span class="keyword">AS</span> <span class="string">'rank'</span>
+<span class="keyword">FROM</span> Scores
+<span class="keyword">ORDER BY</span> score <span class="keyword">DESC</span>;
+
+<span class="comment">-- Alternative without window functions</span>
+<span class="keyword">SELECT</span> 
+    s1.score,
+    (<span class="keyword">SELECT</span> <span class="function">COUNT</span>(<span class="keyword">DISTINCT</span> s2.score)
+     <span class="keyword">FROM</span> Scores s2
+     <span class="keyword">WHERE</span> s2.score >= s1.score) <span class="keyword">AS</span> <span class="string">'rank'</span>
+<span class="keyword">FROM</span> Scores s1
+<span class="keyword">ORDER BY</span> s1.score <span class="keyword">DESC</span>;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

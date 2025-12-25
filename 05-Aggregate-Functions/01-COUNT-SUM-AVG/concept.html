@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aggregate Functions - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Aggregate Functions</h1>
+            <p class="subtitle">COUNT, SUM, AVG, MIN, MAX - Summarize Data</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Aggregate Functions</a>
+            <span>›</span>
+            <span>COUNT, SUM, AVG</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT are Aggregate Functions?</span>
+                </div>
+                <div class="section-content">
+                    <p>Aggregate functions perform calculations on a set of values and return a single value. They are commonly used with GROUP BY to summarize data by categories.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">Aggregate Functions Overview</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Function</div>
+                                    <table>
+                                        <tr><th>Name</th><th>Purpose</th></tr>
+                                        <tr class="highlight"><td>COUNT</td><td>Count rows</td></tr>
+                                        <tr class="highlight-blue"><td>SUM</td><td>Total of values</td></tr>
+                                        <tr class="highlight-yellow"><td>AVG</td><td>Average value</td></tr>
+                                        <tr><td>MIN</td><td>Minimum value</td></tr>
+                                        <tr><td>MAX</td><td>Maximum value</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Sample Data</div>
+                                    <table>
+                                        <tr><th>dept</th><th>salary</th></tr>
+                                        <tr><td>IT</td><td>80000</td></tr>
+                                        <tr><td>IT</td><td>75000</td></tr>
+                                        <tr><td>IT</td><td>70000</td></tr>
+                                        <tr><td>HR</td><td>65000</td></tr>
+                                        <tr><td>HR</td><td>60000</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Aggregated Result</div>
+                                    <table>
+                                        <tr><th>dept</th><th>count</th><th>sum</th><th>avg</th></tr>
+                                        <tr class="highlight"><td>IT</td><td>3</td><td>225000</td><td>75000</td></tr>
+                                        <tr class="highlight-blue"><td>HR</td><td>2</td><td>125000</td><td>62500</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use Aggregate Functions?</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>Data Summarization:</strong> Get totals, averages, counts from large datasets</li>
+                        <li><strong>Reporting:</strong> Generate summary reports and dashboards</li>
+                        <li><strong>Analysis:</strong> Identify trends, outliers, and patterns</li>
+                        <li><strong>Business Metrics:</strong> Calculate KPIs like revenue, customer count</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use Aggregate Functions?</span>
+                </div>
+                <div class="section-content">
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Aggregate Functions - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- COUNT variations</span>
+<span class="keyword">SELECT</span> 
+    <span class="function">COUNT</span>(*) <span class="keyword">AS</span> total_rows,           <span class="comment">-- Count all rows</span>
+    <span class="function">COUNT</span>(salary) <span class="keyword">AS</span> non_null_salary, <span class="comment">-- Count non-NULL values</span>
+    <span class="function">COUNT</span>(<span class="keyword">DISTINCT</span> department_id) <span class="keyword">AS</span> dept_count <span class="comment">-- Count unique values</span>
+<span class="keyword">FROM</span> employees;
+
+<span class="comment">-- SUM and AVG</span>
+<span class="keyword">SELECT</span> 
+    <span class="function">SUM</span>(salary) <span class="keyword">AS</span> total_salary,
+    <span class="function">AVG</span>(salary) <span class="keyword">AS</span> avg_salary,
+    <span class="function">SUM</span>(salary) / <span class="function">COUNT</span>(*) <span class="keyword">AS</span> manual_avg
+<span class="keyword">FROM</span> employees;
+
+<span class="comment">-- MIN and MAX</span>
+<span class="keyword">SELECT</span> 
+    <span class="function">MIN</span>(salary) <span class="keyword">AS</span> lowest_salary,
+    <span class="function">MAX</span>(salary) <span class="keyword">AS</span> highest_salary,
+    <span class="function">MAX</span>(salary) - <span class="function">MIN</span>(salary) <span class="keyword">AS</span> salary_range,
+    <span class="function">MIN</span>(hire_date) <span class="keyword">AS</span> first_hire,
+    <span class="function">MAX</span>(hire_date) <span class="keyword">AS</span> latest_hire
+<span class="keyword">FROM</span> employees;
+
+<span class="comment">-- GROUP BY with aggregates</span>
+<span class="keyword">SELECT</span> 
+    department_id,
+    <span class="function">COUNT</span>(*) <span class="keyword">AS</span> emp_count,
+    <span class="function">SUM</span>(salary) <span class="keyword">AS</span> total_salary,
+    <span class="function">AVG</span>(salary) <span class="keyword">AS</span> avg_salary,
+    <span class="function">MIN</span>(salary) <span class="keyword">AS</span> min_salary,
+    <span class="function">MAX</span>(salary) <span class="keyword">AS</span> max_salary
+<span class="keyword">FROM</span> employees
+<span class="keyword">GROUP BY</span> department_id
+<span class="keyword">ORDER BY</span> total_salary <span class="keyword">DESC</span>;
+
+<span class="comment">-- HAVING clause (filter aggregated results)</span>
+<span class="keyword">SELECT</span> 
+    department_id,
+    <span class="function">COUNT</span>(*) <span class="keyword">AS</span> emp_count,
+    <span class="function">AVG</span>(salary) <span class="keyword">AS</span> avg_salary
+<span class="keyword">FROM</span> employees
+<span class="keyword">GROUP BY</span> department_id
+<span class="keyword">HAVING</span> <span class="function">COUNT</span>(*) > <span class="number">5</span>
+   <span class="keyword">AND</span> <span class="function">AVG</span>(salary) > <span class="number">50000</span>;
+
+<span class="comment">-- Multiple GROUP BY columns</span>
+<span class="keyword">SELECT</span> 
+    department_id,
+    job_id,
+    <span class="function">COUNT</span>(*) <span class="keyword">AS</span> emp_count,
+    <span class="function">AVG</span>(salary) <span class="keyword">AS</span> avg_salary
+<span class="keyword">FROM</span> employees
+<span class="keyword">GROUP BY</span> department_id, job_id
+<span class="keyword">ORDER BY</span> department_id, job_id;
+
+<span class="comment">-- Conditional aggregation</span>
+<span class="keyword">SELECT</span> 
+    department_id,
+    <span class="function">COUNT</span>(*) <span class="keyword">AS</span> total_emp,
+    <span class="function">COUNT</span>(<span class="keyword">CASE WHEN</span> salary > <span class="number">70000</span> <span class="keyword">THEN</span> <span class="number">1</span> <span class="keyword">END</span>) <span class="keyword">AS</span> high_earners,
+    <span class="function">SUM</span>(<span class="keyword">CASE WHEN</span> salary > <span class="number">70000</span> <span class="keyword">THEN</span> salary <span class="keyword">ELSE</span> <span class="number">0</span> <span class="keyword">END</span>) <span class="keyword">AS</span> high_earner_total
+<span class="keyword">FROM</span> employees
+<span class="keyword">GROUP BY</span> department_id;
+
+<span class="comment">-- Percentage calculations</span>
+<span class="keyword">SELECT</span> 
+    department_id,
+    <span class="function">COUNT</span>(*) <span class="keyword">AS</span> dept_count,
+    <span class="function">ROUND</span>(<span class="number">100.0</span> * <span class="function">COUNT</span>(*) / (<span class="keyword">SELECT</span> <span class="function">COUNT</span>(*) <span class="keyword">FROM</span> employees), <span class="number">2</span>) <span class="keyword">AS</span> pct_of_total
+<span class="keyword">FROM</span> employees
+<span class="keyword">GROUP BY</span> department_id;
+                        </pre>
+                    </div>
+
+                    <div class="info-box note">
+                        <span class="icon">📝</span>
+                        <div>
+                            <strong>NULL Handling:</strong>
+                            <ul>
+                                <li>COUNT(*) counts all rows including NULLs</li>
+                                <li>COUNT(column) ignores NULL values</li>
+                                <li>SUM, AVG, MIN, MAX all ignore NULL values</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCL - Transaction Control Language - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>TCL - Transaction Control Language</h1>
+            <p class="subtitle">COMMIT, ROLLBACK, SAVEPOINT - Managing Transactions</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">SQL Fundamentals</a>
+            <span>›</span>
+            <span>TCL</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT is TCL?</span>
+                </div>
+                <div class="section-content">
+                    <p>TCL (Transaction Control Language) consists of SQL commands used to manage transactions in a database. A transaction is a sequence of operations performed as a single logical unit of work that must either complete entirely or not at all.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">TCL Commands Overview</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">BEGIN/START</div>
+                                    <table>
+                                        <tr><th>Purpose</th></tr>
+                                        <tr><td>Start transaction</td></tr>
+                                        <tr><td>Mark beginning</td></tr>
+                                        <tr><td>Enable rollback</td></tr>
+                                        <tr><td>Group operations</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">COMMIT</div>
+                                    <table>
+                                        <tr><th>Purpose</th></tr>
+                                        <tr><td>Save changes</td></tr>
+                                        <tr><td>Make permanent</td></tr>
+                                        <tr><td>End transaction</td></tr>
+                                        <tr><td>Release locks</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">ROLLBACK</div>
+                                    <table>
+                                        <tr><th>Purpose</th></tr>
+                                        <tr><td>Undo changes</td></tr>
+                                        <tr><td>Restore state</td></tr>
+                                        <tr><td>Cancel transaction</td></tr>
+                                        <tr><td>Error recovery</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">SAVEPOINT</div>
+                                    <table>
+                                        <tr><th>Purpose</th></tr>
+                                        <tr><td>Create checkpoint</td></tr>
+                                        <tr><td>Partial rollback</td></tr>
+                                        <tr><td>Named markers</td></tr>
+                                        <tr><td>Nested control</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use TCL?</span>
+                </div>
+                <div class="section-content">
+                    <p>TCL ensures data integrity through ACID properties:</p>
+                    <ul>
+                        <li><strong>Atomicity:</strong> All operations complete or none do - no partial updates</li>
+                        <li><strong>Consistency:</strong> Database moves from one valid state to another</li>
+                        <li><strong>Isolation:</strong> Concurrent transactions don't interfere with each other</li>
+                        <li><strong>Durability:</strong> Committed changes survive system failures</li>
+                    </ul>
+
+                    <div class="info-box tip">
+                        <span class="icon">💡</span>
+                        <div>
+                            <strong>Real-World Example:</strong> Bank transfer - debit from Account A and credit to Account B must both succeed or both fail. You can't have money disappear or appear from nowhere!
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHEN Section -->
+            <section class="section-4wh when">
+                <div class="section-header">
+                    <span class="icon">⏰</span>
+                    <span>WHEN to use TCL?</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Scenario</th>
+                                <th>Action</th>
+                                <th>Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Multiple related updates</td>
+                                <td>Use transaction</td>
+                                <td>Ensure all-or-nothing</td>
+                            </tr>
+                            <tr>
+                                <td>Financial operations</td>
+                                <td>Always use transaction</td>
+                                <td>Money must balance</td>
+                            </tr>
+                            <tr>
+                                <td>Batch processing</td>
+                                <td>Use savepoints</td>
+                                <td>Partial recovery possible</td>
+                            </tr>
+                            <tr>
+                                <td>Error occurs</td>
+                                <td>ROLLBACK</td>
+                                <td>Undo partial changes</td>
+                            </tr>
+                            <tr>
+                                <td>All operations succeed</td>
+                                <td>COMMIT</td>
+                                <td>Make changes permanent</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- WHERE Section -->
+            <section class="section-4wh where">
+                <div class="section-header">
+                    <span class="icon">🌍</span>
+                    <span>WHERE - RDBMS Syntax Differences</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>SQL Server</th>
+                                <th>Oracle</th>
+                                <th>PostgreSQL</th>
+                                <th>MySQL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Start Transaction</td>
+                                <td>BEGIN TRANSACTION</td>
+                                <td>Implicit</td>
+                                <td>BEGIN</td>
+                                <td>START TRANSACTION</td>
+                            </tr>
+                            <tr>
+                                <td>Auto-commit Default</td>
+                                <td>ON</td>
+                                <td>OFF</td>
+                                <td>ON</td>
+                                <td>ON</td>
+                            </tr>
+                            <tr>
+                                <td>Savepoint Syntax</td>
+                                <td>SAVE TRANSACTION</td>
+                                <td>SAVEPOINT</td>
+                                <td>SAVEPOINT</td>
+                                <td>SAVEPOINT</td>
+                            </tr>
+                            <tr>
+                                <td>Rollback to Savepoint</td>
+                                <td>ROLLBACK TRANSACTION</td>
+                                <td>ROLLBACK TO</td>
+                                <td>ROLLBACK TO</td>
+                                <td>ROLLBACK TO</td>
+                            </tr>
+                            <tr>
+                                <td>Nested Transactions</td>
+                                <td>Supported</td>
+                                <td>Savepoints only</td>
+                                <td>Savepoints only</td>
+                                <td>Savepoints only</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use TCL?</span>
+                </div>
+                <div class="section-content">
+                    <h3>1. Basic Transaction</h3>
+                    <div class="db-tabs-container">
+                        <div class="db-tabs">
+                            <button class="db-tab active" data-db="sqlserver">SQL Server</button>
+                            <button class="db-tab" data-db="oracle">Oracle</button>
+                            <button class="db-tab" data-db="postgresql">PostgreSQL</button>
+                            <button class="db-tab" data-db="mysql">MySQL</button>
+                        </div>
+
+                        <div class="db-content active" data-db="sqlserver">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Transaction - SQL Server</span>
+                                    <span class="db-badge">SQL Server</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Bank Transfer Example</span>
+<span class="keyword">BEGIN TRANSACTION</span>;
+
+<span class="keyword">BEGIN TRY</span>
+    <span class="comment">-- Debit from Account A</span>
+    <span class="keyword">UPDATE</span> accounts 
+    <span class="keyword">SET</span> balance = balance - <span class="number">1000</span>
+    <span class="keyword">WHERE</span> account_id = <span class="number">1</span>;
+    
+    <span class="comment">-- Check for sufficient funds</span>
+    <span class="keyword">IF</span> (<span class="keyword">SELECT</span> balance <span class="keyword">FROM</span> accounts <span class="keyword">WHERE</span> account_id = <span class="number">1</span>) < <span class="number">0</span>
+        <span class="keyword">THROW</span> <span class="number">50001</span>, <span class="string">'Insufficient funds'</span>, <span class="number">1</span>;
+    
+    <span class="comment">-- Credit to Account B</span>
+    <span class="keyword">UPDATE</span> accounts 
+    <span class="keyword">SET</span> balance = balance + <span class="number">1000</span>
+    <span class="keyword">WHERE</span> account_id = <span class="number">2</span>;
+    
+    <span class="comment">-- All successful, commit</span>
+    <span class="keyword">COMMIT TRANSACTION</span>;
+    <span class="keyword">PRINT</span> <span class="string">'Transfer successful'</span>;
+<span class="keyword">END TRY</span>
+<span class="keyword">BEGIN CATCH</span>
+    <span class="comment">-- Error occurred, rollback</span>
+    <span class="keyword">ROLLBACK TRANSACTION</span>;
+    <span class="keyword">PRINT</span> <span class="string">'Transfer failed: '</span> + ERROR_MESSAGE();
+<span class="keyword">END CATCH</span>;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="oracle">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Transaction - Oracle</span>
+                                    <span class="db-badge">Oracle</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Bank Transfer Example</span>
+<span class="comment">-- Oracle starts transaction implicitly</span>
+<span class="keyword">DECLARE</span>
+    v_balance <span class="keyword">NUMBER</span>;
+<span class="keyword">BEGIN</span>
+    <span class="comment">-- Debit from Account A</span>
+    <span class="keyword">UPDATE</span> accounts 
+    <span class="keyword">SET</span> balance = balance - <span class="number">1000</span>
+    <span class="keyword">WHERE</span> account_id = <span class="number">1</span>;
+    
+    <span class="comment">-- Check for sufficient funds</span>
+    <span class="keyword">SELECT</span> balance <span class="keyword">INTO</span> v_balance 
+    <span class="keyword">FROM</span> accounts <span class="keyword">WHERE</span> account_id = <span class="number">1</span>;
+    
+    <span class="keyword">IF</span> v_balance < <span class="number">0</span> <span class="keyword">THEN</span>
+        <span class="keyword">RAISE_APPLICATION_ERROR</span>(-<span class="number">20001</span>, <span class="string">'Insufficient funds'</span>);
+    <span class="keyword">END IF</span>;
+    
+    <span class="comment">-- Credit to Account B</span>
+    <span class="keyword">UPDATE</span> accounts 
+    <span class="keyword">SET</span> balance = balance + <span class="number">1000</span>
+    <span class="keyword">WHERE</span> account_id = <span class="number">2</span>;
+    
+    <span class="comment">-- All successful, commit</span>
+    <span class="keyword">COMMIT</span>;
+    DBMS_OUTPUT.PUT_LINE(<span class="string">'Transfer successful'</span>);
+    
+<span class="keyword">EXCEPTION</span>
+    <span class="keyword">WHEN OTHERS THEN</span>
+        <span class="comment">-- Error occurred, rollback</span>
+        <span class="keyword">ROLLBACK</span>;
+        DBMS_OUTPUT.PUT_LINE(<span class="string">'Transfer failed: '</span> || SQLERRM);
+<span class="keyword">END</span>;
+/
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="postgresql">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Transaction - PostgreSQL</span>
+                                    <span class="db-badge">PostgreSQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Bank Transfer Example</span>
+<span class="keyword">BEGIN</span>;
+
+<span class="comment">-- Debit from Account A</span>
+<span class="keyword">UPDATE</span> accounts 
+<span class="keyword">SET</span> balance = balance - <span class="number">1000</span>
+<span class="keyword">WHERE</span> account_id = <span class="number">1</span>;
+
+<span class="comment">-- Credit to Account B</span>
+<span class="keyword">UPDATE</span> accounts 
+<span class="keyword">SET</span> balance = balance + <span class="number">1000</span>
+<span class="keyword">WHERE</span> account_id = <span class="number">2</span>;
+
+<span class="comment">-- If all successful, commit</span>
+<span class="keyword">COMMIT</span>;
+
+<span class="comment">-- Or if error, rollback</span>
+<span class="comment">-- ROLLBACK;</span>
+
+<span class="comment">-- Using DO block for error handling</span>
+<span class="keyword">DO</span> $$
+<span class="keyword">BEGIN</span>
+    <span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance - <span class="number">1000</span> <span class="keyword">WHERE</span> account_id = <span class="number">1</span>;
+    <span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance + <span class="number">1000</span> <span class="keyword">WHERE</span> account_id = <span class="number">2</span>;
+<span class="keyword">EXCEPTION</span>
+    <span class="keyword">WHEN OTHERS THEN</span>
+        <span class="keyword">RAISE NOTICE</span> <span class="string">'Transfer failed: %'</span>, SQLERRM;
+<span class="keyword">END</span>;
+$$;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="mysql">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Transaction - MySQL</span>
+                                    <span class="db-badge">MySQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Bank Transfer Example</span>
+<span class="keyword">START TRANSACTION</span>;
+
+<span class="comment">-- Debit from Account A</span>
+<span class="keyword">UPDATE</span> accounts 
+<span class="keyword">SET</span> balance = balance - <span class="number">1000</span>
+<span class="keyword">WHERE</span> account_id = <span class="number">1</span>;
+
+<span class="comment">-- Credit to Account B</span>
+<span class="keyword">UPDATE</span> accounts 
+<span class="keyword">SET</span> balance = balance + <span class="number">1000</span>
+<span class="keyword">WHERE</span> account_id = <span class="number">2</span>;
+
+<span class="comment">-- If all successful, commit</span>
+<span class="keyword">COMMIT</span>;
+
+<span class="comment">-- Using stored procedure with handler</span>
+<span class="keyword">DELIMITER</span> //
+<span class="keyword">CREATE PROCEDURE</span> transfer_funds(
+    <span class="keyword">IN</span> from_account <span class="keyword">INT</span>,
+    <span class="keyword">IN</span> to_account <span class="keyword">INT</span>,
+    <span class="keyword">IN</span> amount <span class="keyword">DECIMAL</span>(<span class="number">10</span>,<span class="number">2</span>)
+)
+<span class="keyword">BEGIN</span>
+    <span class="keyword">DECLARE EXIT HANDLER FOR SQLEXCEPTION</span>
+    <span class="keyword">BEGIN</span>
+        <span class="keyword">ROLLBACK</span>;
+        <span class="keyword">SELECT</span> <span class="string">'Transfer failed'</span> <span class="keyword">AS</span> result;
+    <span class="keyword">END</span>;
+    
+    <span class="keyword">START TRANSACTION</span>;
+    <span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance - amount <span class="keyword">WHERE</span> account_id = from_account;
+    <span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance + amount <span class="keyword">WHERE</span> account_id = to_account;
+    <span class="keyword">COMMIT</span>;
+    <span class="keyword">SELECT</span> <span class="string">'Transfer successful'</span> <span class="keyword">AS</span> result;
+<span class="keyword">END</span> //
+<span class="keyword">DELIMITER</span> ;
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>2. Using SAVEPOINT</h3>
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>SAVEPOINT Example - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- PostgreSQL/MySQL/Oracle syntax</span>
+<span class="keyword">BEGIN</span>;
+
+<span class="comment">-- Insert first batch</span>
+<span class="keyword">INSERT INTO</span> orders (customer_id, amount) <span class="keyword">VALUES</span> (<span class="number">1</span>, <span class="number">100</span>);
+<span class="keyword">INSERT INTO</span> orders (customer_id, amount) <span class="keyword">VALUES</span> (<span class="number">2</span>, <span class="number">200</span>);
+
+<span class="comment">-- Create savepoint after first batch</span>
+<span class="keyword">SAVEPOINT</span> batch1_complete;
+
+<span class="comment">-- Insert second batch</span>
+<span class="keyword">INSERT INTO</span> orders (customer_id, amount) <span class="keyword">VALUES</span> (<span class="number">3</span>, <span class="number">300</span>);
+<span class="keyword">INSERT INTO</span> orders (customer_id, amount) <span class="keyword">VALUES</span> (<span class="number">4</span>, <span class="number">400</span>);
+
+<span class="comment">-- Create savepoint after second batch</span>
+<span class="keyword">SAVEPOINT</span> batch2_complete;
+
+<span class="comment">-- Insert third batch (this might fail)</span>
+<span class="keyword">INSERT INTO</span> orders (customer_id, amount) <span class="keyword">VALUES</span> (<span class="number">5</span>, <span class="number">500</span>);
+
+<span class="comment">-- If third batch fails, rollback to batch2</span>
+<span class="keyword">ROLLBACK TO SAVEPOINT</span> batch2_complete;
+
+<span class="comment">-- Or rollback to batch1</span>
+<span class="comment">-- ROLLBACK TO SAVEPOINT batch1_complete;</span>
+
+<span class="comment">-- Commit whatever succeeded</span>
+<span class="keyword">COMMIT</span>;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Transaction Flow Visualization -->
+            <section class="visualization-3d">
+                <div class="title">Transaction Lifecycle</div>
+                <div class="table-3d">
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">1. BEGIN</div>
+                            <table>
+                                <tr><th>State</th></tr>
+                                <tr class="highlight"><td>Transaction Started</td></tr>
+                                <tr><td>Changes Tracked</td></tr>
+                                <tr><td>Locks Acquired</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">2. Operations</div>
+                            <table>
+                                <tr><th>State</th></tr>
+                                <tr class="highlight-blue"><td>INSERT/UPDATE/DELETE</td></tr>
+                                <tr><td>Changes in Memory</td></tr>
+                                <tr><td>Not Yet Permanent</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">3a. COMMIT</div>
+                            <table>
+                                <tr><th>State</th></tr>
+                                <tr class="highlight"><td>Changes Saved</td></tr>
+                                <tr><td>Locks Released</td></tr>
+                                <tr><td>Transaction Ends</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">3b. ROLLBACK</div>
+                            <table>
+                                <tr><th>State</th></tr>
+                                <tr class="highlight-red"><td>Changes Undone</td></tr>
+                                <tr><td>Locks Released</td></tr>
+                                <tr><td>Original State</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

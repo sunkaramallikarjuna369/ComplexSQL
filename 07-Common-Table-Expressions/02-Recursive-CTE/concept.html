@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recursive CTE - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Recursive CTE</h1>
+            <p class="subtitle">Traverse Hierarchical and Graph Data</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">CTEs</a>
+            <span>›</span>
+            <span>Recursive CTE</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT is a Recursive CTE?</span>
+                </div>
+                <div class="section-content">
+                    <p>A Recursive CTE is a CTE that references itself. It consists of an anchor member (base case) and a recursive member that references the CTE. It's used to traverse hierarchical data like org charts, bill of materials, or graph structures.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">Recursive CTE Structure</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Components</div>
+                                    <table>
+                                        <tr><th>Part</th><th>Purpose</th></tr>
+                                        <tr class="highlight"><td>Anchor</td><td>Starting point (base case)</td></tr>
+                                        <tr class="highlight-blue"><td>UNION ALL</td><td>Combines results</td></tr>
+                                        <tr class="highlight-yellow"><td>Recursive</td><td>References CTE itself</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Org Chart Example</div>
+                                    <table>
+                                        <tr><th>Level</th><th>Employee</th></tr>
+                                        <tr class="highlight"><td>1</td><td>CEO</td></tr>
+                                        <tr class="highlight-blue"><td>2</td><td>├─ VP Sales</td></tr>
+                                        <tr class="highlight-blue"><td>2</td><td>├─ VP Engineering</td></tr>
+                                        <tr class="highlight-yellow"><td>3</td><td>│  ├─ Manager</td></tr>
+                                        <tr><td>4</td><td>│  │  └─ Developer</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use Recursive CTEs?</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>Hierarchical Data:</strong> Employee-manager relationships, category trees</li>
+                        <li><strong>Bill of Materials:</strong> Product component hierarchies</li>
+                        <li><strong>Graph Traversal:</strong> Find paths, connections in networks</li>
+                        <li><strong>Generate Series:</strong> Create number or date sequences</li>
+                    </ul>
+
+                    <div class="info-box warning">
+                        <span class="icon">⚠️</span>
+                        <div>
+                            <strong>Warning:</strong> Always include a termination condition to prevent infinite loops. Most databases have a default recursion limit (e.g., SQL Server: 100, can be changed with MAXRECURSION).
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use Recursive CTEs?</span>
+                </div>
+                <div class="section-content">
+                    <div class="db-tabs-container">
+                        <div class="db-tabs">
+                            <button class="db-tab active" data-db="universal">All RDBMS</button>
+                            <button class="db-tab" data-db="sqlserver">SQL Server</button>
+                            <button class="db-tab" data-db="oracle">Oracle</button>
+                        </div>
+
+                        <div class="db-content active" data-db="universal">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Recursive CTE - Universal</span>
+                                    <span class="db-badge">All RDBMS</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Employee hierarchy (org chart)</span>
+<span class="keyword">WITH RECURSIVE</span> emp_hierarchy <span class="keyword">AS</span> (
+    <span class="comment">-- Anchor: Start with top-level (no manager)</span>
+    <span class="keyword">SELECT</span> 
+        employee_id,
+        first_name,
+        manager_id,
+        <span class="number">1</span> <span class="keyword">AS</span> level,
+        first_name <span class="keyword">AS</span> path
+    <span class="keyword">FROM</span> employees
+    <span class="keyword">WHERE</span> manager_id <span class="keyword">IS NULL</span>
+    
+    <span class="keyword">UNION ALL</span>
+    
+    <span class="comment">-- Recursive: Get employees who report to current level</span>
+    <span class="keyword">SELECT</span> 
+        e.employee_id,
+        e.first_name,
+        e.manager_id,
+        h.level + <span class="number">1</span>,
+        h.path || <span class="string">' -> '</span> || e.first_name
+    <span class="keyword">FROM</span> employees e
+    <span class="keyword">INNER JOIN</span> emp_hierarchy h <span class="keyword">ON</span> e.manager_id = h.employee_id
+)
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> emp_hierarchy <span class="keyword">ORDER BY</span> level, first_name;
+
+<span class="comment">-- Generate number sequence (1 to 10)</span>
+<span class="keyword">WITH RECURSIVE</span> numbers <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> <span class="number">1</span> <span class="keyword">AS</span> n
+    <span class="keyword">UNION ALL</span>
+    <span class="keyword">SELECT</span> n + <span class="number">1</span> <span class="keyword">FROM</span> numbers <span class="keyword">WHERE</span> n < <span class="number">10</span>
+)
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> numbers;
+
+<span class="comment">-- Generate date range</span>
+<span class="keyword">WITH RECURSIVE</span> date_range <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> <span class="keyword">DATE</span> <span class="string">'2024-01-01'</span> <span class="keyword">AS</span> dt
+    <span class="keyword">UNION ALL</span>
+    <span class="keyword">SELECT</span> dt + <span class="keyword">INTERVAL</span> <span class="string">'1 day'</span>
+    <span class="keyword">FROM</span> date_range
+    <span class="keyword">WHERE</span> dt < <span class="keyword">DATE</span> <span class="string">'2024-01-31'</span>
+)
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> date_range;
+
+<span class="comment">-- Category tree with full path</span>
+<span class="keyword">WITH RECURSIVE</span> category_tree <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        category_id,
+        category_name,
+        parent_id,
+        category_name <span class="keyword">AS</span> full_path,
+        <span class="number">0</span> <span class="keyword">AS</span> depth
+    <span class="keyword">FROM</span> categories
+    <span class="keyword">WHERE</span> parent_id <span class="keyword">IS NULL</span>
+    
+    <span class="keyword">UNION ALL</span>
+    
+    <span class="keyword">SELECT</span> 
+        c.category_id,
+        c.category_name,
+        c.parent_id,
+        ct.full_path || <span class="string">' > '</span> || c.category_name,
+        ct.depth + <span class="number">1</span>
+    <span class="keyword">FROM</span> categories c
+    <span class="keyword">JOIN</span> category_tree ct <span class="keyword">ON</span> c.parent_id = ct.category_id
+)
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> category_tree <span class="keyword">ORDER BY</span> full_path;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="sqlserver">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Recursive CTE - SQL Server</span>
+                                    <span class="db-badge">SQL Server</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- SQL Server doesn't use RECURSIVE keyword</span>
+<span class="keyword">WITH</span> emp_hierarchy <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        employee_id,
+        first_name,
+        manager_id,
+        <span class="number">1</span> <span class="keyword">AS</span> level,
+        <span class="function">CAST</span>(first_name <span class="keyword">AS VARCHAR</span>(<span class="number">MAX</span>)) <span class="keyword">AS</span> path
+    <span class="keyword">FROM</span> employees
+    <span class="keyword">WHERE</span> manager_id <span class="keyword">IS NULL</span>
+    
+    <span class="keyword">UNION ALL</span>
+    
+    <span class="keyword">SELECT</span> 
+        e.employee_id,
+        e.first_name,
+        e.manager_id,
+        h.level + <span class="number">1</span>,
+        h.path + <span class="string">' -> '</span> + e.first_name
+    <span class="keyword">FROM</span> employees e
+    <span class="keyword">INNER JOIN</span> emp_hierarchy h <span class="keyword">ON</span> e.manager_id = h.employee_id
+)
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> emp_hierarchy
+<span class="keyword">OPTION</span> (<span class="keyword">MAXRECURSION</span> <span class="number">100</span>); <span class="comment">-- Default is 100, 0 = unlimited</span>
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="oracle">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Recursive CTE - Oracle</span>
+                                    <span class="db-badge">Oracle</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Oracle also supports CONNECT BY (legacy)</span>
+<span class="keyword">WITH</span> emp_hierarchy (employee_id, first_name, manager_id, lvl, path) <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        employee_id,
+        first_name,
+        manager_id,
+        <span class="number">1</span>,
+        first_name
+    <span class="keyword">FROM</span> employees
+    <span class="keyword">WHERE</span> manager_id <span class="keyword">IS NULL</span>
+    
+    <span class="keyword">UNION ALL</span>
+    
+    <span class="keyword">SELECT</span> 
+        e.employee_id,
+        e.first_name,
+        e.manager_id,
+        h.lvl + <span class="number">1</span>,
+        h.path || <span class="string">' -> '</span> || e.first_name
+    <span class="keyword">FROM</span> employees e
+    <span class="keyword">JOIN</span> emp_hierarchy h <span class="keyword">ON</span> e.manager_id = h.employee_id
+)
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> emp_hierarchy;
+
+<span class="comment">-- Oracle legacy CONNECT BY syntax</span>
+<span class="keyword">SELECT</span> 
+    employee_id,
+    first_name,
+    <span class="keyword">LEVEL</span> <span class="keyword">AS</span> lvl,
+    <span class="function">SYS_CONNECT_BY_PATH</span>(first_name, <span class="string">' -> '</span>) <span class="keyword">AS</span> path
+<span class="keyword">FROM</span> employees
+<span class="keyword">START WITH</span> manager_id <span class="keyword">IS NULL</span>
+<span class="keyword">CONNECT BY PRIOR</span> employee_id = manager_id;
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

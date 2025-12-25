@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DML - Data Manipulation Language - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>DML - Data Manipulation Language</h1>
+            <p class="subtitle">SELECT, INSERT, UPDATE, DELETE - Manipulating Data</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">SQL Fundamentals</a>
+            <span>›</span>
+            <span>DML</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT is DML?</span>
+                </div>
+                <div class="section-content">
+                    <p>DML (Data Manipulation Language) consists of SQL commands used to retrieve, insert, modify, and delete data in database tables. Unlike DDL, DML operations work with the data itself, not the structure.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">DML Commands - CRUD Operations</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">SELECT (Read)</div>
+                                    <table>
+                                        <tr><th>Purpose</th></tr>
+                                        <tr><td>Retrieve data</td></tr>
+                                        <tr><td>Query tables</td></tr>
+                                        <tr><td>Filter results</td></tr>
+                                        <tr><td>Join tables</td></tr>
+                                        <tr><td>Aggregate data</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">INSERT (Create)</div>
+                                    <table>
+                                        <tr><th>Purpose</th></tr>
+                                        <tr><td>Add new rows</td></tr>
+                                        <tr><td>Single row insert</td></tr>
+                                        <tr><td>Multi-row insert</td></tr>
+                                        <tr><td>Insert from SELECT</td></tr>
+                                        <tr><td>Default values</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">UPDATE (Update)</div>
+                                    <table>
+                                        <tr><th>Purpose</th></tr>
+                                        <tr><td>Modify existing data</td></tr>
+                                        <tr><td>Single column</td></tr>
+                                        <tr><td>Multiple columns</td></tr>
+                                        <tr><td>Conditional update</td></tr>
+                                        <tr><td>Update from JOIN</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">DELETE (Delete)</div>
+                                    <table>
+                                        <tr><th>Purpose</th></tr>
+                                        <tr><td>Remove rows</td></tr>
+                                        <tr><td>Conditional delete</td></tr>
+                                        <tr><td>Delete all rows</td></tr>
+                                        <tr><td>Delete with JOIN</td></tr>
+                                        <tr><td>Can be rolled back</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use DML?</span>
+                </div>
+                <div class="section-content">
+                    <p>DML commands are the core of database interaction:</p>
+                    <ul>
+                        <li><strong>Data Retrieval:</strong> SELECT is the most used SQL command for querying data</li>
+                        <li><strong>Data Entry:</strong> INSERT allows adding new records to tables</li>
+                        <li><strong>Data Maintenance:</strong> UPDATE keeps data current and accurate</li>
+                        <li><strong>Data Cleanup:</strong> DELETE removes obsolete or incorrect data</li>
+                        <li><strong>Transaction Support:</strong> DML operations can be rolled back within transactions</li>
+                    </ul>
+
+                    <div class="info-box tip">
+                        <span class="icon">💡</span>
+                        <div>
+                            <strong>Pro Tip:</strong> Always use WHERE clause with UPDATE and DELETE to avoid accidentally modifying or removing all rows. Test your WHERE clause with SELECT first!
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHEN Section -->
+            <section class="section-4wh when">
+                <div class="section-header">
+                    <span class="icon">⏰</span>
+                    <span>WHEN to use each DML command?</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Command</th>
+                                <th>Use Case</th>
+                                <th>Example Scenario</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>SELECT</strong></td>
+                                <td>Retrieve data for display or analysis</td>
+                                <td>Show all employees in Engineering dept</td>
+                            </tr>
+                            <tr>
+                                <td><strong>INSERT</strong></td>
+                                <td>Add new records</td>
+                                <td>Register a new employee</td>
+                            </tr>
+                            <tr>
+                                <td><strong>UPDATE</strong></td>
+                                <td>Modify existing records</td>
+                                <td>Give employees a salary raise</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DELETE</strong></td>
+                                <td>Remove records</td>
+                                <td>Remove terminated employees</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- WHERE Section -->
+            <section class="section-4wh where">
+                <div class="section-header">
+                    <span class="icon">🌍</span>
+                    <span>WHERE - RDBMS Syntax Differences</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>SQL Server</th>
+                                <th>Oracle</th>
+                                <th>PostgreSQL</th>
+                                <th>MySQL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Multi-row INSERT</td>
+                                <td>VALUES (...), (...)</td>
+                                <td>INSERT ALL</td>
+                                <td>VALUES (...), (...)</td>
+                                <td>VALUES (...), (...)</td>
+                            </tr>
+                            <tr>
+                                <td>UPSERT</td>
+                                <td>MERGE</td>
+                                <td>MERGE</td>
+                                <td>ON CONFLICT</td>
+                                <td>ON DUPLICATE KEY</td>
+                            </tr>
+                            <tr>
+                                <td>UPDATE with JOIN</td>
+                                <td>UPDATE...FROM</td>
+                                <td>UPDATE...SET</td>
+                                <td>UPDATE...FROM</td>
+                                <td>UPDATE...JOIN</td>
+                            </tr>
+                            <tr>
+                                <td>DELETE with JOIN</td>
+                                <td>DELETE...FROM...JOIN</td>
+                                <td>DELETE...WHERE EXISTS</td>
+                                <td>DELETE...USING</td>
+                                <td>DELETE...JOIN</td>
+                            </tr>
+                            <tr>
+                                <td>RETURNING clause</td>
+                                <td>OUTPUT</td>
+                                <td>RETURNING INTO</td>
+                                <td>RETURNING</td>
+                                <td>Not supported</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use DML?</span>
+                </div>
+                <div class="section-content">
+                    <h3>1. INSERT Statement</h3>
+                    <div class="db-tabs-container">
+                        <div class="db-tabs">
+                            <button class="db-tab active" data-db="sqlserver">SQL Server</button>
+                            <button class="db-tab" data-db="oracle">Oracle</button>
+                            <button class="db-tab" data-db="postgresql">PostgreSQL</button>
+                            <button class="db-tab" data-db="mysql">MySQL</button>
+                        </div>
+
+                        <div class="db-content active" data-db="sqlserver">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>INSERT - SQL Server</span>
+                                    <span class="db-badge">SQL Server</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Single row insert</span>
+<span class="keyword">INSERT INTO</span> employees (first_name, last_name, email, salary)
+<span class="keyword">VALUES</span> (<span class="string">'John'</span>, <span class="string">'Doe'</span>, <span class="string">'john@company.com'</span>, <span class="number">75000</span>);
+
+<span class="comment">-- Multiple rows insert</span>
+<span class="keyword">INSERT INTO</span> employees (first_name, last_name, email, salary)
+<span class="keyword">VALUES</span> 
+    (<span class="string">'Jane'</span>, <span class="string">'Smith'</span>, <span class="string">'jane@company.com'</span>, <span class="number">80000</span>),
+    (<span class="string">'Bob'</span>, <span class="string">'Johnson'</span>, <span class="string">'bob@company.com'</span>, <span class="number">65000</span>),
+    (<span class="string">'Alice'</span>, <span class="string">'Williams'</span>, <span class="string">'alice@company.com'</span>, <span class="number">90000</span>);
+
+<span class="comment">-- Insert from SELECT</span>
+<span class="keyword">INSERT INTO</span> employees_archive (first_name, last_name, email)
+<span class="keyword">SELECT</span> first_name, last_name, email
+<span class="keyword">FROM</span> employees
+<span class="keyword">WHERE</span> hire_date < <span class="string">'2020-01-01'</span>;
+
+<span class="comment">-- Insert with OUTPUT (return inserted values)</span>
+<span class="keyword">INSERT INTO</span> employees (first_name, last_name, salary)
+<span class="keyword">OUTPUT</span> inserted.employee_id, inserted.first_name
+<span class="keyword">VALUES</span> (<span class="string">'New'</span>, <span class="string">'Employee'</span>, <span class="number">70000</span>);
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="oracle">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>INSERT - Oracle</span>
+                                    <span class="db-badge">Oracle</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Single row insert</span>
+<span class="keyword">INSERT INTO</span> employees (first_name, last_name, email, salary)
+<span class="keyword">VALUES</span> (<span class="string">'John'</span>, <span class="string">'Doe'</span>, <span class="string">'john@company.com'</span>, <span class="number">75000</span>);
+
+<span class="comment">-- Multiple rows insert (INSERT ALL)</span>
+<span class="keyword">INSERT ALL</span>
+    <span class="keyword">INTO</span> employees (first_name, last_name, email, salary) 
+        <span class="keyword">VALUES</span> (<span class="string">'Jane'</span>, <span class="string">'Smith'</span>, <span class="string">'jane@company.com'</span>, <span class="number">80000</span>)
+    <span class="keyword">INTO</span> employees (first_name, last_name, email, salary) 
+        <span class="keyword">VALUES</span> (<span class="string">'Bob'</span>, <span class="string">'Johnson'</span>, <span class="string">'bob@company.com'</span>, <span class="number">65000</span>)
+    <span class="keyword">INTO</span> employees (first_name, last_name, email, salary) 
+        <span class="keyword">VALUES</span> (<span class="string">'Alice'</span>, <span class="string">'Williams'</span>, <span class="string">'alice@company.com'</span>, <span class="number">90000</span>)
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> dual;
+
+<span class="comment">-- Insert from SELECT</span>
+<span class="keyword">INSERT INTO</span> employees_archive (first_name, last_name, email)
+<span class="keyword">SELECT</span> first_name, last_name, email
+<span class="keyword">FROM</span> employees
+<span class="keyword">WHERE</span> hire_date < <span class="keyword">DATE</span> <span class="string">'2020-01-01'</span>;
+
+<span class="comment">-- Insert with RETURNING</span>
+<span class="keyword">INSERT INTO</span> employees (first_name, last_name, salary)
+<span class="keyword">VALUES</span> (<span class="string">'New'</span>, <span class="string">'Employee'</span>, <span class="number">70000</span>)
+<span class="keyword">RETURNING</span> employee_id <span class="keyword">INTO</span> v_emp_id;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="postgresql">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>INSERT - PostgreSQL</span>
+                                    <span class="db-badge">PostgreSQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Single row insert</span>
+<span class="keyword">INSERT INTO</span> employees (first_name, last_name, email, salary)
+<span class="keyword">VALUES</span> (<span class="string">'John'</span>, <span class="string">'Doe'</span>, <span class="string">'john@company.com'</span>, <span class="number">75000</span>);
+
+<span class="comment">-- Multiple rows insert</span>
+<span class="keyword">INSERT INTO</span> employees (first_name, last_name, email, salary)
+<span class="keyword">VALUES</span> 
+    (<span class="string">'Jane'</span>, <span class="string">'Smith'</span>, <span class="string">'jane@company.com'</span>, <span class="number">80000</span>),
+    (<span class="string">'Bob'</span>, <span class="string">'Johnson'</span>, <span class="string">'bob@company.com'</span>, <span class="number">65000</span>),
+    (<span class="string">'Alice'</span>, <span class="string">'Williams'</span>, <span class="string">'alice@company.com'</span>, <span class="number">90000</span>);
+
+<span class="comment">-- Insert with RETURNING</span>
+<span class="keyword">INSERT INTO</span> employees (first_name, last_name, salary)
+<span class="keyword">VALUES</span> (<span class="string">'New'</span>, <span class="string">'Employee'</span>, <span class="number">70000</span>)
+<span class="keyword">RETURNING</span> employee_id, first_name;
+
+<span class="comment">-- UPSERT (Insert or Update on conflict)</span>
+<span class="keyword">INSERT INTO</span> employees (employee_id, first_name, last_name, salary)
+<span class="keyword">VALUES</span> (<span class="number">1</span>, <span class="string">'John'</span>, <span class="string">'Doe'</span>, <span class="number">80000</span>)
+<span class="keyword">ON CONFLICT</span> (employee_id) 
+<span class="keyword">DO UPDATE SET</span> salary = EXCLUDED.salary;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="mysql">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>INSERT - MySQL</span>
+                                    <span class="db-badge">MySQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Single row insert</span>
+<span class="keyword">INSERT INTO</span> employees (first_name, last_name, email, salary)
+<span class="keyword">VALUES</span> (<span class="string">'John'</span>, <span class="string">'Doe'</span>, <span class="string">'john@company.com'</span>, <span class="number">75000</span>);
+
+<span class="comment">-- Multiple rows insert</span>
+<span class="keyword">INSERT INTO</span> employees (first_name, last_name, email, salary)
+<span class="keyword">VALUES</span> 
+    (<span class="string">'Jane'</span>, <span class="string">'Smith'</span>, <span class="string">'jane@company.com'</span>, <span class="number">80000</span>),
+    (<span class="string">'Bob'</span>, <span class="string">'Johnson'</span>, <span class="string">'bob@company.com'</span>, <span class="number">65000</span>),
+    (<span class="string">'Alice'</span>, <span class="string">'Williams'</span>, <span class="string">'alice@company.com'</span>, <span class="number">90000</span>);
+
+<span class="comment">-- UPSERT (Insert or Update on duplicate key)</span>
+<span class="keyword">INSERT INTO</span> employees (employee_id, first_name, last_name, salary)
+<span class="keyword">VALUES</span> (<span class="number">1</span>, <span class="string">'John'</span>, <span class="string">'Doe'</span>, <span class="number">80000</span>)
+<span class="keyword">ON DUPLICATE KEY UPDATE</span> salary = <span class="keyword">VALUES</span>(salary);
+
+<span class="comment">-- INSERT IGNORE (skip on duplicate)</span>
+<span class="keyword">INSERT IGNORE INTO</span> employees (employee_id, first_name, last_name)
+<span class="keyword">VALUES</span> (<span class="number">1</span>, <span class="string">'John'</span>, <span class="string">'Doe'</span>);
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>2. UPDATE Statement</h3>
+                    <div class="db-tabs-container">
+                        <div class="db-tabs">
+                            <button class="db-tab active" data-db="sqlserver2">SQL Server</button>
+                            <button class="db-tab" data-db="oracle2">Oracle</button>
+                            <button class="db-tab" data-db="postgresql2">PostgreSQL</button>
+                            <button class="db-tab" data-db="mysql2">MySQL</button>
+                        </div>
+
+                        <div class="db-content active" data-db="sqlserver2">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>UPDATE - SQL Server</span>
+                                    <span class="db-badge">SQL Server</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Simple update</span>
+<span class="keyword">UPDATE</span> employees
+<span class="keyword">SET</span> salary = <span class="number">80000</span>
+<span class="keyword">WHERE</span> employee_id = <span class="number">1</span>;
+
+<span class="comment">-- Update multiple columns</span>
+<span class="keyword">UPDATE</span> employees
+<span class="keyword">SET</span> salary = salary * <span class="number">1.10</span>,
+    last_name = <span class="string">'Smith-Jones'</span>
+<span class="keyword">WHERE</span> department_id = <span class="number">1</span>;
+
+<span class="comment">-- Update with JOIN</span>
+<span class="keyword">UPDATE</span> e
+<span class="keyword">SET</span> e.salary = e.salary * <span class="number">1.15</span>
+<span class="keyword">FROM</span> employees e
+<span class="keyword">INNER JOIN</span> departments d <span class="keyword">ON</span> e.department_id = d.department_id
+<span class="keyword">WHERE</span> d.department_name = <span class="string">'Engineering'</span>;
+
+<span class="comment">-- Update with OUTPUT</span>
+<span class="keyword">UPDATE</span> employees
+<span class="keyword">SET</span> salary = salary + <span class="number">5000</span>
+<span class="keyword">OUTPUT</span> deleted.salary <span class="keyword">AS</span> old_salary, 
+       inserted.salary <span class="keyword">AS</span> new_salary
+<span class="keyword">WHERE</span> employee_id = <span class="number">1</span>;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="oracle2">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>UPDATE - Oracle</span>
+                                    <span class="db-badge">Oracle</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Simple update</span>
+<span class="keyword">UPDATE</span> employees
+<span class="keyword">SET</span> salary = <span class="number">80000</span>
+<span class="keyword">WHERE</span> employee_id = <span class="number">1</span>;
+
+<span class="comment">-- Update multiple columns</span>
+<span class="keyword">UPDATE</span> employees
+<span class="keyword">SET</span> salary = salary * <span class="number">1.10</span>,
+    last_name = <span class="string">'Smith-Jones'</span>
+<span class="keyword">WHERE</span> department_id = <span class="number">1</span>;
+
+<span class="comment">-- Update with subquery</span>
+<span class="keyword">UPDATE</span> employees e
+<span class="keyword">SET</span> salary = salary * <span class="number">1.15</span>
+<span class="keyword">WHERE EXISTS</span> (
+    <span class="keyword">SELECT</span> <span class="number">1</span> <span class="keyword">FROM</span> departments d
+    <span class="keyword">WHERE</span> d.department_id = e.department_id
+    <span class="keyword">AND</span> d.department_name = <span class="string">'Engineering'</span>
+);
+
+<span class="comment">-- Update with RETURNING</span>
+<span class="keyword">UPDATE</span> employees
+<span class="keyword">SET</span> salary = salary + <span class="number">5000</span>
+<span class="keyword">WHERE</span> employee_id = <span class="number">1</span>
+<span class="keyword">RETURNING</span> salary <span class="keyword">INTO</span> v_new_salary;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="postgresql2">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>UPDATE - PostgreSQL</span>
+                                    <span class="db-badge">PostgreSQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Simple update</span>
+<span class="keyword">UPDATE</span> employees
+<span class="keyword">SET</span> salary = <span class="number">80000</span>
+<span class="keyword">WHERE</span> employee_id = <span class="number">1</span>;
+
+<span class="comment">-- Update multiple columns</span>
+<span class="keyword">UPDATE</span> employees
+<span class="keyword">SET</span> salary = salary * <span class="number">1.10</span>,
+    last_name = <span class="string">'Smith-Jones'</span>
+<span class="keyword">WHERE</span> department_id = <span class="number">1</span>;
+
+<span class="comment">-- Update with JOIN (FROM clause)</span>
+<span class="keyword">UPDATE</span> employees e
+<span class="keyword">SET</span> salary = e.salary * <span class="number">1.15</span>
+<span class="keyword">FROM</span> departments d
+<span class="keyword">WHERE</span> e.department_id = d.department_id
+<span class="keyword">AND</span> d.department_name = <span class="string">'Engineering'</span>;
+
+<span class="comment">-- Update with RETURNING</span>
+<span class="keyword">UPDATE</span> employees
+<span class="keyword">SET</span> salary = salary + <span class="number">5000</span>
+<span class="keyword">WHERE</span> employee_id = <span class="number">1</span>
+<span class="keyword">RETURNING</span> employee_id, salary;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="mysql2">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>UPDATE - MySQL</span>
+                                    <span class="db-badge">MySQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Simple update</span>
+<span class="keyword">UPDATE</span> employees
+<span class="keyword">SET</span> salary = <span class="number">80000</span>
+<span class="keyword">WHERE</span> employee_id = <span class="number">1</span>;
+
+<span class="comment">-- Update multiple columns</span>
+<span class="keyword">UPDATE</span> employees
+<span class="keyword">SET</span> salary = salary * <span class="number">1.10</span>,
+    last_name = <span class="string">'Smith-Jones'</span>
+<span class="keyword">WHERE</span> department_id = <span class="number">1</span>;
+
+<span class="comment">-- Update with JOIN</span>
+<span class="keyword">UPDATE</span> employees e
+<span class="keyword">INNER JOIN</span> departments d <span class="keyword">ON</span> e.department_id = d.department_id
+<span class="keyword">SET</span> e.salary = e.salary * <span class="number">1.15</span>
+<span class="keyword">WHERE</span> d.department_name = <span class="string">'Engineering'</span>;
+
+<span class="comment">-- Update with LIMIT</span>
+<span class="keyword">UPDATE</span> employees
+<span class="keyword">SET</span> salary = salary + <span class="number">1000</span>
+<span class="keyword">ORDER BY</span> hire_date
+<span class="keyword">LIMIT</span> <span class="number">10</span>;
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>3. DELETE Statement</h3>
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>DELETE - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Simple delete</span>
+<span class="keyword">DELETE FROM</span> employees
+<span class="keyword">WHERE</span> employee_id = <span class="number">1</span>;
+
+<span class="comment">-- Delete with multiple conditions</span>
+<span class="keyword">DELETE FROM</span> employees
+<span class="keyword">WHERE</span> department_id = <span class="number">5</span>
+<span class="keyword">AND</span> hire_date < <span class="string">'2020-01-01'</span>;
+
+<span class="comment">-- Delete all rows (use with caution!)</span>
+<span class="keyword">DELETE FROM</span> employees;
+
+<span class="comment">-- Delete with subquery</span>
+<span class="keyword">DELETE FROM</span> employees
+<span class="keyword">WHERE</span> department_id <span class="keyword">IN</span> (
+    <span class="keyword">SELECT</span> department_id 
+    <span class="keyword">FROM</span> departments 
+    <span class="keyword">WHERE</span> location = <span class="string">'Closed Office'</span>
+);
+                        </pre>
+                    </div>
+
+                    <div class="info-box warning">
+                        <span class="icon">⚠️</span>
+                        <div>
+                            <strong>Safety First:</strong> Always test your WHERE clause with SELECT before running UPDATE or DELETE:
+                            <pre style="background:#1e293b;color:#e2e8f0;padding:10px;border-radius:5px;margin-top:10px;">
+-- First, verify which rows will be affected
+SELECT * FROM employees WHERE department_id = 5;
+
+-- Then, if correct, run the DELETE
+DELETE FROM employees WHERE department_id = 5;</pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Visual Demonstration -->
+            <section class="visualization-3d">
+                <div class="title">DML Operations Visualization</div>
+                <div class="table-3d">
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">Original Data</div>
+                            <table>
+                                <tr><th>id</th><th>name</th><th>salary</th></tr>
+                                <tr><td>1</td><td>John</td><td>50000</td></tr>
+                                <tr><td>2</td><td>Jane</td><td>60000</td></tr>
+                                <tr><td>3</td><td>Bob</td><td>55000</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">After INSERT</div>
+                            <table>
+                                <tr><th>id</th><th>name</th><th>salary</th></tr>
+                                <tr><td>1</td><td>John</td><td>50000</td></tr>
+                                <tr><td>2</td><td>Jane</td><td>60000</td></tr>
+                                <tr><td>3</td><td>Bob</td><td>55000</td></tr>
+                                <tr class="highlight"><td>4</td><td>Alice</td><td>70000</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">After UPDATE</div>
+                            <table>
+                                <tr><th>id</th><th>name</th><th>salary</th></tr>
+                                <tr class="highlight-blue"><td>1</td><td>John</td><td>55000</td></tr>
+                                <tr><td>2</td><td>Jane</td><td>60000</td></tr>
+                                <tr><td>3</td><td>Bob</td><td>55000</td></tr>
+                                <tr><td>4</td><td>Alice</td><td>70000</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">After DELETE</div>
+                            <table>
+                                <tr><th>id</th><th>name</th><th>salary</th></tr>
+                                <tr><td>1</td><td>John</td><td>55000</td></tr>
+                                <tr><td>2</td><td>Jane</td><td>60000</td></tr>
+                                <tr class="highlight-red"><td colspan="3">Row 3 Deleted</td></tr>
+                                <tr><td>4</td><td>Alice</td><td>70000</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

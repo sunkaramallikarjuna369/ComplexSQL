@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAG and LEAD - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>LAG() and LEAD()</h1>
+            <p class="subtitle">Access Previous and Next Row Values</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Window Functions</a>
+            <span>›</span>
+            <span>LAG / LEAD</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT are LAG() and LEAD()?</span>
+                </div>
+                <div class="section-content">
+                    <p>LAG() and LEAD() are window functions that allow you to access data from previous or subsequent rows without using self-joins. LAG() looks backward, LEAD() looks forward.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">LAG and LEAD Visualization</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Sales Data</div>
+                                    <table>
+                                        <tr><th>month</th><th>sales</th><th>LAG</th><th>LEAD</th></tr>
+                                        <tr><td>Jan</td><td>100</td><td>NULL</td><td>150</td></tr>
+                                        <tr class="highlight"><td>Feb</td><td>150</td><td>100</td><td>120</td></tr>
+                                        <tr><td>Mar</td><td>120</td><td>150</td><td>180</td></tr>
+                                        <tr><td>Apr</td><td>180</td><td>120</td><td>NULL</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Direction</div>
+                                    <table>
+                                        <tr><th>Function</th><th>Direction</th></tr>
+                                        <tr class="highlight-blue"><td>LAG()</td><td>← Previous Row</td></tr>
+                                        <tr class="highlight-yellow"><td>LEAD()</td><td>→ Next Row</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use LAG() and LEAD()?</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>Calculate Differences:</strong> Compare current value with previous (month-over-month change)</li>
+                        <li><strong>Trend Analysis:</strong> Identify growth or decline patterns</li>
+                        <li><strong>Gap Detection:</strong> Find missing sequences or time gaps</li>
+                        <li><strong>Running Comparisons:</strong> Compare with N rows back/forward</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use LAG() and LEAD()?</span>
+                </div>
+                <div class="section-content">
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>LAG and LEAD - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Basic LAG and LEAD</span>
+<span class="keyword">SELECT</span> 
+    month,
+    sales,
+    <span class="function">LAG</span>(sales) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> month) <span class="keyword">AS</span> prev_month_sales,
+    <span class="function">LEAD</span>(sales) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> month) <span class="keyword">AS</span> next_month_sales
+<span class="keyword">FROM</span> monthly_sales;
+
+<span class="comment">-- Calculate month-over-month change</span>
+<span class="keyword">SELECT</span> 
+    month,
+    sales,
+    <span class="function">LAG</span>(sales) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> month) <span class="keyword">AS</span> prev_sales,
+    sales - <span class="function">LAG</span>(sales) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> month) <span class="keyword">AS</span> change,
+    <span class="function">ROUND</span>(
+        <span class="number">100.0</span> * (sales - <span class="function">LAG</span>(sales) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> month)) 
+        / <span class="function">LAG</span>(sales) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> month), 
+        <span class="number">2</span>
+    ) <span class="keyword">AS</span> pct_change
+<span class="keyword">FROM</span> monthly_sales;
+
+<span class="comment">-- LAG with offset and default value</span>
+<span class="keyword">SELECT</span> 
+    order_date,
+    amount,
+    <span class="function">LAG</span>(amount, <span class="number">1</span>, <span class="number">0</span>) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> order_date) <span class="keyword">AS</span> prev_1,
+    <span class="function">LAG</span>(amount, <span class="number">2</span>, <span class="number">0</span>) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> order_date) <span class="keyword">AS</span> prev_2,
+    <span class="function">LAG</span>(amount, <span class="number">3</span>, <span class="number">0</span>) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> order_date) <span class="keyword">AS</span> prev_3
+<span class="keyword">FROM</span> orders;
+
+<span class="comment">-- Year-over-year comparison</span>
+<span class="keyword">SELECT</span> 
+    year,
+    quarter,
+    revenue,
+    <span class="function">LAG</span>(revenue, <span class="number">4</span>) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> year, quarter) <span class="keyword">AS</span> same_quarter_last_year,
+    revenue - <span class="function">LAG</span>(revenue, <span class="number">4</span>) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> year, quarter) <span class="keyword">AS</span> yoy_change
+<span class="keyword">FROM</span> quarterly_revenue;
+
+<span class="comment">-- Find gaps in sequence</span>
+<span class="keyword">SELECT</span> 
+    id,
+    <span class="function">LAG</span>(id) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> id) <span class="keyword">AS</span> prev_id,
+    id - <span class="function">LAG</span>(id) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> id) <span class="keyword">AS</span> gap
+<span class="keyword">FROM</span> records
+<span class="keyword">WHERE</span> id - <span class="function">LAG</span>(id) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> id) > <span class="number">1</span>;
+
+<span class="comment">-- Session duration calculation</span>
+<span class="keyword">SELECT</span> 
+    user_id,
+    event_time,
+    event_type,
+    <span class="function">LEAD</span>(event_time) <span class="keyword">OVER</span> (
+        <span class="keyword">PARTITION BY</span> user_id 
+        <span class="keyword">ORDER BY</span> event_time
+    ) - event_time <span class="keyword">AS</span> time_to_next_event
+<span class="keyword">FROM</span> user_events;
+                        </pre>
+                    </div>
+
+                    <div class="info-box tip">
+                        <span class="icon">💡</span>
+                        <div>
+                            <strong>Syntax:</strong> LAG(column, offset, default) / LEAD(column, offset, default)
+                            <ul>
+                                <li><strong>column:</strong> The column to retrieve</li>
+                                <li><strong>offset:</strong> Number of rows back/forward (default: 1)</li>
+                                <li><strong>default:</strong> Value to return if no row exists (default: NULL)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Operations - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Set Operations</h1>
+            <p class="subtitle">UNION, UNION ALL, INTERSECT, EXCEPT/MINUS</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Set Operations</a>
+            <span>›</span>
+            <span>Overview</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT are Set Operations?</span>
+                </div>
+                <div class="section-content">
+                    <p>Set operations combine results from two or more SELECT statements. They work like mathematical set operations - union, intersection, and difference.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">Set Operations Visualization</div>
+                        <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin: 20px 0;">
+                            <div style="text-align: center;">
+                                <svg width="150" height="120" viewBox="0 0 150 120">
+                                    <circle cx="50" cy="60" r="40" fill="rgba(139, 92, 246, 0.9)" stroke="#8b5cf6" stroke-width="2"/>
+                                    <circle cx="100" cy="60" r="40" fill="rgba(139, 92, 246, 0.9)" stroke="#8b5cf6" stroke-width="2"/>
+                                </svg>
+                                <p style="color: white; font-weight: bold;">UNION</p>
+                                <p style="color: #a78bfa; font-size: 12px;">All from both (no duplicates)</p>
+                            </div>
+                            <div style="text-align: center;">
+                                <svg width="150" height="120" viewBox="0 0 150 120">
+                                    <circle cx="50" cy="60" r="40" fill="rgba(59, 130, 246, 0.3)" stroke="#3b82f6" stroke-width="2"/>
+                                    <circle cx="100" cy="60" r="40" fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" stroke-width="2"/>
+                                    <path d="M75,30 A40,40 0 0,1 75,90 A40,40 0 0,1 75,30" fill="rgba(139, 92, 246, 0.9)"/>
+                                </svg>
+                                <p style="color: white; font-weight: bold;">INTERSECT</p>
+                                <p style="color: #a78bfa; font-size: 12px;">Only common rows</p>
+                            </div>
+                            <div style="text-align: center;">
+                                <svg width="150" height="120" viewBox="0 0 150 120">
+                                    <defs>
+                                        <clipPath id="exceptClip">
+                                            <rect x="0" y="0" width="75" height="120"/>
+                                        </clipPath>
+                                    </defs>
+                                    <circle cx="50" cy="60" r="40" fill="rgba(139, 92, 246, 0.9)" stroke="#8b5cf6" stroke-width="2" clip-path="url(#exceptClip)"/>
+                                    <circle cx="100" cy="60" r="40" fill="none" stroke="#ef4444" stroke-width="2"/>
+                                    <circle cx="50" cy="60" r="40" fill="none" stroke="#8b5cf6" stroke-width="2"/>
+                                </svg>
+                                <p style="color: white; font-weight: bold;">EXCEPT/MINUS</p>
+                                <p style="color: #a78bfa; font-size: 12px;">In A but not in B</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use Set Operations?</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>Combine Data:</strong> Merge results from different tables or queries</li>
+                        <li><strong>Find Commonalities:</strong> Identify records that exist in multiple sets</li>
+                        <li><strong>Find Differences:</strong> Identify records unique to one set</li>
+                        <li><strong>Data Comparison:</strong> Compare data between environments or time periods</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- WHERE Section -->
+            <section class="section-4wh where">
+                <div class="section-header">
+                    <span class="icon">🌍</span>
+                    <span>WHERE - RDBMS Differences</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Operation</th>
+                                <th>SQL Server</th>
+                                <th>Oracle</th>
+                                <th>PostgreSQL</th>
+                                <th>MySQL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>UNION</td><td>UNION</td><td>UNION</td><td>UNION</td><td>UNION</td></tr>
+                            <tr><td>UNION ALL</td><td>UNION ALL</td><td>UNION ALL</td><td>UNION ALL</td><td>UNION ALL</td></tr>
+                            <tr><td>INTERSECT</td><td>INTERSECT</td><td>INTERSECT</td><td>INTERSECT</td><td>INTERSECT (8.0+)</td></tr>
+                            <tr><td>Difference</td><td>EXCEPT</td><td>MINUS</td><td>EXCEPT</td><td>EXCEPT (8.0+)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use Set Operations?</span>
+                </div>
+                <div class="section-content">
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Set Operations - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- UNION (removes duplicates)</span>
+<span class="keyword">SELECT</span> first_name, last_name <span class="keyword">FROM</span> employees
+<span class="keyword">UNION</span>
+<span class="keyword">SELECT</span> first_name, last_name <span class="keyword">FROM</span> contractors;
+
+<span class="comment">-- UNION ALL (keeps duplicates - faster)</span>
+<span class="keyword">SELECT</span> first_name, last_name <span class="keyword">FROM</span> employees
+<span class="keyword">UNION ALL</span>
+<span class="keyword">SELECT</span> first_name, last_name <span class="keyword">FROM</span> contractors;
+
+<span class="comment">-- INTERSECT (common rows only)</span>
+<span class="keyword">SELECT</span> customer_id <span class="keyword">FROM</span> orders_2023
+<span class="keyword">INTERSECT</span>
+<span class="keyword">SELECT</span> customer_id <span class="keyword">FROM</span> orders_2024;
+
+<span class="comment">-- EXCEPT (in first but not in second)</span>
+<span class="comment">-- SQL Server, PostgreSQL, MySQL 8.0+</span>
+<span class="keyword">SELECT</span> customer_id <span class="keyword">FROM</span> customers
+<span class="keyword">EXCEPT</span>
+<span class="keyword">SELECT</span> customer_id <span class="keyword">FROM</span> orders;
+
+<span class="comment">-- MINUS (Oracle equivalent of EXCEPT)</span>
+<span class="keyword">SELECT</span> customer_id <span class="keyword">FROM</span> customers
+<span class="keyword">MINUS</span>
+<span class="keyword">SELECT</span> customer_id <span class="keyword">FROM</span> orders;
+
+<span class="comment">-- Multiple set operations</span>
+<span class="keyword">SELECT</span> product_id <span class="keyword">FROM</span> products_us
+<span class="keyword">UNION</span>
+<span class="keyword">SELECT</span> product_id <span class="keyword">FROM</span> products_eu
+<span class="keyword">UNION</span>
+<span class="keyword">SELECT</span> product_id <span class="keyword">FROM</span> products_asia;
+
+<span class="comment">-- Set operations with ORDER BY (at the end)</span>
+<span class="keyword">SELECT</span> first_name, <span class="string">'Employee'</span> <span class="keyword">AS</span> type <span class="keyword">FROM</span> employees
+<span class="keyword">UNION ALL</span>
+<span class="keyword">SELECT</span> first_name, <span class="string">'Contractor'</span> <span class="keyword">AS</span> type <span class="keyword">FROM</span> contractors
+<span class="keyword">ORDER BY</span> first_name;
+
+<span class="comment">-- Find customers who ordered in 2023 but not 2024</span>
+<span class="keyword">SELECT</span> customer_id, customer_name
+<span class="keyword">FROM</span> customers
+<span class="keyword">WHERE</span> customer_id <span class="keyword">IN</span> (
+    <span class="keyword">SELECT</span> customer_id <span class="keyword">FROM</span> orders <span class="keyword">WHERE</span> <span class="function">YEAR</span>(order_date) = <span class="number">2023</span>
+    <span class="keyword">EXCEPT</span>
+    <span class="keyword">SELECT</span> customer_id <span class="keyword">FROM</span> orders <span class="keyword">WHERE</span> <span class="function">YEAR</span>(order_date) = <span class="number">2024</span>
+);
+                        </pre>
+                    </div>
+
+                    <div class="info-box warning">
+                        <span class="icon">⚠️</span>
+                        <div>
+                            <strong>Rules for Set Operations:</strong>
+                            <ul>
+                                <li>Both queries must have the same number of columns</li>
+                                <li>Corresponding columns must have compatible data types</li>
+                                <li>Column names come from the first query</li>
+                                <li>ORDER BY can only appear at the end</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

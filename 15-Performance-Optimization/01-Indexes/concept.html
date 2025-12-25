@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Optimization - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Performance Optimization</h1>
+            <p class="subtitle">Indexes, Query Tuning, and Execution Plans</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Performance</a>
+            <span>›</span>
+            <span>Indexes</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT are Indexes?</span>
+                </div>
+                <div class="section-content">
+                    <p>An index is a database object that improves the speed of data retrieval operations. It works like a book's index - instead of scanning every page, you look up the topic and go directly to the relevant pages.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">Index Types</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Index Types</div>
+                                    <table>
+                                        <tr><th>Type</th><th>Use Case</th></tr>
+                                        <tr class="highlight"><td>B-Tree</td><td>Default, range queries, equality</td></tr>
+                                        <tr class="highlight-blue"><td>Hash</td><td>Equality comparisons only</td></tr>
+                                        <tr class="highlight-yellow"><td>Clustered</td><td>Physical row ordering</td></tr>
+                                        <tr><td>Non-Clustered</td><td>Separate index structure</td></tr>
+                                        <tr><td>Composite</td><td>Multiple columns</td></tr>
+                                        <tr><td>Covering</td><td>Includes all query columns</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use Indexes?</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>Faster Queries:</strong> Reduce table scans, find data quickly</li>
+                        <li><strong>Efficient Sorting:</strong> Pre-sorted data for ORDER BY</li>
+                        <li><strong>Unique Constraints:</strong> Enforce uniqueness efficiently</li>
+                        <li><strong>Join Performance:</strong> Speed up table joins</li>
+                    </ul>
+
+                    <div class="info-box warning">
+                        <span class="icon">⚠️</span>
+                        <div>
+                            <strong>Trade-offs:</strong> Indexes speed up reads but slow down writes (INSERT, UPDATE, DELETE) because the index must be maintained. Don't over-index!
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHEN Section -->
+            <section class="section-4wh when">
+                <div class="section-header">
+                    <span class="icon">⏰</span>
+                    <span>WHEN to Create Indexes?</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Create Index When</th>
+                                <th>Avoid Index When</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Columns in WHERE clauses</td>
+                                <td>Small tables (< 1000 rows)</td>
+                            </tr>
+                            <tr>
+                                <td>Columns in JOIN conditions</td>
+                                <td>Columns with low selectivity</td>
+                            </tr>
+                            <tr>
+                                <td>Columns in ORDER BY</td>
+                                <td>Frequently updated columns</td>
+                            </tr>
+                            <tr>
+                                <td>High selectivity columns</td>
+                                <td>Wide columns (large text)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to Create and Optimize Indexes?</span>
+                </div>
+                <div class="section-content">
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Index Operations - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Create basic index</span>
+<span class="keyword">CREATE INDEX</span> idx_employee_name <span class="keyword">ON</span> employees(last_name);
+
+<span class="comment">-- Create unique index</span>
+<span class="keyword">CREATE UNIQUE INDEX</span> idx_employee_email <span class="keyword">ON</span> employees(email);
+
+<span class="comment">-- Create composite index (column order matters!)</span>
+<span class="keyword">CREATE INDEX</span> idx_emp_dept_salary 
+<span class="keyword">ON</span> employees(department_id, salary);
+
+<span class="comment">-- Create covering index (includes all needed columns)</span>
+<span class="keyword">CREATE INDEX</span> idx_emp_covering 
+<span class="keyword">ON</span> employees(department_id) 
+<span class="keyword">INCLUDE</span> (first_name, last_name, salary);
+
+<span class="comment">-- Drop index</span>
+<span class="keyword">DROP INDEX</span> idx_employee_name;
+
+<span class="comment">-- View execution plan (SQL Server)</span>
+<span class="keyword">SET SHOWPLAN_ALL ON</span>;
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> last_name = <span class="string">'Smith'</span>;
+
+<span class="comment">-- View execution plan (PostgreSQL)</span>
+<span class="keyword">EXPLAIN ANALYZE</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> last_name = <span class="string">'Smith'</span>;
+
+<span class="comment">-- View execution plan (MySQL)</span>
+<span class="keyword">EXPLAIN</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> last_name = <span class="string">'Smith'</span>;
+
+<span class="comment">-- View execution plan (Oracle)</span>
+<span class="keyword">EXPLAIN PLAN FOR</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> last_name = <span class="string">'Smith'</span>;
+<span class="keyword">SELECT</span> * <span class="keyword">FROM TABLE</span>(<span class="function">DBMS_XPLAN.DISPLAY</span>);
+                        </pre>
+                    </div>
+
+                    <h3>Query Optimization Tips</h3>
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Query Optimization</span>
+                            <span class="db-badge">Best Practices</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- BAD: Function on indexed column (prevents index use)</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> <span class="function">YEAR</span>(hire_date) = <span class="number">2024</span>;
+
+<span class="comment">-- GOOD: Use range instead</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> hire_date >= <span class="string">'2024-01-01'</span> 
+  <span class="keyword">AND</span> hire_date < <span class="string">'2025-01-01'</span>;
+
+<span class="comment">-- BAD: Leading wildcard (full scan)</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> last_name <span class="keyword">LIKE</span> <span class="string">'%son'</span>;
+
+<span class="comment">-- GOOD: Trailing wildcard (can use index)</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> last_name <span class="keyword">LIKE</span> <span class="string">'John%'</span>;
+
+<span class="comment">-- BAD: OR can prevent index use</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> department_id = <span class="number">10</span> <span class="keyword">OR</span> department_id = <span class="number">20</span>;
+
+<span class="comment">-- GOOD: Use IN instead</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> department_id <span class="keyword">IN</span> (<span class="number">10</span>, <span class="number">20</span>);
+
+<span class="comment">-- BAD: SELECT * (retrieves unnecessary data)</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees;
+
+<span class="comment">-- GOOD: Select only needed columns</span>
+<span class="keyword">SELECT</span> employee_id, first_name, last_name <span class="keyword">FROM</span> employees;
+
+<span class="comment">-- Use EXISTS instead of IN for large subqueries</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> departments d
+<span class="keyword">WHERE EXISTS</span> (
+    <span class="keyword">SELECT</span> <span class="number">1</span> <span class="keyword">FROM</span> employees e 
+    <span class="keyword">WHERE</span> e.department_id = d.department_id
+);
+                        </pre>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Objects - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Database Objects</h1>
+            <p class="subtitle">Views, Stored Procedures, Functions, Triggers</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Database Objects</a>
+            <span>›</span>
+            <span>Overview</span>
+        </nav>
+
+        <main class="content">
+            <!-- VIEWS Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>VIEWS - Virtual Tables</span>
+                </div>
+                <div class="section-content">
+                    <p>A view is a virtual table based on a SELECT query. It doesn't store data itself but provides a way to simplify complex queries, restrict data access, and present data in different formats.</p>
+                    
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Views - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Create a simple view</span>
+<span class="keyword">CREATE VIEW</span> v_employee_details <span class="keyword">AS</span>
+<span class="keyword">SELECT</span> 
+    e.employee_id,
+    e.first_name,
+    e.last_name,
+    e.salary,
+    d.department_name
+<span class="keyword">FROM</span> employees e
+<span class="keyword">JOIN</span> departments d <span class="keyword">ON</span> e.department_id = d.department_id;
+
+<span class="comment">-- Use the view like a table</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> v_employee_details 
+<span class="keyword">WHERE</span> department_name = <span class="string">'IT'</span>;
+
+<span class="comment">-- Create view with column aliases</span>
+<span class="keyword">CREATE VIEW</span> v_dept_summary (dept_name, emp_count, avg_salary) <span class="keyword">AS</span>
+<span class="keyword">SELECT</span> 
+    d.department_name,
+    <span class="function">COUNT</span>(*),
+    <span class="function">AVG</span>(e.salary)
+<span class="keyword">FROM</span> departments d
+<span class="keyword">LEFT JOIN</span> employees e <span class="keyword">ON</span> d.department_id = e.department_id
+<span class="keyword">GROUP BY</span> d.department_name;
+
+<span class="comment">-- Updatable view (simple views can be updated)</span>
+<span class="keyword">CREATE VIEW</span> v_it_employees <span class="keyword">AS</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> department_id = <span class="number">10</span>
+<span class="keyword">WITH CHECK OPTION</span>; <span class="comment">-- Prevents inserting non-IT employees</span>
+
+<span class="comment">-- Materialized view (stores data physically)</span>
+<span class="comment">-- PostgreSQL/Oracle</span>
+<span class="keyword">CREATE MATERIALIZED VIEW</span> mv_sales_summary <span class="keyword">AS</span>
+<span class="keyword">SELECT</span> 
+    product_id,
+    <span class="function">SUM</span>(quantity) <span class="keyword">AS</span> total_qty,
+    <span class="function">SUM</span>(amount) <span class="keyword">AS</span> total_amount
+<span class="keyword">FROM</span> sales
+<span class="keyword">GROUP BY</span> product_id;
+
+<span class="comment">-- Refresh materialized view</span>
+<span class="keyword">REFRESH MATERIALIZED VIEW</span> mv_sales_summary;
+
+<span class="comment">-- Drop view</span>
+<span class="keyword">DROP VIEW</span> v_employee_details;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STORED PROCEDURES Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>STORED PROCEDURES</span>
+                </div>
+                <div class="section-content">
+                    <p>Stored procedures are precompiled SQL code that can accept parameters, perform operations, and return results. They encapsulate business logic in the database.</p>
+                    
+                    <div class="db-tabs-container">
+                        <div class="db-tabs">
+                            <button class="db-tab active" data-db="sqlserver">SQL Server</button>
+                            <button class="db-tab" data-db="oracle">Oracle</button>
+                            <button class="db-tab" data-db="postgresql">PostgreSQL</button>
+                            <button class="db-tab" data-db="mysql">MySQL</button>
+                        </div>
+
+                        <div class="db-content active" data-db="sqlserver">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Stored Procedure - SQL Server</span>
+                                    <span class="db-badge">SQL Server</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="keyword">CREATE PROCEDURE</span> sp_GetEmployeesByDept
+    @DeptId <span class="keyword">INT</span>,
+    @MinSalary <span class="keyword">DECIMAL</span>(<span class="number">10</span>,<span class="number">2</span>) = <span class="number">0</span>
+<span class="keyword">AS</span>
+<span class="keyword">BEGIN</span>
+    <span class="keyword">SELECT</span> 
+        employee_id,
+        first_name,
+        last_name,
+        salary
+    <span class="keyword">FROM</span> employees
+    <span class="keyword">WHERE</span> department_id = @DeptId
+      <span class="keyword">AND</span> salary >= @MinSalary
+    <span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>;
+<span class="keyword">END</span>;
+
+<span class="comment">-- Execute procedure</span>
+<span class="keyword">EXEC</span> sp_GetEmployeesByDept @DeptId = <span class="number">10</span>, @MinSalary = <span class="number">50000</span>;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="oracle">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Stored Procedure - Oracle</span>
+                                    <span class="db-badge">Oracle</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="keyword">CREATE OR REPLACE PROCEDURE</span> sp_GetEmployeesByDept(
+    p_dept_id <span class="keyword">IN NUMBER</span>,
+    p_cursor <span class="keyword">OUT SYS_REFCURSOR</span>
+) <span class="keyword">AS</span>
+<span class="keyword">BEGIN</span>
+    <span class="keyword">OPEN</span> p_cursor <span class="keyword">FOR</span>
+    <span class="keyword">SELECT</span> employee_id, first_name, last_name, salary
+    <span class="keyword">FROM</span> employees
+    <span class="keyword">WHERE</span> department_id = p_dept_id;
+<span class="keyword">END</span>;
+/
+
+<span class="comment">-- Execute procedure</span>
+<span class="keyword">DECLARE</span>
+    v_cursor <span class="keyword">SYS_REFCURSOR</span>;
+<span class="keyword">BEGIN</span>
+    sp_GetEmployeesByDept(<span class="number">10</span>, v_cursor);
+<span class="keyword">END</span>;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="postgresql">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Stored Procedure - PostgreSQL</span>
+                                    <span class="db-badge">PostgreSQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="keyword">CREATE OR REPLACE PROCEDURE</span> sp_transfer_funds(
+    p_from_account <span class="keyword">INT</span>,
+    p_to_account <span class="keyword">INT</span>,
+    p_amount <span class="keyword">DECIMAL</span>
+)
+<span class="keyword">LANGUAGE</span> plpgsql
+<span class="keyword">AS</span> $$
+<span class="keyword">BEGIN</span>
+    <span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance - p_amount
+    <span class="keyword">WHERE</span> account_id = p_from_account;
+    
+    <span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance + p_amount
+    <span class="keyword">WHERE</span> account_id = p_to_account;
+    
+    <span class="keyword">COMMIT</span>;
+<span class="keyword">END</span>;
+$$;
+
+<span class="comment">-- Execute procedure</span>
+<span class="keyword">CALL</span> sp_transfer_funds(<span class="number">1</span>, <span class="number">2</span>, <span class="number">100.00</span>);
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="mysql">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Stored Procedure - MySQL</span>
+                                    <span class="db-badge">MySQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="keyword">DELIMITER</span> //
+<span class="keyword">CREATE PROCEDURE</span> sp_GetEmployeesByDept(
+    <span class="keyword">IN</span> p_dept_id <span class="keyword">INT</span>,
+    <span class="keyword">IN</span> p_min_salary <span class="keyword">DECIMAL</span>(<span class="number">10</span>,<span class="number">2</span>)
+)
+<span class="keyword">BEGIN</span>
+    <span class="keyword">SELECT</span> employee_id, first_name, last_name, salary
+    <span class="keyword">FROM</span> employees
+    <span class="keyword">WHERE</span> department_id = p_dept_id
+      <span class="keyword">AND</span> salary >= p_min_salary;
+<span class="keyword">END</span> //
+<span class="keyword">DELIMITER</span> ;
+
+<span class="comment">-- Execute procedure</span>
+<span class="keyword">CALL</span> sp_GetEmployeesByDept(<span class="number">10</span>, <span class="number">50000</span>);
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FUNCTIONS Section -->
+            <section class="section-4wh when">
+                <div class="section-header">
+                    <span class="icon">⚡</span>
+                    <span>USER-DEFINED FUNCTIONS</span>
+                </div>
+                <div class="section-content">
+                    <p>Functions return a value and can be used in SELECT statements. Unlike procedures, they cannot modify data (in most RDBMS).</p>
+                    
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Functions - SQL Server</span>
+                            <span class="db-badge">SQL Server</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Scalar function (returns single value)</span>
+<span class="keyword">CREATE FUNCTION</span> fn_GetFullName(
+    @FirstName <span class="keyword">VARCHAR</span>(<span class="number">50</span>),
+    @LastName <span class="keyword">VARCHAR</span>(<span class="number">50</span>)
+)
+<span class="keyword">RETURNS VARCHAR</span>(<span class="number">100</span>)
+<span class="keyword">AS</span>
+<span class="keyword">BEGIN</span>
+    <span class="keyword">RETURN</span> @FirstName + <span class="string">' '</span> + @LastName;
+<span class="keyword">END</span>;
+
+<span class="comment">-- Use in query</span>
+<span class="keyword">SELECT</span> dbo.fn_GetFullName(first_name, last_name) <span class="keyword">AS</span> full_name
+<span class="keyword">FROM</span> employees;
+
+<span class="comment">-- Table-valued function</span>
+<span class="keyword">CREATE FUNCTION</span> fn_GetDeptEmployees(@DeptId <span class="keyword">INT</span>)
+<span class="keyword">RETURNS TABLE</span>
+<span class="keyword">AS</span>
+<span class="keyword">RETURN</span> (
+    <span class="keyword">SELECT</span> employee_id, first_name, last_name, salary
+    <span class="keyword">FROM</span> employees
+    <span class="keyword">WHERE</span> department_id = @DeptId
+);
+
+<span class="comment">-- Use table function</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> fn_GetDeptEmployees(<span class="number">10</span>);
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TRIGGERS Section -->
+            <section class="section-4wh where">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>TRIGGERS</span>
+                </div>
+                <div class="section-content">
+                    <p>Triggers are special procedures that automatically execute in response to certain events (INSERT, UPDATE, DELETE) on a table.</p>
+                    
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Triggers - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- SQL Server trigger</span>
+<span class="keyword">CREATE TRIGGER</span> trg_audit_employee
+<span class="keyword">ON</span> employees
+<span class="keyword">AFTER INSERT, UPDATE, DELETE</span>
+<span class="keyword">AS</span>
+<span class="keyword">BEGIN</span>
+    <span class="keyword">INSERT INTO</span> employee_audit (action, employee_id, changed_at)
+    <span class="keyword">SELECT</span> <span class="string">'INSERT'</span>, employee_id, <span class="function">GETDATE</span>() <span class="keyword">FROM</span> inserted
+    <span class="keyword">UNION ALL</span>
+    <span class="keyword">SELECT</span> <span class="string">'DELETE'</span>, employee_id, <span class="function">GETDATE</span>() <span class="keyword">FROM</span> deleted;
+<span class="keyword">END</span>;
+
+<span class="comment">-- PostgreSQL trigger</span>
+<span class="keyword">CREATE OR REPLACE FUNCTION</span> fn_audit_trigger()
+<span class="keyword">RETURNS TRIGGER AS</span> $$
+<span class="keyword">BEGIN</span>
+    <span class="keyword">IF</span> TG_OP = <span class="string">'INSERT'</span> <span class="keyword">THEN</span>
+        <span class="keyword">INSERT INTO</span> audit_log (table_name, action, new_data)
+        <span class="keyword">VALUES</span> (TG_TABLE_NAME, <span class="string">'INSERT'</span>, row_to_json(NEW));
+    <span class="keyword">ELSIF</span> TG_OP = <span class="string">'UPDATE'</span> <span class="keyword">THEN</span>
+        <span class="keyword">INSERT INTO</span> audit_log (table_name, action, old_data, new_data)
+        <span class="keyword">VALUES</span> (TG_TABLE_NAME, <span class="string">'UPDATE'</span>, row_to_json(OLD), row_to_json(NEW));
+    <span class="keyword">ELSIF</span> TG_OP = <span class="string">'DELETE'</span> <span class="keyword">THEN</span>
+        <span class="keyword">INSERT INTO</span> audit_log (table_name, action, old_data)
+        <span class="keyword">VALUES</span> (TG_TABLE_NAME, <span class="string">'DELETE'</span>, row_to_json(OLD));
+    <span class="keyword">END IF</span>;
+    <span class="keyword">RETURN</span> NEW;
+<span class="keyword">END</span>;
+$$ <span class="keyword">LANGUAGE</span> plpgsql;
+
+<span class="keyword">CREATE TRIGGER</span> trg_employee_audit
+<span class="keyword">AFTER INSERT OR UPDATE OR DELETE ON</span> employees
+<span class="keyword">FOR EACH ROW EXECUTE FUNCTION</span> fn_audit_trigger();
+
+<span class="comment">-- MySQL trigger</span>
+<span class="keyword">DELIMITER</span> //
+<span class="keyword">CREATE TRIGGER</span> trg_before_insert
+<span class="keyword">BEFORE INSERT ON</span> employees
+<span class="keyword">FOR EACH ROW</span>
+<span class="keyword">BEGIN</span>
+    <span class="keyword">SET</span> NEW.created_at = <span class="function">NOW</span>();
+<span class="keyword">END</span> //
+<span class="keyword">DELIMITER</span> ;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

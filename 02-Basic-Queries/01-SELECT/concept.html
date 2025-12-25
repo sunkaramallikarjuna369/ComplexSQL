@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SELECT Statement - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>SELECT Statement</h1>
+            <p class="subtitle">Retrieving Data from Database Tables</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Basic Queries</a>
+            <span>›</span>
+            <span>SELECT</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT is SELECT?</span>
+                </div>
+                <div class="section-content">
+                    <p>SELECT is the most commonly used SQL statement. It retrieves data from one or more tables and returns a result set. SELECT is part of DML (Data Manipulation Language) and is the foundation of all SQL queries.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">SELECT Statement Structure</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Clause Order</div>
+                                    <table>
+                                        <tr><th>#</th><th>Clause</th><th>Purpose</th></tr>
+                                        <tr class="highlight"><td>1</td><td>SELECT</td><td>Columns to return</td></tr>
+                                        <tr class="highlight-blue"><td>2</td><td>FROM</td><td>Tables to query</td></tr>
+                                        <tr><td>3</td><td>WHERE</td><td>Filter rows</td></tr>
+                                        <tr><td>4</td><td>GROUP BY</td><td>Group rows</td></tr>
+                                        <tr><td>5</td><td>HAVING</td><td>Filter groups</td></tr>
+                                        <tr><td>6</td><td>ORDER BY</td><td>Sort results</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use SELECT?</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>Data Retrieval:</strong> Fetch data from database tables</li>
+                        <li><strong>Data Analysis:</strong> Aggregate, filter, and transform data</li>
+                        <li><strong>Reporting:</strong> Generate reports and summaries</li>
+                        <li><strong>Data Validation:</strong> Verify data integrity and quality</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use SELECT?</span>
+                </div>
+                <div class="section-content">
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>SELECT - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Select all columns</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees;
+
+<span class="comment">-- Select specific columns</span>
+<span class="keyword">SELECT</span> first_name, last_name, salary <span class="keyword">FROM</span> employees;
+
+<span class="comment">-- Select with column aliases</span>
+<span class="keyword">SELECT</span> 
+    first_name <span class="keyword">AS</span> <span class="string">"First Name"</span>,
+    last_name <span class="keyword">AS</span> <span class="string">"Last Name"</span>,
+    salary * <span class="number">12</span> <span class="keyword">AS</span> annual_salary
+<span class="keyword">FROM</span> employees;
+
+<span class="comment">-- Select with expressions</span>
+<span class="keyword">SELECT</span> 
+    first_name,
+    last_name,
+    salary,
+    salary * <span class="number">0.1</span> <span class="keyword">AS</span> bonus,
+    salary + (salary * <span class="number">0.1</span>) <span class="keyword">AS</span> total_compensation
+<span class="keyword">FROM</span> employees;
+
+<span class="comment">-- Select with string concatenation</span>
+<span class="comment">-- SQL Server</span>
+<span class="keyword">SELECT</span> first_name + <span class="string">' '</span> + last_name <span class="keyword">AS</span> full_name <span class="keyword">FROM</span> employees;
+<span class="comment">-- Oracle, PostgreSQL</span>
+<span class="keyword">SELECT</span> first_name || <span class="string">' '</span> || last_name <span class="keyword">AS</span> full_name <span class="keyword">FROM</span> employees;
+<span class="comment">-- MySQL</span>
+<span class="keyword">SELECT</span> <span class="function">CONCAT</span>(first_name, <span class="string">' '</span>, last_name) <span class="keyword">AS</span> full_name <span class="keyword">FROM</span> employees;
+
+<span class="comment">-- Select DISTINCT (unique values)</span>
+<span class="keyword">SELECT DISTINCT</span> department_id <span class="keyword">FROM</span> employees;
+
+<span class="comment">-- Select with table alias</span>
+<span class="keyword">SELECT</span> 
+    e.first_name,
+    e.last_name,
+    d.department_name
+<span class="keyword">FROM</span> employees e
+<span class="keyword">JOIN</span> departments d <span class="keyword">ON</span> e.department_id = d.department_id;
+
+<span class="comment">-- Select with CASE expression</span>
+<span class="keyword">SELECT</span> 
+    first_name,
+    salary,
+    <span class="keyword">CASE</span>
+        <span class="keyword">WHEN</span> salary >= <span class="number">100000</span> <span class="keyword">THEN</span> <span class="string">'High'</span>
+        <span class="keyword">WHEN</span> salary >= <span class="number">50000</span> <span class="keyword">THEN</span> <span class="string">'Medium'</span>
+        <span class="keyword">ELSE</span> <span class="string">'Low'</span>
+    <span class="keyword">END AS</span> salary_band
+<span class="keyword">FROM</span> employees;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

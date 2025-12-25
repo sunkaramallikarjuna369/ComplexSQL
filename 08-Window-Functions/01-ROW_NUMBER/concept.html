@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROW_NUMBER - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>ROW_NUMBER()</h1>
+            <p class="subtitle">Assign Sequential Numbers to Rows</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Window Functions</a>
+            <span>›</span>
+            <span>ROW_NUMBER</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT is ROW_NUMBER()?</span>
+                </div>
+                <div class="section-content">
+                    <p>ROW_NUMBER() is a window function that assigns a unique sequential integer to each row within a partition of a result set. The numbering starts at 1 for the first row in each partition.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">ROW_NUMBER() Visualization</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Original Data</div>
+                                    <table>
+                                        <tr><th>dept</th><th>name</th><th>salary</th></tr>
+                                        <tr><td>IT</td><td>John</td><td>80000</td></tr>
+                                        <tr><td>IT</td><td>Jane</td><td>75000</td></tr>
+                                        <tr><td>IT</td><td>Bob</td><td>70000</td></tr>
+                                        <tr><td>HR</td><td>Alice</td><td>65000</td></tr>
+                                        <tr><td>HR</td><td>Eve</td><td>60000</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">With ROW_NUMBER()</div>
+                                    <table>
+                                        <tr><th>dept</th><th>name</th><th>salary</th><th>row_num</th></tr>
+                                        <tr class="highlight"><td>IT</td><td>John</td><td>80000</td><td>1</td></tr>
+                                        <tr class="highlight"><td>IT</td><td>Jane</td><td>75000</td><td>2</td></tr>
+                                        <tr class="highlight"><td>IT</td><td>Bob</td><td>70000</td><td>3</td></tr>
+                                        <tr class="highlight-blue"><td>HR</td><td>Alice</td><td>65000</td><td>1</td></tr>
+                                        <tr class="highlight-blue"><td>HR</td><td>Eve</td><td>60000</td><td>2</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use ROW_NUMBER()?</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>Pagination:</strong> Implement page-by-page data retrieval</li>
+                        <li><strong>Top-N per Group:</strong> Get top N records within each category</li>
+                        <li><strong>Deduplication:</strong> Remove duplicate rows keeping only one</li>
+                        <li><strong>Sequential IDs:</strong> Generate row numbers for reporting</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- WHEN Section -->
+            <section class="section-4wh when">
+                <div class="section-header">
+                    <span class="icon">⏰</span>
+                    <span>WHEN to use ROW_NUMBER()?</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Scenario</th>
+                                <th>Example</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Get top 3 earners per department</td>
+                                <td>WHERE row_num <= 3</td>
+                            </tr>
+                            <tr>
+                                <td>Pagination (page 2, 10 per page)</td>
+                                <td>WHERE row_num BETWEEN 11 AND 20</td>
+                            </tr>
+                            <tr>
+                                <td>Remove duplicates</td>
+                                <td>Keep only row_num = 1</td>
+                            </tr>
+                            <tr>
+                                <td>Get latest record per customer</td>
+                                <td>ORDER BY date DESC, row_num = 1</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- WHERE Section -->
+            <section class="section-4wh where">
+                <div class="section-header">
+                    <span class="icon">🌍</span>
+                    <span>WHERE - RDBMS Syntax</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>RDBMS</th>
+                                <th>Support</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>SQL Server</td><td>Full</td><td>Since SQL Server 2005</td></tr>
+                            <tr><td>Oracle</td><td>Full</td><td>Since Oracle 8i</td></tr>
+                            <tr><td>PostgreSQL</td><td>Full</td><td>Since PostgreSQL 8.4</td></tr>
+                            <tr><td>MySQL</td><td>Full</td><td>Since MySQL 8.0</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use ROW_NUMBER()?</span>
+                </div>
+                <div class="section-content">
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>ROW_NUMBER() - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Basic ROW_NUMBER</span>
+<span class="keyword">SELECT</span> 
+    employee_id,
+    first_name,
+    salary,
+    <span class="function">ROW_NUMBER</span>() <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>) <span class="keyword">AS</span> row_num
+<span class="keyword">FROM</span> employees;
+
+<span class="comment">-- ROW_NUMBER with PARTITION BY (per department)</span>
+<span class="keyword">SELECT</span> 
+    department_id,
+    first_name,
+    salary,
+    <span class="function">ROW_NUMBER</span>() <span class="keyword">OVER</span> (
+        <span class="keyword">PARTITION BY</span> department_id 
+        <span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>
+    ) <span class="keyword">AS</span> dept_rank
+<span class="keyword">FROM</span> employees;
+
+<span class="comment">-- Top 3 earners per department</span>
+<span class="keyword">WITH</span> ranked_employees <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        department_id,
+        first_name,
+        salary,
+        <span class="function">ROW_NUMBER</span>() <span class="keyword">OVER</span> (
+            <span class="keyword">PARTITION BY</span> department_id 
+            <span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>
+        ) <span class="keyword">AS</span> rn
+    <span class="keyword">FROM</span> employees
+)
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> ranked_employees <span class="keyword">WHERE</span> rn <= <span class="number">3</span>;
+
+<span class="comment">-- Pagination (Page 2, 10 records per page)</span>
+<span class="keyword">WITH</span> numbered_rows <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        *,
+        <span class="function">ROW_NUMBER</span>() <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> employee_id) <span class="keyword">AS</span> rn
+    <span class="keyword">FROM</span> employees
+)
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> numbered_rows 
+<span class="keyword">WHERE</span> rn <span class="keyword">BETWEEN</span> <span class="number">11</span> <span class="keyword">AND</span> <span class="number">20</span>;
+
+<span class="comment">-- Remove duplicates (keep first occurrence)</span>
+<span class="keyword">WITH</span> duplicates_marked <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        *,
+        <span class="function">ROW_NUMBER</span>() <span class="keyword">OVER</span> (
+            <span class="keyword">PARTITION BY</span> email 
+            <span class="keyword">ORDER BY</span> created_at
+        ) <span class="keyword">AS</span> rn
+    <span class="keyword">FROM</span> users
+)
+<span class="keyword">DELETE FROM</span> duplicates_marked <span class="keyword">WHERE</span> rn > <span class="number">1</span>;
+
+<span class="comment">-- Get latest order per customer</span>
+<span class="keyword">WITH</span> latest_orders <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        customer_id,
+        order_id,
+        order_date,
+        total_amount,
+        <span class="function">ROW_NUMBER</span>() <span class="keyword">OVER</span> (
+            <span class="keyword">PARTITION BY</span> customer_id 
+            <span class="keyword">ORDER BY</span> order_date <span class="keyword">DESC</span>
+        ) <span class="keyword">AS</span> rn
+    <span class="keyword">FROM</span> orders
+)
+<span class="keyword">SELECT</span> customer_id, order_id, order_date, total_amount
+<span class="keyword">FROM</span> latest_orders
+<span class="keyword">WHERE</span> rn = <span class="number">1</span>;
+                        </pre>
+                    </div>
+
+                    <div class="info-box tip">
+                        <span class="icon">💡</span>
+                        <div>
+                            <strong>Pro Tip:</strong> ROW_NUMBER() always produces unique numbers even for ties. If you need to handle ties (same rank for same values), use RANK() or DENSE_RANK() instead.
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

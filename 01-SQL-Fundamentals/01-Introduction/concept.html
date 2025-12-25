@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Introduction to SQL - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Introduction to SQL</h1>
+            <p class="subtitle">Structured Query Language - The Foundation of Database Management</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">SQL Fundamentals</a>
+            <span>›</span>
+            <span>Introduction</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT is SQL?</span>
+                </div>
+                <div class="section-content">
+                    <p>SQL (Structured Query Language) is a standardized programming language designed for managing and manipulating relational database management systems (RDBMS). It allows you to create, read, update, and delete data stored in databases.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">SQL Language Categories</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">DDL</div>
+                                    <table>
+                                        <tr><th>Command</th><th>Purpose</th></tr>
+                                        <tr><td>CREATE</td><td>Create objects</td></tr>
+                                        <tr><td>ALTER</td><td>Modify objects</td></tr>
+                                        <tr><td>DROP</td><td>Delete objects</td></tr>
+                                        <tr><td>TRUNCATE</td><td>Remove all data</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">DML</div>
+                                    <table>
+                                        <tr><th>Command</th><th>Purpose</th></tr>
+                                        <tr><td>SELECT</td><td>Query data</td></tr>
+                                        <tr><td>INSERT</td><td>Add data</td></tr>
+                                        <tr><td>UPDATE</td><td>Modify data</td></tr>
+                                        <tr><td>DELETE</td><td>Remove data</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">DCL</div>
+                                    <table>
+                                        <tr><th>Command</th><th>Purpose</th></tr>
+                                        <tr><td>GRANT</td><td>Give permissions</td></tr>
+                                        <tr><td>REVOKE</td><td>Remove permissions</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">TCL</div>
+                                    <table>
+                                        <tr><th>Command</th><th>Purpose</th></tr>
+                                        <tr><td>COMMIT</td><td>Save changes</td></tr>
+                                        <tr><td>ROLLBACK</td><td>Undo changes</td></tr>
+                                        <tr><td>SAVEPOINT</td><td>Set checkpoint</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use SQL?</span>
+                </div>
+                <div class="section-content">
+                    <p>SQL is essential for several reasons:</p>
+                    <ul>
+                        <li><strong>Universal Standard:</strong> SQL is the industry standard for relational databases, supported by all major RDBMS</li>
+                        <li><strong>Declarative Nature:</strong> You specify what data you want, not how to retrieve it</li>
+                        <li><strong>Data Integrity:</strong> SQL enforces data integrity through constraints and transactions</li>
+                        <li><strong>Scalability:</strong> SQL databases can handle massive amounts of data efficiently</li>
+                        <li><strong>Security:</strong> Built-in access control and permission management</li>
+                    </ul>
+
+                    <div class="info-box tip">
+                        <span class="icon">💡</span>
+                        <div>
+                            <strong>Pro Tip:</strong> Learning SQL is one of the most valuable skills for any data professional. It's used in data analysis, backend development, data engineering, and business intelligence.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHEN Section -->
+            <section class="section-4wh when">
+                <div class="section-header">
+                    <span class="icon">⏰</span>
+                    <span>WHEN to use SQL?</span>
+                </div>
+                <div class="section-content">
+                    <p>SQL is the right choice when:</p>
+                    <ul>
+                        <li>You need to store structured data with relationships</li>
+                        <li>Data integrity and ACID compliance are critical</li>
+                        <li>You need complex queries with joins and aggregations</li>
+                        <li>Your application requires transactions</li>
+                        <li>You need to generate reports and analytics</li>
+                    </ul>
+
+                    <div class="flow-diagram">
+                        <div class="flow-step">Structured Data</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step">Define Schema</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step">Create Tables</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step">Insert Data</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step">Query & Analyze</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHERE Section -->
+            <section class="section-4wh where">
+                <div class="section-header">
+                    <span class="icon">🌍</span>
+                    <span>WHERE is SQL used?</span>
+                </div>
+                <div class="section-content">
+                    <p>SQL is used across various database management systems:</p>
+                    
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>RDBMS</th>
+                                <th>Vendor</th>
+                                <th>License</th>
+                                <th>Best For</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>SQL Server</strong></td>
+                                <td>Microsoft</td>
+                                <td>Commercial</td>
+                                <td>Enterprise Windows environments</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Oracle</strong></td>
+                                <td>Oracle Corp</td>
+                                <td>Commercial</td>
+                                <td>Large enterprise applications</td>
+                            </tr>
+                            <tr>
+                                <td><strong>PostgreSQL</strong></td>
+                                <td>Community</td>
+                                <td>Open Source</td>
+                                <td>Complex queries, extensibility</td>
+                            </tr>
+                            <tr>
+                                <td><strong>MySQL</strong></td>
+                                <td>Oracle Corp</td>
+                                <td>Open Source/Commercial</td>
+                                <td>Web applications, startups</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to write SQL?</span>
+                </div>
+                <div class="section-content">
+                    <p>Here's a basic SQL query structure:</p>
+
+                    <div class="db-tabs-container">
+                        <div class="db-tabs">
+                            <button class="db-tab active" data-db="sqlserver">SQL Server</button>
+                            <button class="db-tab" data-db="oracle">Oracle</button>
+                            <button class="db-tab" data-db="postgresql">PostgreSQL</button>
+                            <button class="db-tab" data-db="mysql">MySQL</button>
+                        </div>
+
+                        <div class="db-content active" data-db="sqlserver">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Basic Query - SQL Server</span>
+                                    <span class="db-badge">SQL Server</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Basic SELECT query in SQL Server</span>
+<span class="keyword">SELECT</span> 
+    employee_id,
+    first_name,
+    last_name,
+    salary
+<span class="keyword">FROM</span> employees
+<span class="keyword">WHERE</span> department_id = <span class="number">10</span>
+<span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>;
+
+<span class="comment">-- Using TOP for limiting results (SQL Server specific)</span>
+<span class="keyword">SELECT TOP</span> <span class="number">5</span> *
+<span class="keyword">FROM</span> employees
+<span class="keyword">ORDER BY</span> hire_date <span class="keyword">DESC</span>;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="oracle">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Basic Query - Oracle</span>
+                                    <span class="db-badge">Oracle</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Basic SELECT query in Oracle</span>
+<span class="keyword">SELECT</span> 
+    employee_id,
+    first_name,
+    last_name,
+    salary
+<span class="keyword">FROM</span> employees
+<span class="keyword">WHERE</span> department_id = <span class="number">10</span>
+<span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>;
+
+<span class="comment">-- Using FETCH FIRST for limiting results (Oracle 12c+)</span>
+<span class="keyword">SELECT</span> *
+<span class="keyword">FROM</span> employees
+<span class="keyword">ORDER BY</span> hire_date <span class="keyword">DESC</span>
+<span class="keyword">FETCH FIRST</span> <span class="number">5</span> <span class="keyword">ROWS ONLY</span>;
+
+<span class="comment">-- Using ROWNUM (older Oracle versions)</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> (
+    <span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees
+    <span class="keyword">ORDER BY</span> hire_date <span class="keyword">DESC</span>
+) <span class="keyword">WHERE</span> ROWNUM <= <span class="number">5</span>;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="postgresql">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Basic Query - PostgreSQL</span>
+                                    <span class="db-badge">PostgreSQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Basic SELECT query in PostgreSQL</span>
+<span class="keyword">SELECT</span> 
+    employee_id,
+    first_name,
+    last_name,
+    salary
+<span class="keyword">FROM</span> employees
+<span class="keyword">WHERE</span> department_id = <span class="number">10</span>
+<span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>;
+
+<span class="comment">-- Using LIMIT for limiting results</span>
+<span class="keyword">SELECT</span> *
+<span class="keyword">FROM</span> employees
+<span class="keyword">ORDER BY</span> hire_date <span class="keyword">DESC</span>
+<span class="keyword">LIMIT</span> <span class="number">5</span>;
+
+<span class="comment">-- Using LIMIT with OFFSET for pagination</span>
+<span class="keyword">SELECT</span> *
+<span class="keyword">FROM</span> employees
+<span class="keyword">ORDER BY</span> employee_id
+<span class="keyword">LIMIT</span> <span class="number">10</span> <span class="keyword">OFFSET</span> <span class="number">20</span>;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="mysql">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Basic Query - MySQL</span>
+                                    <span class="db-badge">MySQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Basic SELECT query in MySQL</span>
+<span class="keyword">SELECT</span> 
+    employee_id,
+    first_name,
+    last_name,
+    salary
+<span class="keyword">FROM</span> employees
+<span class="keyword">WHERE</span> department_id = <span class="number">10</span>
+<span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>;
+
+<span class="comment">-- Using LIMIT for limiting results</span>
+<span class="keyword">SELECT</span> *
+<span class="keyword">FROM</span> employees
+<span class="keyword">ORDER BY</span> hire_date <span class="keyword">DESC</span>
+<span class="keyword">LIMIT</span> <span class="number">5</span>;
+
+<span class="comment">-- Using LIMIT with OFFSET for pagination</span>
+<span class="keyword">SELECT</span> *
+<span class="keyword">FROM</span> employees
+<span class="keyword">ORDER BY</span> employee_id
+<span class="keyword">LIMIT</span> <span class="number">20</span>, <span class="number">10</span>; <span class="comment">-- offset, count</span>
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-box note">
+                        <span class="icon">📝</span>
+                        <div>
+                            <strong>Note:</strong> While SQL is standardized, each RDBMS has its own extensions and variations. Always check the specific syntax for your database system.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sample Data Visualization -->
+            <section class="section-4wh" style="background: linear-gradient(135deg, #1e3a5f, #2d5a87);">
+                <div class="section-header" style="background: transparent;">
+                    <span class="icon">📊</span>
+                    <span>Sample Database Structure</span>
+                </div>
+                <div class="section-content">
+                    <div class="visualization-3d">
+                        <div class="title">Sample Tables Used Throughout This Tutorial</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">employees</div>
+                                    <table>
+                                        <tr><th>Column</th><th>Type</th></tr>
+                                        <tr><td>employee_id</td><td>INT PK</td></tr>
+                                        <tr><td>first_name</td><td>VARCHAR</td></tr>
+                                        <tr><td>last_name</td><td>VARCHAR</td></tr>
+                                        <tr><td>email</td><td>VARCHAR</td></tr>
+                                        <tr><td>department_id</td><td>INT FK</td></tr>
+                                        <tr><td>salary</td><td>DECIMAL</td></tr>
+                                        <tr><td>hire_date</td><td>DATE</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">departments</div>
+                                    <table>
+                                        <tr><th>Column</th><th>Type</th></tr>
+                                        <tr><td>department_id</td><td>INT PK</td></tr>
+                                        <tr><td>department_name</td><td>VARCHAR</td></tr>
+                                        <tr><td>manager_id</td><td>INT FK</td></tr>
+                                        <tr><td>location</td><td>VARCHAR</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">orders</div>
+                                    <table>
+                                        <tr><th>Column</th><th>Type</th></tr>
+                                        <tr><td>order_id</td><td>INT PK</td></tr>
+                                        <tr><td>customer_id</td><td>INT FK</td></tr>
+                                        <tr><td>order_date</td><td>DATE</td></tr>
+                                        <tr><td>total_amount</td><td>DECIMAL</td></tr>
+                                        <tr><td>status</td><td>VARCHAR</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>
