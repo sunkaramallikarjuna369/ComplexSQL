@@ -1,79 +1,103 @@
--- ============================================
--- SCENARIO-BASED SQL QUESTIONS
--- Category: Employee Management (Questions 1-20)
--- SQL Server, Oracle, PostgreSQL, MySQL
--- ============================================
+-- ============================================================================
+-- SCENARIO-BASED SQL QUESTIONS: EMPLOYEE MANAGEMENT (Q1-Q20)
+-- ============================================================================
+-- This file contains 20 comprehensive scenario-based SQL questions with
+-- solutions for SQL Server, Oracle, PostgreSQL, and MySQL.
+-- 
+-- Prerequisites: Run schema.sql first to create tables and sample data.
+-- 
+-- Supported Versions:
+--   SQL Server: 2016+
+--   Oracle: 12c+
+--   PostgreSQL: 10+
+--   MySQL: 8.0+
+-- ============================================================================
 
--- ============================================
--- SAMPLE SCHEMA
--- ============================================
-/*
-CREATE TABLE employees (
-    employee_id INT PRIMARY KEY,
-    first_name VARCHAR(50),
-    last_name VARCHAR(50),
-    email VARCHAR(100),
-    phone VARCHAR(20),
-    hire_date DATE,
-    job_id VARCHAR(20),
-    salary DECIMAL(10,2),
-    commission_pct DECIMAL(4,2),
-    manager_id INT,
-    department_id INT
-);
 
-CREATE TABLE departments (
-    department_id INT PRIMARY KEY,
-    department_name VARCHAR(100),
-    manager_id INT,
-    location_id INT
-);
+-- ============================================================================
+-- Q1: FIND EMPLOYEES HIRED IN THE LAST 90 DAYS
+-- ============================================================================
+-- Difficulty: Easy
+-- Concepts: Date Functions, Filtering, ORDER BY
+-- 
+-- BUSINESS SCENARIO:
+-- The HR department needs to identify all employees hired within the last 90
+-- days to schedule them for the mandatory new hire orientation program. The
+-- report should show employee details sorted by most recent hire first.
+--
+-- REQUIREMENTS:
+-- - Return employee_id, first_name, last_name, hire_date
+-- - Filter for employees hired within the last 90 days from today
+-- - Sort by hire_date descending (most recent first)
+-- - Handle edge case: employees hired exactly 90 days ago should be included
+--
+-- EXPECTED OUTPUT (based on sample data, assuming today is 2025-12-25):
+-- +-------------+------------+-----------+------------+
+-- | employee_id | first_name | last_name | hire_date  |
+-- +-------------+------------+-----------+------------+
+-- | 307         | Christopher| Olsen     | 2025-11-15 |
+-- | 207         | Sarah      | Bell      | 2025-10-01 |
+-- +-------------+------------+-----------+------------+
+-- ============================================================================
 
-CREATE TABLE jobs (
-    job_id VARCHAR(20) PRIMARY KEY,
-    job_title VARCHAR(100),
-    min_salary DECIMAL(10,2),
-    max_salary DECIMAL(10,2)
-);
-
-CREATE TABLE job_history (
-    employee_id INT,
-    start_date DATE,
-    end_date DATE,
-    job_id VARCHAR(20),
-    department_id INT,
-    PRIMARY KEY (employee_id, start_date)
-);
-*/
-
--- ============================================
--- QUESTION 1: Find employees hired in the last 90 days
--- ============================================
--- Scenario: HR needs to identify new hires for orientation program
-
--- SQL Server
-SELECT employee_id, first_name, last_name, hire_date
+-- SQL Server Solution:
+SELECT 
+    employee_id,
+    first_name,
+    last_name,
+    hire_date
 FROM employees
-WHERE hire_date >= DATEADD(DAY, -90, GETDATE())
+WHERE hire_date >= DATEADD(DAY, -90, CAST(GETDATE() AS DATE))
 ORDER BY hire_date DESC;
 
--- Oracle
-SELECT employee_id, first_name, last_name, hire_date
+-- Oracle Solution:
+SELECT 
+    employee_id,
+    first_name,
+    last_name,
+    hire_date
 FROM employees
-WHERE hire_date >= SYSDATE - 90
+WHERE hire_date >= TRUNC(SYSDATE) - 90
 ORDER BY hire_date DESC;
 
--- PostgreSQL
-SELECT employee_id, first_name, last_name, hire_date
+-- PostgreSQL Solution:
+SELECT 
+    employee_id,
+    first_name,
+    last_name,
+    hire_date
 FROM employees
 WHERE hire_date >= CURRENT_DATE - INTERVAL '90 days'
 ORDER BY hire_date DESC;
 
--- MySQL
-SELECT employee_id, first_name, last_name, hire_date
+-- MySQL Solution:
+SELECT 
+    employee_id,
+    first_name,
+    last_name,
+    hire_date
 FROM employees
 WHERE hire_date >= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
 ORDER BY hire_date DESC;
+
+-- EXPLANATION:
+-- Each RDBMS has different functions to get the current date and perform
+-- date arithmetic:
+--   SQL Server: GETDATE() returns datetime, CAST to DATE for date-only comparison
+--               DATEADD(interval, number, date) adds/subtracts from a date
+--   Oracle:     SYSDATE returns current date/time, TRUNC removes time portion
+--               Simple arithmetic (SYSDATE - 90) subtracts days
+--   PostgreSQL: CURRENT_DATE returns date, INTERVAL for date arithmetic
+--   MySQL:      CURDATE() returns current date, DATE_SUB for subtraction
+--
+-- EDGE CASES:
+-- - If no employees were hired in the last 90 days, returns empty result set
+-- - Time portion is ignored (hire_date is DATE type)
+--
+-- COMMON MISTAKES:
+-- - Using > instead of >= (excludes employees hired exactly 90 days ago)
+-- - Not handling time portion in datetime columns
+-- - Forgetting ORDER BY for consistent results
 
 -- ============================================
 -- QUESTION 2: Calculate years of service for each employee
