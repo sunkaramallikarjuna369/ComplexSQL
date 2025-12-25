@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management - Scenario-Based SQL Questions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #134e5e 0%, #71b280 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .schema-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        .schema-section h2 { color: #90EE90; margin-bottom: 15px; }
+        .tables-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .table-3d {
+            background: linear-gradient(145deg, #2d5a4a, #1a3d32);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: perspective(1000px) rotateX(5deg);
+            transition: transform 0.3s ease;
+            min-width: 250px;
+        }
+        .table-3d:hover { transform: perspective(1000px) rotateX(0deg) scale(1.02); }
+        .table-name {
+            background: linear-gradient(90deg, #71b280, #134e5e);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .columns { font-size: 0.9em; }
+        .column {
+            padding: 5px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+        }
+        .pk { color: #ffd700; }
+        .fk { color: #00ff88; }
+        .question-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #71b280;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+        .question-card:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateX(10px);
+        }
+        .question-number {
+            background: linear-gradient(90deg, #71b280, #134e5e);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .scenario { color: #90EE90; font-style: italic; margin-bottom: 10px; }
+        .question-text { font-size: 1.1em; margin-bottom: 15px; }
+        .sql-code {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+        .sql-code pre { margin: 0; white-space: pre-wrap; }
+        .difficulty {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .easy { background: #00ff88; color: #000; }
+        .medium { background: #ffd700; color: #000; }
+        .hard { background: #ff4757; color: #fff; }
+        .concept-tag {
+            display: inline-block;
+            background: rgba(113,178,128,0.3);
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin: 2px;
+        }
+        .inventory-visual {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        .stock-level {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .stock-bar {
+            flex: 1;
+            height: 30px;
+            background: #333;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 0 10px;
+        }
+        .stock-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+        .stock-fill.critical { background: linear-gradient(90deg, #ff4757, #ff6b81); }
+        .stock-fill.warning { background: linear-gradient(90deg, #ffd700, #ffeb3b); }
+        .stock-fill.ok { background: linear-gradient(90deg, #00ff88, #71b280); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Inventory Management SQL Scenarios</h1>
+        
+        <div class="schema-section">
+            <h2>Database Schema</h2>
+            <div class="tables-container">
+                <div class="table-3d">
+                    <div class="table-name">PRODUCTS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">product_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>product_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span class="fk">category_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">supplier_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>units_in_stock</span><span>INT</span></div>
+                        <div class="column"><span>reorder_level</span><span>INT</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">INVENTORY_TRANSACTIONS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">transaction_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">product_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>transaction_type</span><span>VARCHAR</span></div>
+                        <div class="column"><span>quantity</span><span>INT</span></div>
+                        <div class="column"><span>transaction_date</span><span>TIMESTAMP</span></div>
+                        <div class="column"><span class="fk">warehouse_id (FK)</span><span>INT</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">WAREHOUSES</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">warehouse_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>warehouse_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>location</span><span>VARCHAR</span></div>
+                        <div class="column"><span>capacity</span><span>INT</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">SUPPLIERS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">supplier_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>company_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>lead_time_days</span><span>INT</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-section">
+            <div class="question-card">
+                <span class="question-number">Q41</span>
+                <span class="difficulty easy">Easy</span>
+                <span class="concept-tag">JOIN</span>
+                <span class="concept-tag">Filtering</span>
+                <p class="scenario">Scenario: Generate purchase order recommendations</p>
+                <p class="question-text">Find products below reorder level</p>
+                <div class="sql-code">
+                    <pre>SELECT p.product_id, p.product_name, p.units_in_stock,
+       p.reorder_level, p.reorder_level - p.units_in_stock AS units_to_order,
+       s.company_name AS supplier, s.lead_time_days
+FROM products p
+JOIN suppliers s ON p.supplier_id = s.supplier_id
+WHERE p.units_in_stock < p.reorder_level AND p.discontinued = 0
+ORDER BY (p.reorder_level - p.units_in_stock) DESC;</pre>
+                </div>
+                <div class="inventory-visual">
+                    <h4>Stock Level Visualization</h4>
+                    <div class="stock-level">
+                        <span style="width:100px">Widget A</span>
+                        <div class="stock-bar"><div class="stock-fill critical" style="width:20%"></div></div>
+                        <span>20/100</span>
+                    </div>
+                    <div class="stock-level">
+                        <span style="width:100px">Widget B</span>
+                        <div class="stock-bar"><div class="stock-fill warning" style="width:45%"></div></div>
+                        <span>45/100</span>
+                    </div>
+                    <div class="stock-level">
+                        <span style="width:100px">Widget C</span>
+                        <div class="stock-bar"><div class="stock-fill ok" style="width:85%"></div></div>
+                        <span>85/100</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q42</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">CTE</span>
+                <span class="concept-tag">Aggregation</span>
+                <span class="concept-tag">Turnover</span>
+                <p class="scenario">Scenario: Identify slow-moving inventory</p>
+                <p class="question-text">Calculate inventory turnover ratio</p>
+                <div class="sql-code">
+                    <pre>WITH sales_data AS (
+    SELECT product_id,
+           SUM(CASE WHEN transaction_type = 'OUT' THEN quantity ELSE 0 END) AS total_sold
+    FROM inventory_transactions
+    WHERE transaction_date >= CURRENT_DATE - INTERVAL '1 year'
+    GROUP BY product_id
+)
+SELECT p.product_id, p.product_name, sd.total_sold,
+       p.units_in_stock AS avg_inventory,
+       ROUND(sd.total_sold / NULLIF(p.units_in_stock, 0), 2) AS turnover_ratio
+FROM products p
+LEFT JOIN sales_data sd ON p.product_id = sd.product_id
+ORDER BY turnover_ratio NULLS LAST;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q48</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Window Functions</span>
+                <span class="concept-tag">ABC Analysis</span>
+                <p class="scenario">Scenario: Prioritize inventory management efforts</p>
+                <p class="question-text">Calculate ABC inventory classification</p>
+                <div class="sql-code">
+                    <pre>WITH product_value AS (
+    SELECT product_id, product_name,
+           units_in_stock * unit_price AS inventory_value
+    FROM products WHERE discontinued = 0
+),
+ranked AS (
+    SELECT product_id, product_name, inventory_value,
+           SUM(inventory_value) OVER (ORDER BY inventory_value DESC) AS cumulative,
+           SUM(inventory_value) OVER () AS total
+    FROM product_value
+)
+SELECT product_id, product_name, inventory_value,
+       ROUND(100.0 * cumulative / total, 2) AS cumulative_pct,
+       CASE WHEN 100.0 * cumulative / total <= 80 THEN 'A'
+            WHEN 100.0 * cumulative / total <= 95 THEN 'B'
+            ELSE 'C' END AS abc_class
+FROM ranked ORDER BY inventory_value DESC;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q51</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Statistics</span>
+                <span class="concept-tag">Safety Stock</span>
+                <p class="scenario">Scenario: Prevent stockouts during demand variability</p>
+                <p class="question-text">Calculate safety stock levels</p>
+                <div class="sql-code">
+                    <pre>WITH demand_stats AS (
+    SELECT product_id, AVG(quantity) AS avg_daily_demand,
+           STDDEV(quantity) AS stddev_demand
+    FROM inventory_transactions
+    WHERE transaction_type = 'OUT'
+    AND transaction_date >= CURRENT_DATE - INTERVAL '90 days'
+    GROUP BY product_id
+)
+SELECT p.product_id, p.product_name, ds.avg_daily_demand, ds.stddev_demand,
+       s.lead_time_days,
+       -- Safety stock = Z * σ * √L (Z=1.65 for 95% service level)
+       ROUND(1.65 * ds.stddev_demand * SQRT(s.lead_time_days), 0) AS safety_stock
+FROM products p
+JOIN demand_stats ds ON p.product_id = ds.product_id
+JOIN suppliers s ON p.supplier_id = s.supplier_id;</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media - Scenario-Based SQL Questions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e91e63 0%, #9c27b0 50%, #673ab7 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .schema-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .schema-section h2 { color: #fff; margin-bottom: 15px; }
+        .tables-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .table-3d {
+            background: linear-gradient(145deg, #c2185b, #7b1fa2);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: perspective(1000px) rotateX(5deg);
+            transition: transform 0.3s ease;
+            min-width: 200px;
+        }
+        .table-3d:hover { transform: perspective(1000px) rotateX(0deg) scale(1.02); }
+        .table-name {
+            background: linear-gradient(90deg, #fff, #e0e0e0);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #c2185b;
+        }
+        .columns { font-size: 0.85em; }
+        .column {
+            padding: 4px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            display: flex;
+            justify-content: space-between;
+        }
+        .pk { color: #ffd700; }
+        .fk { color: #90EE90; }
+        .question-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffd700;
+            transition: all 0.3s ease;
+        }
+        .question-card:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateX(10px);
+        }
+        .question-number {
+            background: linear-gradient(90deg, #ffd700, #ff6b35);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #000;
+        }
+        .scenario { color: #ffd700; font-style: italic; margin-bottom: 10px; }
+        .question-text { font-size: 1.1em; margin-bottom: 15px; }
+        .sql-code {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85em;
+        }
+        .sql-code pre { margin: 0; white-space: pre-wrap; }
+        .difficulty {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .easy { background: #00ff88; color: #000; }
+        .medium { background: #ffd700; color: #000; }
+        .hard { background: #ff4757; color: #fff; }
+        .concept-tag {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin: 2px;
+        }
+        .social-visual {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        .trending-tag {
+            display: inline-block;
+            background: linear-gradient(90deg, #e91e63, #9c27b0);
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 0.9em;
+        }
+        .engagement-bar {
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .engagement-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e91e63, #ffd700);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Social Media SQL Scenarios</h1>
+        
+        <div class="schema-section">
+            <h2>Database Schema</h2>
+            <div class="tables-container">
+                <div class="table-3d">
+                    <div class="table-name">USERS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">user_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>username</span><span>VARCHAR</span></div>
+                        <div class="column"><span>follower_count</span><span>INT</span></div>
+                        <div class="column"><span>following_count</span><span>INT</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">POSTS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">post_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">user_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>content</span><span>TEXT</span></div>
+                        <div class="column"><span>likes_count</span><span>INT</span></div>
+                        <div class="column"><span>comments_count</span><span>INT</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">FOLLOWS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">follower_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="pk">following_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>created_at</span><span>TIMESTAMP</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">HASHTAGS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">hashtag_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>tag_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>post_count</span><span>INT</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-section">
+            <div class="question-card">
+                <span class="question-number">Q141</span>
+                <span class="difficulty medium">Medium</span>
+                <span class="concept-tag">CTE</span>
+                <span class="concept-tag">Trending Analysis</span>
+                <p class="scenario">Scenario: Discover what's popular right now</p>
+                <p class="question-text">Find trending hashtags</p>
+                <div class="sql-code">
+                    <pre>WITH recent_hashtags AS (
+    SELECT h.hashtag_id, h.tag_name, COUNT(*) AS recent_posts
+    FROM hashtags h
+    JOIN post_hashtags ph ON h.hashtag_id = ph.hashtag_id
+    JOIN posts p ON ph.post_id = p.post_id
+    WHERE p.created_at >= CURRENT_TIMESTAMP - INTERVAL '24 hours'
+    GROUP BY h.hashtag_id, h.tag_name
+)
+SELECT tag_name, recent_posts,
+       ROUND(100.0 * (recent_posts - prev_posts) / NULLIF(prev_posts, 0), 2) AS growth_pct
+FROM recent_hashtags ORDER BY recent_posts DESC LIMIT 10;</pre>
+                </div>
+                <div class="social-visual">
+                    <h4>Trending Now</h4>
+                    <span class="trending-tag">#TechNews +245%</span>
+                    <span class="trending-tag">#AI +180%</span>
+                    <span class="trending-tag">#Coding +156%</span>
+                    <span class="trending-tag">#DataScience +134%</span>
+                    <span class="trending-tag">#SQL +98%</span>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q142</span>
+                <span class="difficulty medium">Medium</span>
+                <span class="concept-tag">Engagement</span>
+                <span class="concept-tag">Influencer Analytics</span>
+                <p class="scenario">Scenario: Influencer analytics</p>
+                <p class="question-text">Calculate user engagement rate</p>
+                <div class="sql-code">
+                    <pre>SELECT u.user_id, u.username, u.follower_count,
+       COUNT(DISTINCT p.post_id) AS total_posts,
+       SUM(p.likes_count) AS total_likes,
+       SUM(p.comments_count) AS total_comments,
+       ROUND(100.0 * (SUM(p.likes_count) + SUM(p.comments_count)) / 
+             (NULLIF(u.follower_count, 0) * COUNT(DISTINCT p.post_id)), 4) AS engagement_rate
+FROM users u
+JOIN posts p ON u.user_id = p.user_id
+WHERE p.created_at >= CURRENT_DATE - INTERVAL '30 days'
+GROUP BY u.user_id, u.username, u.follower_count
+ORDER BY engagement_rate DESC;</pre>
+                </div>
+                <div class="social-visual">
+                    <h4>Engagement Rate by User</h4>
+                    <div>@influencer1 - 8.5%</div>
+                    <div class="engagement-bar"><div class="engagement-fill" style="width:85%"></div></div>
+                    <div>@creator2 - 6.2%</div>
+                    <div class="engagement-bar"><div class="engagement-fill" style="width:62%"></div></div>
+                    <div>@brand3 - 3.8%</div>
+                    <div class="engagement-bar"><div class="engagement-fill" style="width:38%"></div></div>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q143</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Self Join</span>
+                <span class="concept-tag">Friend Suggestions</span>
+                <p class="scenario">Scenario: Friend suggestions</p>
+                <p class="question-text">Find mutual followers</p>
+                <div class="sql-code">
+                    <pre>SELECT f1.follower_id AS user_id, u1.username AS user_name,
+       f2.following_id AS suggested_user_id, u2.username AS suggested_name,
+       COUNT(*) AS mutual_connections
+FROM follows f1
+JOIN follows f2 ON f1.following_id = f2.follower_id
+JOIN users u1 ON f1.follower_id = u1.user_id
+JOIN users u2 ON f2.following_id = u2.user_id
+WHERE f1.follower_id != f2.following_id
+AND NOT EXISTS (SELECT 1 FROM follows f3 
+                WHERE f3.follower_id = f1.follower_id AND f3.following_id = f2.following_id)
+GROUP BY f1.follower_id, u1.username, f2.following_id, u2.username
+HAVING COUNT(*) >= 3;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q145</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Bot Detection</span>
+                <span class="concept-tag">Platform Integrity</span>
+                <p class="scenario">Scenario: Platform integrity</p>
+                <p class="question-text">Detect fake/bot accounts</p>
+                <div class="sql-code">
+                    <pre>SELECT u.user_id, u.username, u.follower_count, u.following_count,
+       COUNT(DISTINCT p.post_id) AS post_count,
+       ROUND(u.following_count::DECIMAL / NULLIF(u.follower_count, 0), 2) AS following_ratio,
+       CASE WHEN u.following_count > 1000 AND u.follower_count < 100 THEN 'HIGH'
+            WHEN COUNT(DISTINCT p.post_id) = 0 AND COUNT(DISTINCT l.like_id) > 100 THEN 'HIGH'
+            ELSE 'LOW' END AS bot_risk
+FROM users u
+LEFT JOIN posts p ON u.user_id = p.user_id
+LEFT JOIN likes l ON u.user_id = l.user_id
+GROUP BY u.user_id, u.username, u.follower_count, u.following_count
+HAVING u.following_count > 1000 AND u.follower_count < 100;</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

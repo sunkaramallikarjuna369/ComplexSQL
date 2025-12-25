@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Analytics - Scenario-Based SQL Questions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(90deg, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .schema-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .schema-section h2 { color: #f093fb; margin-bottom: 15px; }
+        .tables-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .table-3d {
+            background: linear-gradient(145deg, #3d3d5c, #1a1a2e);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: perspective(1000px) rotateX(5deg);
+            transition: transform 0.3s ease;
+            min-width: 250px;
+        }
+        .table-3d:hover { transform: perspective(1000px) rotateX(0deg) scale(1.02); }
+        .table-name {
+            background: linear-gradient(90deg, #f093fb, #f5576c);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .columns { font-size: 0.9em; }
+        .column {
+            padding: 5px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+        }
+        .pk { color: #ffd700; }
+        .fk { color: #00ff88; }
+        .question-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #f5576c;
+            transition: all 0.3s ease;
+        }
+        .question-card:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(10px);
+        }
+        .question-number {
+            background: linear-gradient(90deg, #f093fb, #f5576c);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .scenario { color: #f093fb; font-style: italic; margin-bottom: 10px; }
+        .question-text { font-size: 1.1em; margin-bottom: 15px; }
+        .sql-code {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+        .sql-code pre { margin: 0; white-space: pre-wrap; }
+        .difficulty {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .easy { background: #00ff88; color: #000; }
+        .medium { background: #ffd700; color: #000; }
+        .hard { background: #ff4757; color: #fff; }
+        .concept-tag {
+            display: inline-block;
+            background: rgba(240,147,251,0.2);
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin: 2px;
+        }
+        .chart-container {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            height: 150px;
+            gap: 10px;
+            padding: 10px;
+        }
+        .bar {
+            flex: 1;
+            background: linear-gradient(180deg, #f093fb, #f5576c);
+            border-radius: 5px 5px 0 0;
+            position: relative;
+            min-width: 30px;
+            transition: all 0.3s ease;
+        }
+        .bar:hover { opacity: 0.8; }
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7em;
+            white-space: nowrap;
+        }
+        .bar-value {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sales Analytics SQL Scenarios</h1>
+        
+        <div class="schema-section">
+            <h2>Database Schema</h2>
+            <div class="tables-container">
+                <div class="table-3d">
+                    <div class="table-name">ORDERS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">order_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">customer_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>order_date</span><span>DATE</span></div>
+                        <div class="column"><span>ship_date</span><span>DATE</span></div>
+                        <div class="column"><span>status</span><span>VARCHAR</span></div>
+                        <div class="column"><span>total_amount</span><span>DECIMAL</span></div>
+                        <div class="column"><span>discount</span><span>DECIMAL</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">ORDER_ITEMS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">item_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">order_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">product_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>quantity</span><span>INT</span></div>
+                        <div class="column"><span>unit_price</span><span>DECIMAL</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">PRODUCTS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">product_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>product_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span class="fk">category_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>unit_price</span><span>DECIMAL</span></div>
+                        <div class="column"><span>units_in_stock</span><span>INT</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">CUSTOMERS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">customer_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>company_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>city</span><span>VARCHAR</span></div>
+                        <div class="column"><span>country</span><span>VARCHAR</span></div>
+                        <div class="column"><span>segment</span><span>VARCHAR</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-section">
+            <div class="question-card">
+                <span class="question-number">Q21</span>
+                <span class="difficulty medium">Medium</span>
+                <span class="concept-tag">Window Functions</span>
+                <span class="concept-tag">LAG</span>
+                <span class="concept-tag">Growth Rate</span>
+                <p class="scenario">Scenario: Management needs to track month-over-month sales performance</p>
+                <p class="question-text">Calculate monthly sales growth rate</p>
+                <div class="sql-code">
+                    <pre>WITH monthly_sales AS (
+    SELECT DATE_TRUNC('month', order_date) AS month,
+           SUM(total_amount) AS total_sales
+    FROM orders WHERE status = 'Completed'
+    GROUP BY DATE_TRUNC('month', order_date)
+)
+SELECT month, total_sales,
+       LAG(total_sales) OVER (ORDER BY month) AS prev_month,
+       ROUND(100.0 * (total_sales - LAG(total_sales) OVER (ORDER BY month)) / 
+             NULLIF(LAG(total_sales) OVER (ORDER BY month), 0), 2) AS growth_pct
+FROM monthly_sales ORDER BY month;</pre>
+                </div>
+                <div class="chart-container">
+                    <h4>Monthly Sales Trend</h4>
+                    <div class="bar-chart">
+                        <div class="bar" style="height: 60%;"><span class="bar-value">$45K</span><span class="bar-label">Jan</span></div>
+                        <div class="bar" style="height: 70%;"><span class="bar-value">$52K</span><span class="bar-label">Feb</span></div>
+                        <div class="bar" style="height: 65%;"><span class="bar-value">$48K</span><span class="bar-label">Mar</span></div>
+                        <div class="bar" style="height: 80%;"><span class="bar-value">$62K</span><span class="bar-label">Apr</span></div>
+                        <div class="bar" style="height: 90%;"><span class="bar-value">$71K</span><span class="bar-label">May</span></div>
+                        <div class="bar" style="height: 100%;"><span class="bar-value">$78K</span><span class="bar-label">Jun</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q22</span>
+                <span class="difficulty medium">Medium</span>
+                <span class="concept-tag">Aggregation</span>
+                <span class="concept-tag">Customer Analytics</span>
+                <p class="scenario">Scenario: Identify VIP customers for loyalty program</p>
+                <p class="question-text">Find top 10 customers by lifetime value</p>
+                <div class="sql-code">
+                    <pre>SELECT c.customer_id, c.company_name, c.segment,
+       COUNT(DISTINCT o.order_id) AS total_orders,
+       SUM(o.total_amount) AS lifetime_value,
+       AVG(o.total_amount) AS avg_order_value
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+WHERE o.status = 'Completed'
+GROUP BY c.customer_id, c.company_name, c.segment
+ORDER BY lifetime_value DESC LIMIT 10;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q26</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Self Join</span>
+                <span class="concept-tag">Market Basket</span>
+                <p class="scenario">Scenario: Product bundling recommendations</p>
+                <p class="question-text">Find products frequently bought together</p>
+                <div class="sql-code">
+                    <pre>SELECT oi1.product_id AS product1, p1.product_name,
+       oi2.product_id AS product2, p2.product_name,
+       COUNT(*) AS times_bought_together
+FROM order_items oi1
+JOIN order_items oi2 ON oi1.order_id = oi2.order_id 
+    AND oi1.product_id < oi2.product_id
+JOIN products p1 ON oi1.product_id = p1.product_id
+JOIN products p2 ON oi2.product_id = p2.product_id
+GROUP BY oi1.product_id, p1.product_name, oi2.product_id, p2.product_name
+HAVING COUNT(*) > 10
+ORDER BY times_bought_together DESC;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q29</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Cohort Analysis</span>
+                <span class="concept-tag">Retention</span>
+                <p class="scenario">Scenario: Measure customer loyalty over time</p>
+                <p class="question-text">Calculate customer retention rate by cohort</p>
+                <div class="sql-code">
+                    <pre>WITH first_purchase AS (
+    SELECT customer_id, DATE_TRUNC('month', MIN(order_date)) AS cohort_month
+    FROM orders GROUP BY customer_id
+),
+monthly_activity AS (
+    SELECT fp.cohort_month, DATE_TRUNC('month', o.order_date) AS activity_month,
+           COUNT(DISTINCT o.customer_id) AS active_customers
+    FROM first_purchase fp
+    JOIN orders o ON fp.customer_id = o.customer_id
+    GROUP BY fp.cohort_month, DATE_TRUNC('month', o.order_date)
+)
+SELECT cohort_month, activity_month, active_customers,
+       FIRST_VALUE(active_customers) OVER (PARTITION BY cohort_month ORDER BY activity_month) AS cohort_size,
+       ROUND(100.0 * active_customers / FIRST_VALUE(active_customers) 
+             OVER (PARTITION BY cohort_month ORDER BY activity_month), 2) AS retention_rate
+FROM monthly_activity;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q38</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Anomaly Detection</span>
+                <span class="concept-tag">Moving Average</span>
+                <span class="concept-tag">Z-Score</span>
+                <p class="scenario">Scenario: Detect unusual sales spikes or drops</p>
+                <p class="question-text">Find sales anomalies by comparing to moving average</p>
+                <div class="sql-code">
+                    <pre>WITH daily_sales AS (
+    SELECT order_date, SUM(total_amount) AS daily_total
+    FROM orders WHERE status = 'Completed'
+    GROUP BY order_date
+),
+with_moving_avg AS (
+    SELECT order_date, daily_total,
+           AVG(daily_total) OVER (ORDER BY order_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS ma_7d,
+           STDDEV(daily_total) OVER (ORDER BY order_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS std_7d
+    FROM daily_sales
+)
+SELECT order_date, daily_total, ROUND(ma_7d, 2) AS moving_avg,
+       ROUND((daily_total - ma_7d) / NULLIF(std_7d, 0), 2) AS z_score,
+       CASE WHEN daily_total > ma_7d + 2 * std_7d THEN 'Spike'
+            WHEN daily_total < ma_7d - 2 * std_7d THEN 'Drop'
+            ELSE 'Normal' END AS anomaly_type
+FROM with_moving_avg WHERE ABS((daily_total - ma_7d) / NULLIF(std_7d, 0)) > 2;</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

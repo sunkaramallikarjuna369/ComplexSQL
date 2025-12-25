@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare - Scenario-Based SQL Questions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .schema-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .schema-section h2 { color: #fff; margin-bottom: 15px; }
+        .tables-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .table-3d {
+            background: linear-gradient(145deg, #0d7377, #14a3a8);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: perspective(1000px) rotateX(5deg);
+            transition: transform 0.3s ease;
+            min-width: 220px;
+        }
+        .table-3d:hover { transform: perspective(1000px) rotateX(0deg) scale(1.02); }
+        .table-name {
+            background: linear-gradient(90deg, #fff, #e0e0e0);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #0d7377;
+        }
+        .columns { font-size: 0.85em; }
+        .column {
+            padding: 4px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            display: flex;
+            justify-content: space-between;
+        }
+        .pk { color: #ffd700; }
+        .fk { color: #90EE90; }
+        .question-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #fff;
+            transition: all 0.3s ease;
+        }
+        .question-card:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateX(10px);
+        }
+        .question-number {
+            background: linear-gradient(90deg, #fff, #e0e0e0);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #0d7377;
+        }
+        .scenario { color: #90EE90; font-style: italic; margin-bottom: 10px; }
+        .question-text { font-size: 1.1em; margin-bottom: 15px; }
+        .sql-code {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85em;
+        }
+        .sql-code pre { margin: 0; white-space: pre-wrap; }
+        .difficulty {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .easy { background: #00ff88; color: #000; }
+        .medium { background: #ffd700; color: #000; }
+        .hard { background: #ff4757; color: #fff; }
+        .concept-tag {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin: 2px;
+        }
+        .health-visual {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        .patient-card {
+            background: linear-gradient(145deg, #0d7377, #14a3a8);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .risk-indicator {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .risk-high { background: #ff4757; }
+        .risk-medium { background: #ffd700; color: #000; }
+        .risk-low { background: #00ff88; color: #000; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Healthcare SQL Scenarios</h1>
+        
+        <div class="schema-section">
+            <h2>Database Schema</h2>
+            <div class="tables-container">
+                <div class="table-3d">
+                    <div class="table-name">PATIENTS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">patient_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>first_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>last_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>date_of_birth</span><span>DATE</span></div>
+                        <div class="column"><span>blood_type</span><span>VARCHAR</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">DOCTORS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">doctor_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>first_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>last_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>specialization</span><span>VARCHAR</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">APPOINTMENTS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">appointment_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">patient_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">doctor_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>appointment_date</span><span>TIMESTAMP</span></div>
+                        <div class="column"><span>status</span><span>VARCHAR</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">DIAGNOSES</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">diagnosis_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">patient_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>diagnosis_code</span><span>VARCHAR</span></div>
+                        <div class="column"><span>diagnosis_date</span><span>DATE</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">LAB_RESULTS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">result_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">patient_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>test_type</span><span>VARCHAR</span></div>
+                        <div class="column"><span>result_value</span><span>DECIMAL</span></div>
+                        <div class="column"><span>status</span><span>VARCHAR</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-section">
+            <div class="question-card">
+                <span class="question-number">Q102</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Window Functions</span>
+                <span class="concept-tag">Readmission</span>
+                <p class="scenario">Scenario: Quality metric for hospital performance</p>
+                <p class="question-text">Calculate patient readmission rate</p>
+                <div class="sql-code">
+                    <pre>WITH admissions AS (
+    SELECT patient_id, admission_date, discharge_date,
+           LEAD(admission_date) OVER (PARTITION BY patient_id ORDER BY admission_date) AS next_admission
+    FROM hospital_admissions WHERE discharge_date IS NOT NULL
+)
+SELECT DATE_TRUNC('month', discharge_date) AS month,
+       COUNT(*) AS total_discharges,
+       COUNT(CASE WHEN next_admission <= discharge_date + INTERVAL '30 days' THEN 1 END) AS readmissions,
+       ROUND(100.0 * COUNT(CASE WHEN next_admission <= discharge_date + INTERVAL '30 days' THEN 1 END) / COUNT(*), 2) AS readmission_rate
+FROM admissions GROUP BY DATE_TRUNC('month', discharge_date);</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q107</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Risk Scoring</span>
+                <span class="concept-tag">Population Health</span>
+                <p class="scenario">Scenario: Population health management</p>
+                <p class="question-text">Identify high-risk patients for intervention</p>
+                <div class="sql-code">
+                    <pre>WITH patient_risk AS (
+    SELECT p.patient_id, p.first_name || ' ' || p.last_name AS patient_name,
+           EXTRACT(YEAR FROM AGE(CURRENT_DATE, p.date_of_birth)) AS age,
+           COUNT(DISTINCT d.diagnosis_code) AS diagnosis_count,
+           COUNT(DISTINCT pr.prescription_id) AS medication_count,
+           COUNT(DISTINCT CASE WHEN a.status = 'NO_SHOW' THEN a.appointment_id END) AS missed_appointments
+    FROM patients p
+    LEFT JOIN diagnoses d ON p.patient_id = d.patient_id
+    LEFT JOIN prescriptions pr ON p.patient_id = pr.patient_id
+    LEFT JOIN appointments a ON p.patient_id = a.patient_id
+    GROUP BY p.patient_id, p.first_name, p.last_name, p.date_of_birth
+)
+SELECT *, (CASE WHEN age > 65 THEN 2 ELSE 0 END + diagnosis_count * 0.5 + missed_appointments) AS risk_score
+FROM patient_risk ORDER BY risk_score DESC;</pre>
+                </div>
+                <div class="health-visual">
+                    <h4>Patient Risk Assessment</h4>
+                    <div class="patient-card">
+                        <div>John Smith, 72 years old</div>
+                        <div>Conditions: 5 | Medications: 8 | Missed Appts: 3</div>
+                        <span class="risk-indicator risk-high">HIGH RISK - Score: 8.5</span>
+                    </div>
+                    <div class="patient-card">
+                        <div>Mary Johnson, 58 years old</div>
+                        <div>Conditions: 2 | Medications: 3 | Missed Appts: 1</div>
+                        <span class="risk-indicator risk-medium">MEDIUM RISK - Score: 4.0</span>
+                    </div>
+                    <div class="patient-card">
+                        <div>Robert Davis, 35 years old</div>
+                        <div>Conditions: 1 | Medications: 1 | Missed Appts: 0</div>
+                        <span class="risk-indicator risk-low">LOW RISK - Score: 0.5</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q105</span>
+                <span class="difficulty medium">Medium</span>
+                <span class="concept-tag">CASE Statement</span>
+                <span class="concept-tag">Lab Analysis</span>
+                <p class="scenario">Scenario: Critical value alerts</p>
+                <p class="question-text">Find abnormal lab results requiring follow-up</p>
+                <div class="sql-code">
+                    <pre>SELECT lr.result_id, p.patient_id, p.first_name || ' ' || p.last_name AS patient_name,
+       lr.test_type, lr.result_value, lr.reference_min, lr.reference_max,
+       CASE WHEN lr.result_value < lr.reference_min THEN 'LOW'
+            WHEN lr.result_value > lr.reference_max THEN 'HIGH'
+            ELSE 'NORMAL' END AS status
+FROM lab_results lr
+JOIN patients p ON lr.patient_id = p.patient_id
+WHERE lr.result_value < lr.reference_min OR lr.result_value > lr.reference_max
+ORDER BY ABS(lr.result_value - (lr.reference_min + lr.reference_max) / 2) DESC;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q109</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Self Join</span>
+                <span class="concept-tag">Drug Safety</span>
+                <p class="scenario">Scenario: Medication safety alert</p>
+                <p class="question-text">Find drug interactions in patient prescriptions</p>
+                <div class="sql-code">
+                    <pre>SELECT p.patient_id, p.first_name || ' ' || p.last_name AS patient_name,
+       m1.medication_name AS medication_1, m2.medication_name AS medication_2,
+       di.interaction_severity, di.interaction_description
+FROM prescriptions pr1
+JOIN prescriptions pr2 ON pr1.patient_id = pr2.patient_id 
+    AND pr1.medication_id < pr2.medication_id
+    AND pr1.end_date >= pr2.start_date AND pr1.start_date <= pr2.end_date
+JOIN drug_interactions di ON (di.drug_1_id = pr1.medication_id AND di.drug_2_id = pr2.medication_id)
+JOIN patients p ON pr1.patient_id = p.patient_id
+JOIN medications m1 ON pr1.medication_id = m1.medication_id
+JOIN medications m2 ON pr2.medication_id = m2.medication_id
+WHERE di.interaction_severity IN ('SEVERE', 'MAJOR');</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
