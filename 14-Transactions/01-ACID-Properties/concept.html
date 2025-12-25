@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions and ACID - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Transactions and ACID Properties</h1>
+            <p class="subtitle">Ensuring Data Integrity and Consistency</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Transactions</a>
+            <span>›</span>
+            <span>ACID Properties</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT are ACID Properties?</span>
+                </div>
+                <div class="section-content">
+                    <p>ACID is an acronym describing the four key properties that guarantee database transactions are processed reliably: Atomicity, Consistency, Isolation, and Durability.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">ACID Properties</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">ACID</div>
+                                    <table>
+                                        <tr><th>Property</th><th>Meaning</th></tr>
+                                        <tr class="highlight"><td>Atomicity</td><td>All or nothing - complete or rollback</td></tr>
+                                        <tr class="highlight-blue"><td>Consistency</td><td>Valid state before and after</td></tr>
+                                        <tr class="highlight-yellow"><td>Isolation</td><td>Concurrent transactions don't interfere</td></tr>
+                                        <tr><td>Durability</td><td>Committed changes are permanent</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY are Transactions Important?</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>Data Integrity:</strong> Prevent partial updates that corrupt data</li>
+                        <li><strong>Concurrency Control:</strong> Handle multiple users safely</li>
+                        <li><strong>Error Recovery:</strong> Rollback on failures</li>
+                        <li><strong>Business Logic:</strong> Ensure complex operations complete fully</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- WHEN Section -->
+            <section class="section-4wh when">
+                <div class="section-header">
+                    <span class="icon">⏰</span>
+                    <span>WHEN to use Transactions?</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Scenario</th>
+                                <th>Example</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Financial transfers</td>
+                                <td>Debit one account, credit another</td>
+                            </tr>
+                            <tr>
+                                <td>Order processing</td>
+                                <td>Create order, update inventory, charge payment</td>
+                            </tr>
+                            <tr>
+                                <td>Batch updates</td>
+                                <td>Update multiple related records</td>
+                            </tr>
+                            <tr>
+                                <td>Data migration</td>
+                                <td>Move data between tables safely</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- WHERE Section -->
+            <section class="section-4wh where">
+                <div class="section-header">
+                    <span class="icon">🌍</span>
+                    <span>WHERE - Isolation Levels</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Level</th>
+                                <th>Dirty Read</th>
+                                <th>Non-Repeatable</th>
+                                <th>Phantom</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>READ UNCOMMITTED</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+                            <tr><td>READ COMMITTED</td><td>No</td><td>Yes</td><td>Yes</td></tr>
+                            <tr><td>REPEATABLE READ</td><td>No</td><td>No</td><td>Yes</td></tr>
+                            <tr><td>SERIALIZABLE</td><td>No</td><td>No</td><td>No</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use Transactions?</span>
+                </div>
+                <div class="section-content">
+                    <div class="db-tabs-container">
+                        <div class="db-tabs">
+                            <button class="db-tab active" data-db="sqlserver">SQL Server</button>
+                            <button class="db-tab" data-db="oracle">Oracle</button>
+                            <button class="db-tab" data-db="postgresql">PostgreSQL</button>
+                            <button class="db-tab" data-db="mysql">MySQL</button>
+                        </div>
+
+                        <div class="db-content active" data-db="sqlserver">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Transactions - SQL Server</span>
+                                    <span class="db-badge">SQL Server</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Basic transaction</span>
+<span class="keyword">BEGIN TRANSACTION</span>;
+
+<span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance - <span class="number">100</span> <span class="keyword">WHERE</span> account_id = <span class="number">1</span>;
+<span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance + <span class="number">100</span> <span class="keyword">WHERE</span> account_id = <span class="number">2</span>;
+
+<span class="keyword">IF</span> @@ERROR = <span class="number">0</span>
+    <span class="keyword">COMMIT TRANSACTION</span>;
+<span class="keyword">ELSE</span>
+    <span class="keyword">ROLLBACK TRANSACTION</span>;
+
+<span class="comment">-- With TRY-CATCH</span>
+<span class="keyword">BEGIN TRY</span>
+    <span class="keyword">BEGIN TRANSACTION</span>;
+    
+    <span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance - <span class="number">100</span> <span class="keyword">WHERE</span> account_id = <span class="number">1</span>;
+    <span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance + <span class="number">100</span> <span class="keyword">WHERE</span> account_id = <span class="number">2</span>;
+    
+    <span class="keyword">COMMIT TRANSACTION</span>;
+<span class="keyword">END TRY</span>
+<span class="keyword">BEGIN CATCH</span>
+    <span class="keyword">ROLLBACK TRANSACTION</span>;
+    <span class="keyword">THROW</span>;
+<span class="keyword">END CATCH</span>;
+
+<span class="comment">-- Set isolation level</span>
+<span class="keyword">SET TRANSACTION ISOLATION LEVEL READ COMMITTED</span>;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="oracle">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Transactions - Oracle</span>
+                                    <span class="db-badge">Oracle</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Oracle auto-starts transactions</span>
+<span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance - <span class="number">100</span> <span class="keyword">WHERE</span> account_id = <span class="number">1</span>;
+<span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance + <span class="number">100</span> <span class="keyword">WHERE</span> account_id = <span class="number">2</span>;
+
+<span class="keyword">COMMIT</span>;
+<span class="comment">-- or ROLLBACK;</span>
+
+<span class="comment">-- With SAVEPOINT</span>
+<span class="keyword">SAVEPOINT</span> before_transfer;
+
+<span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance - <span class="number">100</span> <span class="keyword">WHERE</span> account_id = <span class="number">1</span>;
+
+<span class="comment">-- If error, rollback to savepoint</span>
+<span class="keyword">ROLLBACK TO</span> before_transfer;
+
+<span class="comment">-- Set isolation level</span>
+<span class="keyword">SET TRANSACTION ISOLATION LEVEL SERIALIZABLE</span>;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="postgresql">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Transactions - PostgreSQL</span>
+                                    <span class="db-badge">PostgreSQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Basic transaction</span>
+<span class="keyword">BEGIN</span>;
+
+<span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance - <span class="number">100</span> <span class="keyword">WHERE</span> account_id = <span class="number">1</span>;
+<span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance + <span class="number">100</span> <span class="keyword">WHERE</span> account_id = <span class="number">2</span>;
+
+<span class="keyword">COMMIT</span>;
+
+<span class="comment">-- With SAVEPOINT</span>
+<span class="keyword">BEGIN</span>;
+<span class="keyword">SAVEPOINT</span> sp1;
+
+<span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance - <span class="number">100</span> <span class="keyword">WHERE</span> account_id = <span class="number">1</span>;
+
+<span class="keyword">ROLLBACK TO SAVEPOINT</span> sp1;
+<span class="keyword">COMMIT</span>;
+
+<span class="comment">-- Set isolation level</span>
+<span class="keyword">BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ</span>;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="mysql">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>Transactions - MySQL</span>
+                                    <span class="db-badge">MySQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Disable autocommit</span>
+<span class="keyword">SET</span> autocommit = <span class="number">0</span>;
+
+<span class="comment">-- Basic transaction</span>
+<span class="keyword">START TRANSACTION</span>;
+
+<span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance - <span class="number">100</span> <span class="keyword">WHERE</span> account_id = <span class="number">1</span>;
+<span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance + <span class="number">100</span> <span class="keyword">WHERE</span> account_id = <span class="number">2</span>;
+
+<span class="keyword">COMMIT</span>;
+
+<span class="comment">-- With SAVEPOINT</span>
+<span class="keyword">START TRANSACTION</span>;
+<span class="keyword">SAVEPOINT</span> sp1;
+
+<span class="keyword">UPDATE</span> accounts <span class="keyword">SET</span> balance = balance - <span class="number">100</span> <span class="keyword">WHERE</span> account_id = <span class="number">1</span>;
+
+<span class="keyword">ROLLBACK TO SAVEPOINT</span> sp1;
+<span class="keyword">COMMIT</span>;
+
+<span class="comment">-- Set isolation level</span>
+<span class="keyword">SET TRANSACTION ISOLATION LEVEL READ COMMITTED</span>;
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

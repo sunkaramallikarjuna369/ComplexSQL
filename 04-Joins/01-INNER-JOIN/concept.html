@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INNER JOIN - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>INNER JOIN</h1>
+            <p class="subtitle">Return Only Matching Rows from Both Tables</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Joins</a>
+            <span>›</span>
+            <span>INNER JOIN</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT is INNER JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <p>INNER JOIN returns only the rows where there is a match in both tables based on the join condition. If a row in either table doesn't have a matching row in the other table, it is excluded from the result set.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">INNER JOIN Visualization</div>
+                        <div style="display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap;">
+                            <svg width="300" height="200" viewBox="0 0 300 200">
+                                <defs>
+                                    <clipPath id="leftCircle">
+                                        <circle cx="100" cy="100" r="80"/>
+                                    </clipPath>
+                                    <clipPath id="rightCircle">
+                                        <circle cx="200" cy="100" r="80"/>
+                                    </clipPath>
+                                </defs>
+                                <!-- Left circle (Table A) -->
+                                <circle cx="100" cy="100" r="80" fill="rgba(59, 130, 246, 0.5)" stroke="#3b82f6" stroke-width="2"/>
+                                <!-- Right circle (Table B) -->
+                                <circle cx="200" cy="100" r="80" fill="rgba(239, 68, 68, 0.5)" stroke="#ef4444" stroke-width="2"/>
+                                <!-- Intersection (INNER JOIN result) -->
+                                <path d="M150,34.02 A80,80 0 0,1 150,165.98 A80,80 0 0,1 150,34.02" fill="rgba(139, 92, 246, 0.9)" stroke="#8b5cf6" stroke-width="2"/>
+                                <!-- Labels -->
+                                <text x="60" y="105" fill="white" font-weight="bold" font-size="14">Table A</text>
+                                <text x="210" y="105" fill="white" font-weight="bold" font-size="14">Table B</text>
+                                <text x="135" y="105" fill="white" font-weight="bold" font-size="12">INNER</text>
+                            </svg>
+                            <div style="color: white; text-align: left;">
+                                <p><strong style="color: #60a5fa;">Blue:</strong> Rows only in Table A (excluded)</p>
+                                <p><strong style="color: #f87171;">Red:</strong> Rows only in Table B (excluded)</p>
+                                <p><strong style="color: #a78bfa;">Purple:</strong> Matching rows (INNER JOIN result)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use INNER JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>Data Integrity:</strong> Only returns complete, matched data from both tables</li>
+                        <li><strong>Performance:</strong> Generally faster than OUTER JOINs as it processes fewer rows</li>
+                        <li><strong>Clean Results:</strong> No NULL values from missing matches</li>
+                        <li><strong>Common Use Case:</strong> Most frequently used join type in SQL queries</li>
+                    </ul>
+
+                    <div class="info-box tip">
+                        <span class="icon">💡</span>
+                        <div>
+                            <strong>Pro Tip:</strong> INNER JOIN is the default join type. Writing just "JOIN" without specifying the type is equivalent to "INNER JOIN".
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHEN Section -->
+            <section class="section-4wh when">
+                <div class="section-header">
+                    <span class="icon">⏰</span>
+                    <span>WHEN to use INNER JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Scenario</th>
+                                <th>Example</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Get employees with their departments</td>
+                                <td>Only employees assigned to a department</td>
+                            </tr>
+                            <tr>
+                                <td>Orders with customer details</td>
+                                <td>Only orders from existing customers</td>
+                            </tr>
+                            <tr>
+                                <td>Products with categories</td>
+                                <td>Only categorized products</td>
+                            </tr>
+                            <tr>
+                                <td>Students with enrolled courses</td>
+                                <td>Only students who enrolled</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- WHERE Section -->
+            <section class="section-4wh where">
+                <div class="section-header">
+                    <span class="icon">🌍</span>
+                    <span>WHERE - RDBMS Syntax (All Same)</span>
+                </div>
+                <div class="section-content">
+                    <p>INNER JOIN syntax is identical across all major RDBMS:</p>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>RDBMS</th>
+                                <th>Syntax</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>SQL Server</td><td>INNER JOIN ... ON</td></tr>
+                            <tr><td>Oracle</td><td>INNER JOIN ... ON</td></tr>
+                            <tr><td>PostgreSQL</td><td>INNER JOIN ... ON</td></tr>
+                            <tr><td>MySQL</td><td>INNER JOIN ... ON</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use INNER JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>INNER JOIN - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Basic INNER JOIN syntax</span>
+<span class="keyword">SELECT</span> 
+    e.employee_id,
+    e.first_name,
+    e.last_name,
+    d.department_name
+<span class="keyword">FROM</span> employees e
+<span class="keyword">INNER JOIN</span> departments d 
+    <span class="keyword">ON</span> e.department_id = d.department_id;
+
+<span class="comment">-- Equivalent using just JOIN (INNER is default)</span>
+<span class="keyword">SELECT</span> 
+    e.employee_id,
+    e.first_name,
+    d.department_name
+<span class="keyword">FROM</span> employees e
+<span class="keyword">JOIN</span> departments d 
+    <span class="keyword">ON</span> e.department_id = d.department_id;
+
+<span class="comment">-- Multiple table INNER JOIN</span>
+<span class="keyword">SELECT</span> 
+    e.first_name,
+    d.department_name,
+    p.project_name
+<span class="keyword">FROM</span> employees e
+<span class="keyword">INNER JOIN</span> departments d <span class="keyword">ON</span> e.department_id = d.department_id
+<span class="keyword">INNER JOIN</span> projects p <span class="keyword">ON</span> e.employee_id = p.lead_id;
+
+<span class="comment">-- INNER JOIN with additional conditions</span>
+<span class="keyword">SELECT</span> 
+    e.first_name,
+    e.salary,
+    d.department_name
+<span class="keyword">FROM</span> employees e
+<span class="keyword">INNER JOIN</span> departments d 
+    <span class="keyword">ON</span> e.department_id = d.department_id
+<span class="keyword">WHERE</span> e.salary > <span class="number">50000</span>
+<span class="keyword">ORDER BY</span> e.salary <span class="keyword">DESC</span>;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sample Data Visualization -->
+            <section class="visualization-3d">
+                <div class="title">INNER JOIN Example with Sample Data</div>
+                <div class="table-3d">
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">employees</div>
+                            <table>
+                                <tr><th>emp_id</th><th>name</th><th>dept_id</th></tr>
+                                <tr class="highlight"><td>1</td><td>John</td><td>10</td></tr>
+                                <tr class="highlight"><td>2</td><td>Jane</td><td>20</td></tr>
+                                <tr class="highlight-red"><td>3</td><td>Bob</td><td>NULL</td></tr>
+                                <tr class="highlight"><td>4</td><td>Alice</td><td>10</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">departments</div>
+                            <table>
+                                <tr><th>dept_id</th><th>dept_name</th></tr>
+                                <tr class="highlight"><td>10</td><td>Engineering</td></tr>
+                                <tr class="highlight"><td>20</td><td>Marketing</td></tr>
+                                <tr class="highlight-red"><td>30</td><td>Finance</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">INNER JOIN Result</div>
+                            <table>
+                                <tr><th>name</th><th>dept_name</th></tr>
+                                <tr class="highlight"><td>John</td><td>Engineering</td></tr>
+                                <tr class="highlight"><td>Jane</td><td>Marketing</td></tr>
+                                <tr class="highlight"><td>Alice</td><td>Engineering</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <p style="color: #f87171; text-align: center; margin-top: 20px;">
+                    Note: Bob (no dept_id) and Finance dept (no employees) are excluded from results
+                </p>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

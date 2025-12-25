@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Normalization - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Database Normalization</h1>
+            <p class="subtitle">1NF, 2NF, 3NF, BCNF - Organizing Data Efficiently</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Normalization</a>
+            <span>›</span>
+            <span>Normal Forms</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT is Normalization?</span>
+                </div>
+                <div class="section-content">
+                    <p>Normalization is the process of organizing data in a database to reduce redundancy and improve data integrity. It involves dividing large tables into smaller, related tables and defining relationships between them.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">Normal Forms Progression</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Normal Forms</div>
+                                    <table>
+                                        <tr><th>Form</th><th>Rule</th></tr>
+                                        <tr class="highlight"><td>1NF</td><td>Atomic values, no repeating groups</td></tr>
+                                        <tr class="highlight-blue"><td>2NF</td><td>1NF + No partial dependencies</td></tr>
+                                        <tr class="highlight-yellow"><td>3NF</td><td>2NF + No transitive dependencies</td></tr>
+                                        <tr><td>BCNF</td><td>3NF + Every determinant is a key</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY Normalize?</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>Eliminate Redundancy:</strong> Store data only once</li>
+                        <li><strong>Prevent Anomalies:</strong> Avoid insert, update, delete anomalies</li>
+                        <li><strong>Data Integrity:</strong> Ensure consistency across the database</li>
+                        <li><strong>Efficient Storage:</strong> Reduce disk space usage</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to Normalize?</span>
+                </div>
+                <div class="section-content">
+                    <h3>First Normal Form (1NF)</h3>
+                    <div class="visualization-3d">
+                        <div class="title">1NF: Eliminate Repeating Groups</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Before 1NF (Unnormalized)</div>
+                                    <table>
+                                        <tr><th>order_id</th><th>customer</th><th>products</th></tr>
+                                        <tr class="highlight-red"><td>1</td><td>John</td><td>Laptop, Mouse, Keyboard</td></tr>
+                                        <tr class="highlight-red"><td>2</td><td>Jane</td><td>Monitor, Cable</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">After 1NF</div>
+                                    <table>
+                                        <tr><th>order_id</th><th>customer</th><th>product</th></tr>
+                                        <tr><td>1</td><td>John</td><td>Laptop</td></tr>
+                                        <tr><td>1</td><td>John</td><td>Mouse</td></tr>
+                                        <tr><td>1</td><td>John</td><td>Keyboard</td></tr>
+                                        <tr><td>2</td><td>Jane</td><td>Monitor</td></tr>
+                                        <tr><td>2</td><td>Jane</td><td>Cable</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>Second Normal Form (2NF)</h3>
+                    <div class="visualization-3d">
+                        <div class="title">2NF: Remove Partial Dependencies</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Before 2NF</div>
+                                    <table>
+                                        <tr><th>order_id</th><th>product_id</th><th>product_name</th><th>qty</th></tr>
+                                        <tr class="highlight-red"><td>1</td><td>P1</td><td>Laptop</td><td>2</td></tr>
+                                        <tr class="highlight-red"><td>1</td><td>P2</td><td>Mouse</td><td>3</td></tr>
+                                    </table>
+                                    <p style="color: #ef4444; font-size: 12px;">product_name depends only on product_id (partial dependency)</p>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">After 2NF - Orders</div>
+                                    <table>
+                                        <tr><th>order_id</th><th>product_id</th><th>qty</th></tr>
+                                        <tr><td>1</td><td>P1</td><td>2</td></tr>
+                                        <tr><td>1</td><td>P2</td><td>3</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">After 2NF - Products</div>
+                                    <table>
+                                        <tr><th>product_id</th><th>product_name</th></tr>
+                                        <tr><td>P1</td><td>Laptop</td></tr>
+                                        <tr><td>P2</td><td>Mouse</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>Third Normal Form (3NF)</h3>
+                    <div class="visualization-3d">
+                        <div class="title">3NF: Remove Transitive Dependencies</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Before 3NF</div>
+                                    <table>
+                                        <tr><th>emp_id</th><th>dept_id</th><th>dept_name</th><th>dept_loc</th></tr>
+                                        <tr class="highlight-red"><td>1</td><td>D1</td><td>IT</td><td>NYC</td></tr>
+                                        <tr class="highlight-red"><td>2</td><td>D1</td><td>IT</td><td>NYC</td></tr>
+                                    </table>
+                                    <p style="color: #ef4444; font-size: 12px;">dept_name, dept_loc depend on dept_id (transitive)</p>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">After 3NF - Employees</div>
+                                    <table>
+                                        <tr><th>emp_id</th><th>dept_id</th></tr>
+                                        <tr><td>1</td><td>D1</td></tr>
+                                        <tr><td>2</td><td>D1</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">After 3NF - Departments</div>
+                                    <table>
+                                        <tr><th>dept_id</th><th>dept_name</th><th>dept_loc</th></tr>
+                                        <tr><td>D1</td><td>IT</td><td>NYC</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-box tip">
+                        <span class="icon">💡</span>
+                        <div>
+                            <strong>Denormalization:</strong> Sometimes we intentionally denormalize for performance. Read-heavy applications may benefit from some redundancy to avoid expensive JOINs. Balance normalization with query performance needs.
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

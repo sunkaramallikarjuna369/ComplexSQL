@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SELF JOIN - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>SELF JOIN</h1>
+            <p class="subtitle">Join a Table with Itself</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Joins</a>
+            <span>›</span>
+            <span>SELF JOIN</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT is SELF JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <p>A SELF JOIN is when a table is joined with itself. This is useful when a table contains hierarchical or self-referential data, such as employees and their managers (both stored in the same table).</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">SELF JOIN - Employee-Manager Hierarchy</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">employees (as e)</div>
+                                    <table>
+                                        <tr><th>emp_id</th><th>name</th><th>mgr_id</th></tr>
+                                        <tr><td>1</td><td>CEO</td><td>NULL</td></tr>
+                                        <tr class="highlight"><td>2</td><td>John</td><td>1</td></tr>
+                                        <tr class="highlight"><td>3</td><td>Jane</td><td>1</td></tr>
+                                        <tr class="highlight-blue"><td>4</td><td>Bob</td><td>2</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">employees (as m)</div>
+                                    <table>
+                                        <tr><th>emp_id</th><th>name</th><th>mgr_id</th></tr>
+                                        <tr class="highlight"><td>1</td><td>CEO</td><td>NULL</td></tr>
+                                        <tr class="highlight-blue"><td>2</td><td>John</td><td>1</td></tr>
+                                        <tr><td>3</td><td>Jane</td><td>1</td></tr>
+                                        <tr><td>4</td><td>Bob</td><td>2</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">SELF JOIN Result</div>
+                                    <table>
+                                        <tr><th>employee</th><th>manager</th></tr>
+                                        <tr class="highlight"><td>John</td><td>CEO</td></tr>
+                                        <tr class="highlight"><td>Jane</td><td>CEO</td></tr>
+                                        <tr class="highlight-blue"><td>Bob</td><td>John</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use SELF JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>Hierarchical Data:</strong> Employee-manager, category-subcategory relationships</li>
+                        <li><strong>Compare Rows:</strong> Find duplicates or compare records within same table</li>
+                        <li><strong>Sequential Data:</strong> Compare current row with previous/next row</li>
+                        <li><strong>Graph Relationships:</strong> Find connections in social networks</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use SELF JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>SELF JOIN - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Employee with their manager's name</span>
+<span class="keyword">SELECT</span> 
+    e.first_name <span class="keyword">AS</span> employee_name,
+    m.first_name <span class="keyword">AS</span> manager_name
+<span class="keyword">FROM</span> employees e
+<span class="keyword">LEFT JOIN</span> employees m <span class="keyword">ON</span> e.manager_id = m.employee_id;
+
+<span class="comment">-- Find employees who earn more than their manager</span>
+<span class="keyword">SELECT</span> 
+    e.first_name <span class="keyword">AS</span> employee,
+    e.salary <span class="keyword">AS</span> employee_salary,
+    m.first_name <span class="keyword">AS</span> manager,
+    m.salary <span class="keyword">AS</span> manager_salary
+<span class="keyword">FROM</span> employees e
+<span class="keyword">INNER JOIN</span> employees m <span class="keyword">ON</span> e.manager_id = m.employee_id
+<span class="keyword">WHERE</span> e.salary > m.salary;
+
+<span class="comment">-- Find employees in the same department</span>
+<span class="keyword">SELECT</span> 
+    e1.first_name <span class="keyword">AS</span> employee1,
+    e2.first_name <span class="keyword">AS</span> employee2,
+    e1.department_id
+<span class="keyword">FROM</span> employees e1
+<span class="keyword">INNER JOIN</span> employees e2 
+    <span class="keyword">ON</span> e1.department_id = e2.department_id
+    <span class="keyword">AND</span> e1.employee_id < e2.employee_id;
+
+<span class="comment">-- Find duplicate emails</span>
+<span class="keyword">SELECT DISTINCT</span> 
+    e1.email
+<span class="keyword">FROM</span> employees e1
+<span class="keyword">INNER JOIN</span> employees e2 
+    <span class="keyword">ON</span> e1.email = e2.email
+    <span class="keyword">AND</span> e1.employee_id != e2.employee_id;
+
+<span class="comment">-- Category hierarchy (parent-child)</span>
+<span class="keyword">SELECT</span> 
+    c.category_name <span class="keyword">AS</span> category,
+    p.category_name <span class="keyword">AS</span> parent_category
+<span class="keyword">FROM</span> categories c
+<span class="keyword">LEFT JOIN</span> categories p <span class="keyword">ON</span> c.parent_id = p.category_id;
+                        </pre>
+                    </div>
+
+                    <div class="info-box tip">
+                        <span class="icon">💡</span>
+                        <div>
+                            <strong>Pro Tip:</strong> Always use different aliases (e, m or e1, e2) when doing SELF JOINs to distinguish between the two instances of the same table.
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

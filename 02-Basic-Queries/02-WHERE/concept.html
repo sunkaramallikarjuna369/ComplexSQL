@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WHERE Clause - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>WHERE Clause</h1>
+            <p class="subtitle">Filtering Data with Conditions</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Basic Queries</a>
+            <span>›</span>
+            <span>WHERE</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT is WHERE?</span>
+                </div>
+                <div class="section-content">
+                    <p>The WHERE clause filters rows based on specified conditions. Only rows that satisfy the condition(s) are included in the result set. WHERE is used with SELECT, UPDATE, and DELETE statements.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">WHERE Clause Operators</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Comparison Operators</div>
+                                    <table>
+                                        <tr><th>Operator</th><th>Meaning</th></tr>
+                                        <tr><td>=</td><td>Equal to</td></tr>
+                                        <tr><td><> or !=</td><td>Not equal to</td></tr>
+                                        <tr><td>></td><td>Greater than</td></tr>
+                                        <tr><td><</td><td>Less than</td></tr>
+                                        <tr><td>>=</td><td>Greater than or equal</td></tr>
+                                        <tr><td><=</td><td>Less than or equal</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Logical Operators</div>
+                                    <table>
+                                        <tr><th>Operator</th><th>Meaning</th></tr>
+                                        <tr class="highlight"><td>AND</td><td>Both conditions true</td></tr>
+                                        <tr class="highlight-blue"><td>OR</td><td>Either condition true</td></tr>
+                                        <tr class="highlight-yellow"><td>NOT</td><td>Negates condition</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Special Operators</div>
+                                    <table>
+                                        <tr><th>Operator</th><th>Meaning</th></tr>
+                                        <tr><td>IN</td><td>Match any in list</td></tr>
+                                        <tr><td>BETWEEN</td><td>Within range</td></tr>
+                                        <tr><td>LIKE</td><td>Pattern matching</td></tr>
+                                        <tr><td>IS NULL</td><td>Check for NULL</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use WHERE?</span>
+                </div>
+                <div class="section-content">
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>WHERE - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Basic comparison</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> salary > <span class="number">50000</span>;
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> department_id = <span class="number">10</span>;
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> first_name = <span class="string">'John'</span>;
+
+<span class="comment">-- Multiple conditions with AND</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> department_id = <span class="number">10</span> 
+  <span class="keyword">AND</span> salary > <span class="number">50000</span>;
+
+<span class="comment">-- Multiple conditions with OR</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> department_id = <span class="number">10</span> 
+   <span class="keyword">OR</span> department_id = <span class="number">20</span>;
+
+<span class="comment">-- IN operator (cleaner than multiple OR)</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> department_id <span class="keyword">IN</span> (<span class="number">10</span>, <span class="number">20</span>, <span class="number">30</span>);
+
+<span class="comment">-- NOT IN</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> department_id <span class="keyword">NOT IN</span> (<span class="number">10</span>, <span class="number">20</span>);
+
+<span class="comment">-- BETWEEN (inclusive)</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> salary <span class="keyword">BETWEEN</span> <span class="number">50000</span> <span class="keyword">AND</span> <span class="number">100000</span>;
+
+<span class="comment">-- LIKE pattern matching</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> first_name <span class="keyword">LIKE</span> <span class="string">'J%'</span>;     <span class="comment">-- Starts with J</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> first_name <span class="keyword">LIKE</span> <span class="string">'%son'</span>;   <span class="comment">-- Ends with son</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> first_name <span class="keyword">LIKE</span> <span class="string">'%oh%'</span>;  <span class="comment">-- Contains oh</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> first_name <span class="keyword">LIKE</span> <span class="string">'J_hn'</span>;  <span class="comment">-- _ = single char</span>
+
+<span class="comment">-- IS NULL / IS NOT NULL</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> manager_id <span class="keyword">IS NULL</span>;
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees <span class="keyword">WHERE</span> commission <span class="keyword">IS NOT NULL</span>;
+
+<span class="comment">-- Combining conditions with parentheses</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> (department_id = <span class="number">10</span> <span class="keyword">OR</span> department_id = <span class="number">20</span>)
+  <span class="keyword">AND</span> salary > <span class="number">50000</span>;
+
+<span class="comment">-- NOT operator</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE NOT</span> (department_id = <span class="number">10</span> <span class="keyword">AND</span> salary < <span class="number">50000</span>);
+
+<span class="comment">-- Date comparisons</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> hire_date >= <span class="string">'2020-01-01'</span>;
+
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> employees 
+<span class="keyword">WHERE</span> hire_date <span class="keyword">BETWEEN</span> <span class="string">'2020-01-01'</span> <span class="keyword">AND</span> <span class="string">'2020-12-31'</span>;
+                        </pre>
+                    </div>
+
+                    <div class="info-box tip">
+                        <span class="icon">💡</span>
+                        <div>
+                            <strong>Performance Tips:</strong>
+                            <ul>
+                                <li>Use indexed columns in WHERE clauses</li>
+                                <li>Avoid functions on indexed columns (e.g., WHERE YEAR(date) = 2024)</li>
+                                <li>Use IN instead of multiple OR conditions</li>
+                                <li>Be careful with NULL comparisons (use IS NULL, not = NULL)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

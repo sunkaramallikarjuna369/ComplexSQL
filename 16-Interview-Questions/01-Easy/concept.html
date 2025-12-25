@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Interview Questions - Easy - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>SQL Interview Questions - Easy</h1>
+            <p class="subtitle">Foundation Level Questions for Beginners</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Interview Questions</a>
+            <span>›</span>
+            <span>Easy</span>
+        </nav>
+
+        <main class="content">
+            <!-- Question 1 -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">❓</span>
+                    <span>Q1: Second Highest Salary</span>
+                </div>
+                <div class="section-content">
+                    <p><strong>Problem:</strong> Write a SQL query to find the second highest salary from the employees table. If there is no second highest salary, return NULL.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">Sample Data</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">employees</div>
+                                    <table>
+                                        <tr><th>id</th><th>salary</th></tr>
+                                        <tr><td>1</td><td>100</td></tr>
+                                        <tr class="highlight"><td>2</td><td>200</td></tr>
+                                        <tr><td>3</td><td>300</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Expected Output</div>
+                                    <table>
+                                        <tr><th>SecondHighestSalary</th></tr>
+                                        <tr class="highlight"><td>200</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Solution - Multiple Approaches</span>
+                            <span class="db-badge">All RDBMS</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Solution 1: Using LIMIT/OFFSET (MySQL, PostgreSQL)</span>
+<span class="keyword">SELECT</span> 
+    (<span class="keyword">SELECT DISTINCT</span> salary 
+     <span class="keyword">FROM</span> employees 
+     <span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span> 
+     <span class="keyword">LIMIT</span> <span class="number">1</span> <span class="keyword">OFFSET</span> <span class="number">1</span>) <span class="keyword">AS</span> SecondHighestSalary;
+
+<span class="comment">-- Solution 2: Using MAX with subquery</span>
+<span class="keyword">SELECT</span> <span class="function">MAX</span>(salary) <span class="keyword">AS</span> SecondHighestSalary
+<span class="keyword">FROM</span> employees
+<span class="keyword">WHERE</span> salary < (<span class="keyword">SELECT</span> <span class="function">MAX</span>(salary) <span class="keyword">FROM</span> employees);
+
+<span class="comment">-- Solution 3: Using DENSE_RANK (handles ties)</span>
+<span class="keyword">SELECT</span> salary <span class="keyword">AS</span> SecondHighestSalary
+<span class="keyword">FROM</span> (
+    <span class="keyword">SELECT</span> salary, <span class="function">DENSE_RANK</span>() <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>) <span class="keyword">AS</span> rnk
+    <span class="keyword">FROM</span> employees
+) ranked
+<span class="keyword">WHERE</span> rnk = <span class="number">2</span>
+<span class="keyword">LIMIT</span> <span class="number">1</span>;
+
+<span class="comment">-- Solution 4: SQL Server (TOP)</span>
+<span class="keyword">SELECT</span> <span class="keyword">TOP</span> <span class="number">1</span> salary <span class="keyword">AS</span> SecondHighestSalary
+<span class="keyword">FROM</span> (<span class="keyword">SELECT DISTINCT TOP</span> <span class="number">2</span> salary <span class="keyword">FROM</span> employees <span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>) <span class="keyword">AS</span> t
+<span class="keyword">ORDER BY</span> salary;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Question 2 -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">❓</span>
+                    <span>Q2: Duplicate Emails</span>
+                </div>
+                <div class="section-content">
+                    <p><strong>Problem:</strong> Write a SQL query to find all duplicate emails in a table.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">Sample Data</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Person</div>
+                                    <table>
+                                        <tr><th>id</th><th>email</th></tr>
+                                        <tr><td>1</td><td>a@b.com</td></tr>
+                                        <tr class="highlight"><td>2</td><td>c@d.com</td></tr>
+                                        <tr class="highlight"><td>3</td><td>c@d.com</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Expected Output</div>
+                                    <table>
+                                        <tr><th>Email</th></tr>
+                                        <tr class="highlight"><td>c@d.com</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Solution</span>
+                            <span class="db-badge">All RDBMS</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Solution 1: Using GROUP BY and HAVING</span>
+<span class="keyword">SELECT</span> email
+<span class="keyword">FROM</span> Person
+<span class="keyword">GROUP BY</span> email
+<span class="keyword">HAVING</span> <span class="function">COUNT</span>(*) > <span class="number">1</span>;
+
+<span class="comment">-- Solution 2: Using self-join</span>
+<span class="keyword">SELECT DISTINCT</span> p1.email
+<span class="keyword">FROM</span> Person p1
+<span class="keyword">JOIN</span> Person p2 <span class="keyword">ON</span> p1.email = p2.email <span class="keyword">AND</span> p1.id != p2.id;
+
+<span class="comment">-- Solution 3: Using window function</span>
+<span class="keyword">SELECT DISTINCT</span> email
+<span class="keyword">FROM</span> (
+    <span class="keyword">SELECT</span> email, <span class="function">COUNT</span>(*) <span class="keyword">OVER</span> (<span class="keyword">PARTITION BY</span> email) <span class="keyword">AS</span> cnt
+    <span class="keyword">FROM</span> Person
+) t
+<span class="keyword">WHERE</span> cnt > <span class="number">1</span>;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Question 3 -->
+            <section class="section-4wh when">
+                <div class="section-header">
+                    <span class="icon">❓</span>
+                    <span>Q3: Customers Who Never Order</span>
+                </div>
+                <div class="section-content">
+                    <p><strong>Problem:</strong> Find all customers who never placed an order.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">Sample Data</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Customers</div>
+                                    <table>
+                                        <tr><th>id</th><th>name</th></tr>
+                                        <tr><td>1</td><td>Joe</td></tr>
+                                        <tr class="highlight"><td>2</td><td>Henry</td></tr>
+                                        <tr><td>3</td><td>Sam</td></tr>
+                                        <tr class="highlight"><td>4</td><td>Max</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Orders</div>
+                                    <table>
+                                        <tr><th>id</th><th>customerId</th></tr>
+                                        <tr><td>1</td><td>3</td></tr>
+                                        <tr><td>2</td><td>1</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Expected Output</div>
+                                    <table>
+                                        <tr><th>Customers</th></tr>
+                                        <tr class="highlight"><td>Henry</td></tr>
+                                        <tr class="highlight"><td>Max</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Solution</span>
+                            <span class="db-badge">All RDBMS</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Solution 1: Using LEFT JOIN</span>
+<span class="keyword">SELECT</span> c.name <span class="keyword">AS</span> Customers
+<span class="keyword">FROM</span> Customers c
+<span class="keyword">LEFT JOIN</span> Orders o <span class="keyword">ON</span> c.id = o.customerId
+<span class="keyword">WHERE</span> o.id <span class="keyword">IS NULL</span>;
+
+<span class="comment">-- Solution 2: Using NOT IN</span>
+<span class="keyword">SELECT</span> name <span class="keyword">AS</span> Customers
+<span class="keyword">FROM</span> Customers
+<span class="keyword">WHERE</span> id <span class="keyword">NOT IN</span> (<span class="keyword">SELECT</span> customerId <span class="keyword">FROM</span> Orders);
+
+<span class="comment">-- Solution 3: Using NOT EXISTS</span>
+<span class="keyword">SELECT</span> name <span class="keyword">AS</span> Customers
+<span class="keyword">FROM</span> Customers c
+<span class="keyword">WHERE NOT EXISTS</span> (
+    <span class="keyword">SELECT</span> <span class="number">1</span> <span class="keyword">FROM</span> Orders o <span class="keyword">WHERE</span> o.customerId = c.id
+);
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Question 4 -->
+            <section class="section-4wh where">
+                <div class="section-header">
+                    <span class="icon">❓</span>
+                    <span>Q4: Delete Duplicate Emails</span>
+                </div>
+                <div class="section-content">
+                    <p><strong>Problem:</strong> Delete all duplicate emails, keeping only the one with the smallest id.</p>
+                    
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Solution</span>
+                            <span class="db-badge">All RDBMS</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Solution 1: Using self-join (MySQL)</span>
+<span class="keyword">DELETE</span> p1
+<span class="keyword">FROM</span> Person p1, Person p2
+<span class="keyword">WHERE</span> p1.email = p2.email <span class="keyword">AND</span> p1.id > p2.id;
+
+<span class="comment">-- Solution 2: Using ROW_NUMBER (SQL Server, PostgreSQL)</span>
+<span class="keyword">WITH</span> cte <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> id, 
+           <span class="function">ROW_NUMBER</span>() <span class="keyword">OVER</span> (<span class="keyword">PARTITION BY</span> email <span class="keyword">ORDER BY</span> id) <span class="keyword">AS</span> rn
+    <span class="keyword">FROM</span> Person
+)
+<span class="keyword">DELETE FROM</span> Person <span class="keyword">WHERE</span> id <span class="keyword">IN</span> (<span class="keyword">SELECT</span> id <span class="keyword">FROM</span> cte <span class="keyword">WHERE</span> rn > <span class="number">1</span>);
+
+<span class="comment">-- Solution 3: Using subquery</span>
+<span class="keyword">DELETE FROM</span> Person
+<span class="keyword">WHERE</span> id <span class="keyword">NOT IN</span> (
+    <span class="keyword">SELECT</span> * <span class="keyword">FROM</span> (
+        <span class="keyword">SELECT</span> <span class="function">MIN</span>(id) <span class="keyword">FROM</span> Person <span class="keyword">GROUP BY</span> email
+    ) <span class="keyword">AS</span> t
+);
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Question 5 -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">❓</span>
+                    <span>Q5: Rising Temperature</span>
+                </div>
+                <div class="section-content">
+                    <p><strong>Problem:</strong> Find all dates' ids with higher temperatures compared to the previous day.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">Sample Data</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Weather</div>
+                                    <table>
+                                        <tr><th>id</th><th>recordDate</th><th>temperature</th></tr>
+                                        <tr><td>1</td><td>2015-01-01</td><td>10</td></tr>
+                                        <tr class="highlight"><td>2</td><td>2015-01-02</td><td>25</td></tr>
+                                        <tr><td>3</td><td>2015-01-03</td><td>20</td></tr>
+                                        <tr class="highlight"><td>4</td><td>2015-01-04</td><td>30</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Expected Output</div>
+                                    <table>
+                                        <tr><th>id</th></tr>
+                                        <tr class="highlight"><td>2</td></tr>
+                                        <tr class="highlight"><td>4</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Solution</span>
+                            <span class="db-badge">All RDBMS</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Solution 1: Using self-join with date arithmetic</span>
+<span class="keyword">SELECT</span> w1.id
+<span class="keyword">FROM</span> Weather w1
+<span class="keyword">JOIN</span> Weather w2 
+    <span class="keyword">ON</span> w1.recordDate = w2.recordDate + <span class="keyword">INTERVAL</span> <span class="string">'1 day'</span>
+<span class="keyword">WHERE</span> w1.temperature > w2.temperature;
+
+<span class="comment">-- Solution 2: Using LAG window function</span>
+<span class="keyword">SELECT</span> id
+<span class="keyword">FROM</span> (
+    <span class="keyword">SELECT</span> 
+        id,
+        temperature,
+        recordDate,
+        <span class="function">LAG</span>(temperature) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> recordDate) <span class="keyword">AS</span> prev_temp,
+        <span class="function">LAG</span>(recordDate) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> recordDate) <span class="keyword">AS</span> prev_date
+    <span class="keyword">FROM</span> Weather
+) t
+<span class="keyword">WHERE</span> temperature > prev_temp 
+  <span class="keyword">AND</span> recordDate = prev_date + <span class="keyword">INTERVAL</span> <span class="string">'1 day'</span>;
+
+<span class="comment">-- Solution 3: MySQL specific</span>
+<span class="keyword">SELECT</span> w1.id
+<span class="keyword">FROM</span> Weather w1, Weather w2
+<span class="keyword">WHERE</span> <span class="function">DATEDIFF</span>(w1.recordDate, w2.recordDate) = <span class="number">1</span>
+  <span class="keyword">AND</span> w1.temperature > w2.temperature;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

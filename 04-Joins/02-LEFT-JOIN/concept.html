@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEFT JOIN - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>LEFT JOIN (LEFT OUTER JOIN)</h1>
+            <p class="subtitle">Return All Rows from Left Table with Matching Rows from Right</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Joins</a>
+            <span>›</span>
+            <span>LEFT JOIN</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT is LEFT JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <p>LEFT JOIN (or LEFT OUTER JOIN) returns all rows from the left table and the matching rows from the right table. If there's no match, NULL values are returned for columns from the right table.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">LEFT JOIN Visualization</div>
+                        <div style="display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap;">
+                            <svg width="300" height="200" viewBox="0 0 300 200">
+                                <!-- Left circle (Table A) - fully highlighted -->
+                                <circle cx="100" cy="100" r="80" fill="rgba(139, 92, 246, 0.9)" stroke="#8b5cf6" stroke-width="3"/>
+                                <!-- Right circle (Table B) -->
+                                <circle cx="200" cy="100" r="80" fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" stroke-width="2"/>
+                                <!-- Intersection overlay -->
+                                <path d="M150,34.02 A80,80 0 0,1 150,165.98 A80,80 0 0,1 150,34.02" fill="rgba(139, 92, 246, 0.9)" stroke="#8b5cf6" stroke-width="2"/>
+                                <!-- Labels -->
+                                <text x="50" y="105" fill="white" font-weight="bold" font-size="14">Table A</text>
+                                <text x="50" y="125" fill="white" font-size="11">(All Rows)</text>
+                                <text x="210" y="105" fill="white" font-weight="bold" font-size="14">Table B</text>
+                                <text x="135" y="105" fill="white" font-weight="bold" font-size="10">Match</text>
+                            </svg>
+                            <div style="color: white; text-align: left;">
+                                <p><strong style="color: #a78bfa;">Purple:</strong> All rows from Table A (included)</p>
+                                <p><strong style="color: #a78bfa;">Purple Center:</strong> Matching rows from both</p>
+                                <p><strong style="color: #f87171;">Red (faded):</strong> Non-matching Table B rows (excluded)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use LEFT JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>Preserve All Left Data:</strong> Keep all records from the primary table</li>
+                        <li><strong>Find Missing Relationships:</strong> Identify records without matches</li>
+                        <li><strong>Optional Relationships:</strong> When the relationship isn't mandatory</li>
+                        <li><strong>Reporting:</strong> Show all items even if related data is missing</li>
+                    </ul>
+
+                    <div class="info-box tip">
+                        <span class="icon">💡</span>
+                        <div>
+                            <strong>Pro Tip:</strong> Use LEFT JOIN with WHERE right_table.column IS NULL to find records in the left table that have no match in the right table.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHEN Section -->
+            <section class="section-4wh when">
+                <div class="section-header">
+                    <span class="icon">⏰</span>
+                    <span>WHEN to use LEFT JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Scenario</th>
+                                <th>Example</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>All employees, with or without department</td>
+                                <td>Show unassigned employees too</td>
+                            </tr>
+                            <tr>
+                                <td>All customers, with or without orders</td>
+                                <td>Find customers who never ordered</td>
+                            </tr>
+                            <tr>
+                                <td>All products, with or without sales</td>
+                                <td>Identify unsold products</td>
+                            </tr>
+                            <tr>
+                                <td>All students, with or without grades</td>
+                                <td>Find students missing grades</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- WHERE Section -->
+            <section class="section-4wh where">
+                <div class="section-header">
+                    <span class="icon">🌍</span>
+                    <span>WHERE - RDBMS Syntax</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>RDBMS</th>
+                                <th>Standard Syntax</th>
+                                <th>Alternative</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>SQL Server</td><td>LEFT JOIN ... ON</td><td>LEFT OUTER JOIN</td></tr>
+                            <tr><td>Oracle</td><td>LEFT JOIN ... ON</td><td>(+) operator (legacy)</td></tr>
+                            <tr><td>PostgreSQL</td><td>LEFT JOIN ... ON</td><td>LEFT OUTER JOIN</td></tr>
+                            <tr><td>MySQL</td><td>LEFT JOIN ... ON</td><td>LEFT OUTER JOIN</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use LEFT JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>LEFT JOIN - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Basic LEFT JOIN</span>
+<span class="keyword">SELECT</span> 
+    e.employee_id,
+    e.first_name,
+    e.last_name,
+    d.department_name
+<span class="keyword">FROM</span> employees e
+<span class="keyword">LEFT JOIN</span> departments d 
+    <span class="keyword">ON</span> e.department_id = d.department_id;
+
+<span class="comment">-- Find employees without a department</span>
+<span class="keyword">SELECT</span> 
+    e.employee_id,
+    e.first_name,
+    e.last_name
+<span class="keyword">FROM</span> employees e
+<span class="keyword">LEFT JOIN</span> departments d 
+    <span class="keyword">ON</span> e.department_id = d.department_id
+<span class="keyword">WHERE</span> d.department_id <span class="keyword">IS NULL</span>;
+
+<span class="comment">-- Find customers who never placed an order</span>
+<span class="keyword">SELECT</span> 
+    c.customer_id,
+    c.customer_name,
+    c.email
+<span class="keyword">FROM</span> customers c
+<span class="keyword">LEFT JOIN</span> orders o 
+    <span class="keyword">ON</span> c.customer_id = o.customer_id
+<span class="keyword">WHERE</span> o.order_id <span class="keyword">IS NULL</span>;
+
+<span class="comment">-- Multiple LEFT JOINs</span>
+<span class="keyword">SELECT</span> 
+    e.first_name,
+    d.department_name,
+    m.first_name <span class="keyword">AS</span> manager_name
+<span class="keyword">FROM</span> employees e
+<span class="keyword">LEFT JOIN</span> departments d <span class="keyword">ON</span> e.department_id = d.department_id
+<span class="keyword">LEFT JOIN</span> employees m <span class="keyword">ON</span> e.manager_id = m.employee_id;
+
+<span class="comment">-- Oracle legacy syntax (not recommended)</span>
+<span class="keyword">SELECT</span> e.first_name, d.department_name
+<span class="keyword">FROM</span> employees e, departments d
+<span class="keyword">WHERE</span> e.department_id = d.department_id(+);
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sample Data Visualization -->
+            <section class="visualization-3d">
+                <div class="title">LEFT JOIN Example with Sample Data</div>
+                <div class="table-3d">
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">employees (LEFT)</div>
+                            <table>
+                                <tr><th>emp_id</th><th>name</th><th>dept_id</th></tr>
+                                <tr class="highlight"><td>1</td><td>John</td><td>10</td></tr>
+                                <tr class="highlight"><td>2</td><td>Jane</td><td>20</td></tr>
+                                <tr class="highlight-yellow"><td>3</td><td>Bob</td><td>NULL</td></tr>
+                                <tr class="highlight"><td>4</td><td>Alice</td><td>10</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">departments (RIGHT)</div>
+                            <table>
+                                <tr><th>dept_id</th><th>dept_name</th></tr>
+                                <tr class="highlight"><td>10</td><td>Engineering</td></tr>
+                                <tr class="highlight"><td>20</td><td>Marketing</td></tr>
+                                <tr class="highlight-red"><td>30</td><td>Finance</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">LEFT JOIN Result</div>
+                            <table>
+                                <tr><th>name</th><th>dept_name</th></tr>
+                                <tr class="highlight"><td>John</td><td>Engineering</td></tr>
+                                <tr class="highlight"><td>Jane</td><td>Marketing</td></tr>
+                                <tr class="highlight-yellow"><td>Bob</td><td>NULL</td></tr>
+                                <tr class="highlight"><td>Alice</td><td>Engineering</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <p style="color: #facc15; text-align: center; margin-top: 20px;">
+                    Note: Bob is included with NULL department. Finance dept (no employees) is excluded.
+                </p>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

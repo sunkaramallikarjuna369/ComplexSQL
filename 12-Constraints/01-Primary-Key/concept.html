@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Constraints - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>SQL Constraints</h1>
+            <p class="subtitle">PRIMARY KEY, FOREIGN KEY, UNIQUE, CHECK, DEFAULT, NOT NULL</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Constraints</a>
+            <span>›</span>
+            <span>Overview</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT are Constraints?</span>
+                </div>
+                <div class="section-content">
+                    <p>Constraints are rules enforced on data columns to ensure data integrity, accuracy, and reliability. They prevent invalid data from being inserted into the database.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">Types of Constraints</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Constraint Types</div>
+                                    <table>
+                                        <tr><th>Constraint</th><th>Purpose</th></tr>
+                                        <tr class="highlight"><td>PRIMARY KEY</td><td>Unique identifier for each row</td></tr>
+                                        <tr class="highlight-blue"><td>FOREIGN KEY</td><td>Links tables together</td></tr>
+                                        <tr class="highlight-yellow"><td>UNIQUE</td><td>No duplicate values</td></tr>
+                                        <tr><td>CHECK</td><td>Validates data values</td></tr>
+                                        <tr><td>DEFAULT</td><td>Sets default value</td></tr>
+                                        <tr><td>NOT NULL</td><td>Prevents NULL values</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use Constraints?</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>Data Integrity:</strong> Ensure data is accurate and consistent</li>
+                        <li><strong>Referential Integrity:</strong> Maintain relationships between tables</li>
+                        <li><strong>Business Rules:</strong> Enforce business logic at database level</li>
+                        <li><strong>Data Quality:</strong> Prevent invalid or inconsistent data entry</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use Constraints?</span>
+                </div>
+                <div class="section-content">
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Constraints - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- PRIMARY KEY: Unique identifier</span>
+<span class="keyword">CREATE TABLE</span> employees (
+    employee_id <span class="keyword">INT PRIMARY KEY</span>,
+    first_name <span class="keyword">VARCHAR</span>(<span class="number">50</span>),
+    last_name <span class="keyword">VARCHAR</span>(<span class="number">50</span>)
+);
+
+<span class="comment">-- Composite PRIMARY KEY</span>
+<span class="keyword">CREATE TABLE</span> order_items (
+    order_id <span class="keyword">INT</span>,
+    product_id <span class="keyword">INT</span>,
+    quantity <span class="keyword">INT</span>,
+    <span class="keyword">PRIMARY KEY</span> (order_id, product_id)
+);
+
+<span class="comment">-- FOREIGN KEY: Referential integrity</span>
+<span class="keyword">CREATE TABLE</span> orders (
+    order_id <span class="keyword">INT PRIMARY KEY</span>,
+    customer_id <span class="keyword">INT</span>,
+    order_date <span class="keyword">DATE</span>,
+    <span class="keyword">FOREIGN KEY</span> (customer_id) <span class="keyword">REFERENCES</span> customers(customer_id)
+        <span class="keyword">ON DELETE CASCADE</span>
+        <span class="keyword">ON UPDATE CASCADE</span>
+);
+
+<span class="comment">-- UNIQUE: No duplicates allowed</span>
+<span class="keyword">CREATE TABLE</span> users (
+    user_id <span class="keyword">INT PRIMARY KEY</span>,
+    email <span class="keyword">VARCHAR</span>(<span class="number">100</span>) <span class="keyword">UNIQUE</span>,
+    username <span class="keyword">VARCHAR</span>(<span class="number">50</span>) <span class="keyword">UNIQUE</span>
+);
+
+<span class="comment">-- CHECK: Validate data values</span>
+<span class="keyword">CREATE TABLE</span> products (
+    product_id <span class="keyword">INT PRIMARY KEY</span>,
+    product_name <span class="keyword">VARCHAR</span>(<span class="number">100</span>),
+    price <span class="keyword">DECIMAL</span>(<span class="number">10</span>,<span class="number">2</span>) <span class="keyword">CHECK</span> (price > <span class="number">0</span>),
+    quantity <span class="keyword">INT CHECK</span> (quantity >= <span class="number">0</span>),
+    status <span class="keyword">VARCHAR</span>(<span class="number">20</span>) <span class="keyword">CHECK</span> (status <span class="keyword">IN</span> (<span class="string">'active'</span>, <span class="string">'inactive'</span>, <span class="string">'discontinued'</span>))
+);
+
+<span class="comment">-- DEFAULT: Set default values</span>
+<span class="keyword">CREATE TABLE</span> orders (
+    order_id <span class="keyword">INT PRIMARY KEY</span>,
+    order_date <span class="keyword">DATE DEFAULT CURRENT_DATE</span>,
+    status <span class="keyword">VARCHAR</span>(<span class="number">20</span>) <span class="keyword">DEFAULT</span> <span class="string">'pending'</span>,
+    created_at <span class="keyword">TIMESTAMP DEFAULT CURRENT_TIMESTAMP</span>
+);
+
+<span class="comment">-- NOT NULL: Prevent NULL values</span>
+<span class="keyword">CREATE TABLE</span> employees (
+    employee_id <span class="keyword">INT PRIMARY KEY</span>,
+    first_name <span class="keyword">VARCHAR</span>(<span class="number">50</span>) <span class="keyword">NOT NULL</span>,
+    last_name <span class="keyword">VARCHAR</span>(<span class="number">50</span>) <span class="keyword">NOT NULL</span>,
+    email <span class="keyword">VARCHAR</span>(<span class="number">100</span>) <span class="keyword">NOT NULL UNIQUE</span>
+);
+
+<span class="comment">-- Adding constraints to existing table</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">ADD CONSTRAINT</span> pk_employee <span class="keyword">PRIMARY KEY</span> (employee_id);
+
+<span class="keyword">ALTER TABLE</span> orders
+<span class="keyword">ADD CONSTRAINT</span> fk_customer 
+    <span class="keyword">FOREIGN KEY</span> (customer_id) <span class="keyword">REFERENCES</span> customers(customer_id);
+
+<span class="keyword">ALTER TABLE</span> products
+<span class="keyword">ADD CONSTRAINT</span> chk_price <span class="keyword">CHECK</span> (price > <span class="number">0</span>);
+
+<span class="comment">-- Dropping constraints</span>
+<span class="keyword">ALTER TABLE</span> orders <span class="keyword">DROP CONSTRAINT</span> fk_customer;
+<span class="keyword">ALTER TABLE</span> products <span class="keyword">DROP CONSTRAINT</span> chk_price;
+                        </pre>
+                    </div>
+
+                    <div class="info-box note">
+                        <span class="icon">📝</span>
+                        <div>
+                            <strong>Foreign Key Actions:</strong>
+                            <ul>
+                                <li><strong>CASCADE:</strong> Delete/update child rows when parent is deleted/updated</li>
+                                <li><strong>SET NULL:</strong> Set child FK to NULL when parent is deleted</li>
+                                <li><strong>SET DEFAULT:</strong> Set child FK to default value</li>
+                                <li><strong>RESTRICT/NO ACTION:</strong> Prevent deletion if children exist</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

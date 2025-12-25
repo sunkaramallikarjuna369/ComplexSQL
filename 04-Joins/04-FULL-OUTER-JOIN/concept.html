@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FULL OUTER JOIN - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>FULL OUTER JOIN</h1>
+            <p class="subtitle">Return All Rows from Both Tables</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Joins</a>
+            <span>›</span>
+            <span>FULL OUTER JOIN</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT is FULL OUTER JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <p>FULL OUTER JOIN returns all rows from both tables. When there's a match, it combines the rows. When there's no match, it returns NULL for the missing side. It's essentially a combination of LEFT JOIN and RIGHT JOIN.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">FULL OUTER JOIN Visualization</div>
+                        <div style="display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap;">
+                            <svg width="300" height="200" viewBox="0 0 300 200">
+                                <!-- Left circle (Table A) - fully highlighted -->
+                                <circle cx="100" cy="100" r="80" fill="rgba(139, 92, 246, 0.9)" stroke="#8b5cf6" stroke-width="3"/>
+                                <!-- Right circle (Table B) - fully highlighted -->
+                                <circle cx="200" cy="100" r="80" fill="rgba(139, 92, 246, 0.9)" stroke="#8b5cf6" stroke-width="3"/>
+                                <!-- Labels -->
+                                <text x="50" y="105" fill="white" font-weight="bold" font-size="14">Table A</text>
+                                <text x="50" y="125" fill="white" font-size="11">(All Rows)</text>
+                                <text x="195" y="105" fill="white" font-weight="bold" font-size="14">Table B</text>
+                                <text x="195" y="125" fill="white" font-size="11">(All Rows)</text>
+                            </svg>
+                            <div style="color: white; text-align: left;">
+                                <p><strong style="color: #a78bfa;">Purple:</strong> All rows from both tables included</p>
+                                <p>Matching rows are combined</p>
+                                <p>Non-matching rows have NULLs</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use FULL OUTER JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>Complete Picture:</strong> See all data from both tables</li>
+                        <li><strong>Data Reconciliation:</strong> Find mismatches between tables</li>
+                        <li><strong>Data Quality:</strong> Identify orphaned records on both sides</li>
+                        <li><strong>Reporting:</strong> Comprehensive reports showing all entities</li>
+                    </ul>
+
+                    <div class="info-box warning">
+                        <span class="icon">⚠️</span>
+                        <div>
+                            <strong>MySQL Note:</strong> MySQL does not support FULL OUTER JOIN directly. You need to simulate it using UNION of LEFT JOIN and RIGHT JOIN.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHERE Section -->
+            <section class="section-4wh where">
+                <div class="section-header">
+                    <span class="icon">🌍</span>
+                    <span>WHERE - RDBMS Syntax Differences</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>RDBMS</th>
+                                <th>Support</th>
+                                <th>Syntax</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>SQL Server</td><td>Native</td><td>FULL OUTER JOIN</td></tr>
+                            <tr><td>Oracle</td><td>Native</td><td>FULL OUTER JOIN</td></tr>
+                            <tr><td>PostgreSQL</td><td>Native</td><td>FULL OUTER JOIN</td></tr>
+                            <tr><td>MySQL</td><td>Simulated</td><td>LEFT JOIN UNION RIGHT JOIN</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use FULL OUTER JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <div class="db-tabs-container">
+                        <div class="db-tabs">
+                            <button class="db-tab active" data-db="standard">SQL Server/Oracle/PostgreSQL</button>
+                            <button class="db-tab" data-db="mysql">MySQL (Workaround)</button>
+                        </div>
+
+                        <div class="db-content active" data-db="standard">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>FULL OUTER JOIN - Native Support</span>
+                                    <span class="db-badge">SQL Server/Oracle/PostgreSQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Basic FULL OUTER JOIN</span>
+<span class="keyword">SELECT</span> 
+    e.first_name,
+    e.last_name,
+    d.department_name
+<span class="keyword">FROM</span> employees e
+<span class="keyword">FULL OUTER JOIN</span> departments d 
+    <span class="keyword">ON</span> e.department_id = d.department_id;
+
+<span class="comment">-- Find all unmatched records</span>
+<span class="keyword">SELECT</span> 
+    e.employee_id,
+    e.first_name,
+    d.department_id,
+    d.department_name
+<span class="keyword">FROM</span> employees e
+<span class="keyword">FULL OUTER JOIN</span> departments d 
+    <span class="keyword">ON</span> e.department_id = d.department_id
+<span class="keyword">WHERE</span> e.employee_id <span class="keyword">IS NULL</span> 
+   <span class="keyword">OR</span> d.department_id <span class="keyword">IS NULL</span>;
+
+<span class="comment">-- Data reconciliation example</span>
+<span class="keyword">SELECT</span> 
+    <span class="function">COALESCE</span>(a.id, b.id) <span class="keyword">AS</span> id,
+    a.value <span class="keyword">AS</span> system_a_value,
+    b.value <span class="keyword">AS</span> system_b_value,
+    <span class="keyword">CASE</span> 
+        <span class="keyword">WHEN</span> a.id <span class="keyword">IS NULL THEN</span> <span class="string">'Missing in A'</span>
+        <span class="keyword">WHEN</span> b.id <span class="keyword">IS NULL THEN</span> <span class="string">'Missing in B'</span>
+        <span class="keyword">WHEN</span> a.value != b.value <span class="keyword">THEN</span> <span class="string">'Value Mismatch'</span>
+        <span class="keyword">ELSE</span> <span class="string">'Match'</span>
+    <span class="keyword">END AS</span> status
+<span class="keyword">FROM</span> system_a a
+<span class="keyword">FULL OUTER JOIN</span> system_b b <span class="keyword">ON</span> a.id = b.id;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="mysql">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>FULL OUTER JOIN - MySQL Workaround</span>
+                                    <span class="db-badge">MySQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- MySQL: Simulate FULL OUTER JOIN using UNION</span>
+<span class="keyword">SELECT</span> 
+    e.first_name,
+    e.last_name,
+    d.department_name
+<span class="keyword">FROM</span> employees e
+<span class="keyword">LEFT JOIN</span> departments d 
+    <span class="keyword">ON</span> e.department_id = d.department_id
+
+<span class="keyword">UNION</span>
+
+<span class="keyword">SELECT</span> 
+    e.first_name,
+    e.last_name,
+    d.department_name
+<span class="keyword">FROM</span> employees e
+<span class="keyword">RIGHT JOIN</span> departments d 
+    <span class="keyword">ON</span> e.department_id = d.department_id
+<span class="keyword">WHERE</span> e.employee_id <span class="keyword">IS NULL</span>;
+
+<span class="comment">-- Alternative using UNION ALL (faster, no duplicate removal)</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> (
+    <span class="keyword">SELECT</span> e.first_name, d.department_name
+    <span class="keyword">FROM</span> employees e
+    <span class="keyword">LEFT JOIN</span> departments d <span class="keyword">ON</span> e.department_id = d.department_id
+    
+    <span class="keyword">UNION ALL</span>
+    
+    <span class="keyword">SELECT</span> e.first_name, d.department_name
+    <span class="keyword">FROM</span> employees e
+    <span class="keyword">RIGHT JOIN</span> departments d <span class="keyword">ON</span> e.department_id = d.department_id
+    <span class="keyword">WHERE</span> e.employee_id <span class="keyword">IS NULL</span>
+) <span class="keyword">AS</span> full_outer_result;
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sample Data Visualization -->
+            <section class="visualization-3d">
+                <div class="title">FULL OUTER JOIN Example with Sample Data</div>
+                <div class="table-3d">
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">employees</div>
+                            <table>
+                                <tr><th>emp_id</th><th>name</th><th>dept_id</th></tr>
+                                <tr class="highlight"><td>1</td><td>John</td><td>10</td></tr>
+                                <tr class="highlight"><td>2</td><td>Jane</td><td>20</td></tr>
+                                <tr class="highlight-yellow"><td>3</td><td>Bob</td><td>NULL</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">departments</div>
+                            <table>
+                                <tr><th>dept_id</th><th>dept_name</th></tr>
+                                <tr class="highlight"><td>10</td><td>Engineering</td></tr>
+                                <tr class="highlight"><td>20</td><td>Marketing</td></tr>
+                                <tr class="highlight-yellow"><td>30</td><td>Finance</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">FULL OUTER JOIN Result</div>
+                            <table>
+                                <tr><th>name</th><th>dept_name</th></tr>
+                                <tr class="highlight"><td>John</td><td>Engineering</td></tr>
+                                <tr class="highlight"><td>Jane</td><td>Marketing</td></tr>
+                                <tr class="highlight-yellow"><td>Bob</td><td>NULL</td></tr>
+                                <tr class="highlight-yellow"><td>NULL</td><td>Finance</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <p style="color: #facc15; text-align: center; margin-top: 20px;">
+                    Note: Both Bob (no dept) AND Finance (no employees) are included with NULLs
+                </p>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

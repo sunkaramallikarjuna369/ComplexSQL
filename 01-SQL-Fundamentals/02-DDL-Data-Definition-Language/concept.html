@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDL - Data Definition Language - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>DDL - Data Definition Language</h1>
+            <p class="subtitle">CREATE, ALTER, DROP, TRUNCATE - Defining Database Structure</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">SQL Fundamentals</a>
+            <span>›</span>
+            <span>DDL</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT is DDL?</span>
+                </div>
+                <div class="section-content">
+                    <p>DDL (Data Definition Language) consists of SQL commands used to define, modify, and delete database structures. These commands affect the schema (structure) of the database, not the data itself.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">DDL Commands Overview</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">CREATE</div>
+                                    <table>
+                                        <tr><th>Creates</th></tr>
+                                        <tr><td>DATABASE</td></tr>
+                                        <tr><td>TABLE</td></tr>
+                                        <tr><td>INDEX</td></tr>
+                                        <tr><td>VIEW</td></tr>
+                                        <tr><td>PROCEDURE</td></tr>
+                                        <tr><td>FUNCTION</td></tr>
+                                        <tr><td>TRIGGER</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">ALTER</div>
+                                    <table>
+                                        <tr><th>Modifies</th></tr>
+                                        <tr><td>ADD Column</td></tr>
+                                        <tr><td>DROP Column</td></tr>
+                                        <tr><td>MODIFY Column</td></tr>
+                                        <tr><td>RENAME Column</td></tr>
+                                        <tr><td>ADD Constraint</td></tr>
+                                        <tr><td>DROP Constraint</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">DROP</div>
+                                    <table>
+                                        <tr><th>Deletes</th></tr>
+                                        <tr><td>DATABASE</td></tr>
+                                        <tr><td>TABLE</td></tr>
+                                        <tr><td>INDEX</td></tr>
+                                        <tr><td>VIEW</td></tr>
+                                        <tr><td>PROCEDURE</td></tr>
+                                        <tr><td>Entire Structure</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">TRUNCATE</div>
+                                    <table>
+                                        <tr><th>Removes</th></tr>
+                                        <tr><td>All Rows</td></tr>
+                                        <tr><td>Keeps Structure</td></tr>
+                                        <tr><td>Resets Identity</td></tr>
+                                        <tr><td>Cannot Rollback</td></tr>
+                                        <tr><td>Faster than DELETE</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use DDL?</span>
+                </div>
+                <div class="section-content">
+                    <p>DDL commands are essential for:</p>
+                    <ul>
+                        <li><strong>Database Design:</strong> Creating the initial structure of your database</li>
+                        <li><strong>Schema Evolution:</strong> Modifying tables as requirements change</li>
+                        <li><strong>Performance Optimization:</strong> Creating indexes for faster queries</li>
+                        <li><strong>Data Integrity:</strong> Defining constraints to ensure data quality</li>
+                        <li><strong>Cleanup:</strong> Removing unused objects to maintain database health</li>
+                    </ul>
+
+                    <div class="info-box warning">
+                        <span class="icon">⚠️</span>
+                        <div>
+                            <strong>Warning:</strong> DDL commands are auto-committed in most databases. They cannot be rolled back! Always backup before making structural changes.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHEN Section -->
+            <section class="section-4wh when">
+                <div class="section-header">
+                    <span class="icon">⏰</span>
+                    <span>WHEN to use DDL?</span>
+                </div>
+                <div class="section-content">
+                    <p>Use DDL commands in these scenarios:</p>
+                    
+                    <div class="flow-diagram">
+                        <div class="flow-step">New Project</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step">CREATE Tables</div>
+                    </div>
+                    <div class="flow-diagram">
+                        <div class="flow-step">New Feature</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step">ALTER Table</div>
+                    </div>
+                    <div class="flow-diagram">
+                        <div class="flow-step">Slow Queries</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step">CREATE Index</div>
+                    </div>
+                    <div class="flow-diagram">
+                        <div class="flow-step">Deprecation</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step">DROP Object</div>
+                    </div>
+                    <div class="flow-diagram">
+                        <div class="flow-step">Reset Data</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-step">TRUNCATE Table</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHERE Section -->
+            <section class="section-4wh where">
+                <div class="section-header">
+                    <span class="icon">🌍</span>
+                    <span>WHERE - RDBMS Syntax Differences</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>SQL Server</th>
+                                <th>Oracle</th>
+                                <th>PostgreSQL</th>
+                                <th>MySQL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Auto Increment</td>
+                                <td>IDENTITY(1,1)</td>
+                                <td>GENERATED AS IDENTITY</td>
+                                <td>SERIAL / GENERATED</td>
+                                <td>AUTO_INCREMENT</td>
+                            </tr>
+                            <tr>
+                                <td>String Type</td>
+                                <td>VARCHAR(n)</td>
+                                <td>VARCHAR2(n)</td>
+                                <td>VARCHAR(n)</td>
+                                <td>VARCHAR(n)</td>
+                            </tr>
+                            <tr>
+                                <td>Modify Column</td>
+                                <td>ALTER COLUMN</td>
+                                <td>MODIFY</td>
+                                <td>ALTER COLUMN</td>
+                                <td>MODIFY COLUMN</td>
+                            </tr>
+                            <tr>
+                                <td>Rename Column</td>
+                                <td>sp_rename</td>
+                                <td>RENAME COLUMN</td>
+                                <td>RENAME COLUMN</td>
+                                <td>CHANGE COLUMN</td>
+                            </tr>
+                            <tr>
+                                <td>IF EXISTS</td>
+                                <td>IF OBJECT_ID</td>
+                                <td>EXCEPTION handling</td>
+                                <td>IF EXISTS</td>
+                                <td>IF EXISTS</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use DDL?</span>
+                </div>
+                <div class="section-content">
+                    <h3>1. CREATE TABLE</h3>
+                    <div class="db-tabs-container">
+                        <div class="db-tabs">
+                            <button class="db-tab active" data-db="sqlserver">SQL Server</button>
+                            <button class="db-tab" data-db="oracle">Oracle</button>
+                            <button class="db-tab" data-db="postgresql">PostgreSQL</button>
+                            <button class="db-tab" data-db="mysql">MySQL</button>
+                        </div>
+
+                        <div class="db-content active" data-db="sqlserver">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>CREATE TABLE - SQL Server</span>
+                                    <span class="db-badge">SQL Server</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Create a new table with various constraints</span>
+<span class="keyword">CREATE TABLE</span> employees (
+    employee_id <span class="keyword">INT</span> <span class="keyword">IDENTITY</span>(<span class="number">1</span>,<span class="number">1</span>) <span class="keyword">PRIMARY KEY</span>,
+    first_name <span class="keyword">VARCHAR</span>(<span class="number">50</span>) <span class="keyword">NOT NULL</span>,
+    last_name <span class="keyword">VARCHAR</span>(<span class="number">50</span>) <span class="keyword">NOT NULL</span>,
+    email <span class="keyword">VARCHAR</span>(<span class="number">100</span>) <span class="keyword">UNIQUE</span>,
+    department_id <span class="keyword">INT</span>,
+    salary <span class="keyword">DECIMAL</span>(<span class="number">10</span>,<span class="number">2</span>) <span class="keyword">CHECK</span> (salary > <span class="number">0</span>),
+    hire_date <span class="keyword">DATE</span> <span class="keyword">DEFAULT</span> <span class="function">GETDATE</span>(),
+    <span class="keyword">CONSTRAINT</span> fk_department 
+        <span class="keyword">FOREIGN KEY</span> (department_id) 
+        <span class="keyword">REFERENCES</span> departments(department_id)
+);
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="oracle">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>CREATE TABLE - Oracle</span>
+                                    <span class="db-badge">Oracle</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Create a new table with various constraints</span>
+<span class="keyword">CREATE TABLE</span> employees (
+    employee_id <span class="keyword">NUMBER</span> <span class="keyword">GENERATED BY DEFAULT AS IDENTITY</span> <span class="keyword">PRIMARY KEY</span>,
+    first_name <span class="keyword">VARCHAR2</span>(<span class="number">50</span>) <span class="keyword">NOT NULL</span>,
+    last_name <span class="keyword">VARCHAR2</span>(<span class="number">50</span>) <span class="keyword">NOT NULL</span>,
+    email <span class="keyword">VARCHAR2</span>(<span class="number">100</span>) <span class="keyword">UNIQUE</span>,
+    department_id <span class="keyword">NUMBER</span>,
+    salary <span class="keyword">NUMBER</span>(<span class="number">10</span>,<span class="number">2</span>) <span class="keyword">CHECK</span> (salary > <span class="number">0</span>),
+    hire_date <span class="keyword">DATE</span> <span class="keyword">DEFAULT</span> <span class="function">SYSDATE</span>,
+    <span class="keyword">CONSTRAINT</span> fk_department 
+        <span class="keyword">FOREIGN KEY</span> (department_id) 
+        <span class="keyword">REFERENCES</span> departments(department_id)
+);
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="postgresql">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>CREATE TABLE - PostgreSQL</span>
+                                    <span class="db-badge">PostgreSQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Create a new table with various constraints</span>
+<span class="keyword">CREATE TABLE</span> employees (
+    employee_id <span class="keyword">SERIAL PRIMARY KEY</span>,
+    first_name <span class="keyword">VARCHAR</span>(<span class="number">50</span>) <span class="keyword">NOT NULL</span>,
+    last_name <span class="keyword">VARCHAR</span>(<span class="number">50</span>) <span class="keyword">NOT NULL</span>,
+    email <span class="keyword">VARCHAR</span>(<span class="number">100</span>) <span class="keyword">UNIQUE</span>,
+    department_id <span class="keyword">INT</span>,
+    salary <span class="keyword">DECIMAL</span>(<span class="number">10</span>,<span class="number">2</span>) <span class="keyword">CHECK</span> (salary > <span class="number">0</span>),
+    hire_date <span class="keyword">DATE</span> <span class="keyword">DEFAULT</span> <span class="function">CURRENT_DATE</span>,
+    <span class="keyword">CONSTRAINT</span> fk_department 
+        <span class="keyword">FOREIGN KEY</span> (department_id) 
+        <span class="keyword">REFERENCES</span> departments(department_id)
+);
+
+<span class="comment">-- Alternative with GENERATED ALWAYS</span>
+<span class="keyword">CREATE TABLE</span> employees_v2 (
+    employee_id <span class="keyword">INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY</span>,
+    <span class="comment">-- ... other columns</span>
+);
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="mysql">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>CREATE TABLE - MySQL</span>
+                                    <span class="db-badge">MySQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Create a new table with various constraints</span>
+<span class="keyword">CREATE TABLE</span> employees (
+    employee_id <span class="keyword">INT AUTO_INCREMENT PRIMARY KEY</span>,
+    first_name <span class="keyword">VARCHAR</span>(<span class="number">50</span>) <span class="keyword">NOT NULL</span>,
+    last_name <span class="keyword">VARCHAR</span>(<span class="number">50</span>) <span class="keyword">NOT NULL</span>,
+    email <span class="keyword">VARCHAR</span>(<span class="number">100</span>) <span class="keyword">UNIQUE</span>,
+    department_id <span class="keyword">INT</span>,
+    salary <span class="keyword">DECIMAL</span>(<span class="number">10</span>,<span class="number">2</span>) <span class="keyword">CHECK</span> (salary > <span class="number">0</span>),
+    hire_date <span class="keyword">DATE</span> <span class="keyword">DEFAULT</span> (<span class="function">CURRENT_DATE</span>),
+    <span class="keyword">CONSTRAINT</span> fk_department 
+        <span class="keyword">FOREIGN KEY</span> (department_id) 
+        <span class="keyword">REFERENCES</span> departments(department_id)
+) <span class="keyword">ENGINE</span>=InnoDB;
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>2. ALTER TABLE</h3>
+                    <div class="db-tabs-container">
+                        <div class="db-tabs">
+                            <button class="db-tab active" data-db="sqlserver2">SQL Server</button>
+                            <button class="db-tab" data-db="oracle2">Oracle</button>
+                            <button class="db-tab" data-db="postgresql2">PostgreSQL</button>
+                            <button class="db-tab" data-db="mysql2">MySQL</button>
+                        </div>
+
+                        <div class="db-content active" data-db="sqlserver2">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>ALTER TABLE - SQL Server</span>
+                                    <span class="db-badge">SQL Server</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Add a new column</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">ADD</span> phone_number <span class="keyword">VARCHAR</span>(<span class="number">20</span>);
+
+<span class="comment">-- Modify column data type</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">ALTER COLUMN</span> phone_number <span class="keyword">VARCHAR</span>(<span class="number">30</span>);
+
+<span class="comment">-- Drop a column</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">DROP COLUMN</span> phone_number;
+
+<span class="comment">-- Rename a column</span>
+<span class="keyword">EXEC</span> sp_rename <span class="string">'employees.email'</span>, <span class="string">'email_address'</span>, <span class="string">'COLUMN'</span>;
+
+<span class="comment">-- Add a constraint</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">ADD CONSTRAINT</span> chk_salary <span class="keyword">CHECK</span> (salary >= <span class="number">0</span>);
+
+<span class="comment">-- Drop a constraint</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">DROP CONSTRAINT</span> chk_salary;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="oracle2">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>ALTER TABLE - Oracle</span>
+                                    <span class="db-badge">Oracle</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Add a new column</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">ADD</span> phone_number <span class="keyword">VARCHAR2</span>(<span class="number">20</span>);
+
+<span class="comment">-- Modify column data type</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">MODIFY</span> phone_number <span class="keyword">VARCHAR2</span>(<span class="number">30</span>);
+
+<span class="comment">-- Drop a column</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">DROP COLUMN</span> phone_number;
+
+<span class="comment">-- Rename a column</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">RENAME COLUMN</span> email <span class="keyword">TO</span> email_address;
+
+<span class="comment">-- Add a constraint</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">ADD CONSTRAINT</span> chk_salary <span class="keyword">CHECK</span> (salary >= <span class="number">0</span>);
+
+<span class="comment">-- Drop a constraint</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">DROP CONSTRAINT</span> chk_salary;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="postgresql2">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>ALTER TABLE - PostgreSQL</span>
+                                    <span class="db-badge">PostgreSQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Add a new column</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">ADD COLUMN</span> phone_number <span class="keyword">VARCHAR</span>(<span class="number">20</span>);
+
+<span class="comment">-- Modify column data type</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">ALTER COLUMN</span> phone_number <span class="keyword">TYPE VARCHAR</span>(<span class="number">30</span>);
+
+<span class="comment">-- Drop a column</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">DROP COLUMN</span> phone_number;
+
+<span class="comment">-- Rename a column</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">RENAME COLUMN</span> email <span class="keyword">TO</span> email_address;
+
+<span class="comment">-- Add a constraint</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">ADD CONSTRAINT</span> chk_salary <span class="keyword">CHECK</span> (salary >= <span class="number">0</span>);
+
+<span class="comment">-- Drop a constraint</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">DROP CONSTRAINT</span> chk_salary;
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div class="db-content" data-db="mysql2">
+                            <div class="sql-container">
+                                <div class="sql-header">
+                                    <span>ALTER TABLE - MySQL</span>
+                                    <span class="db-badge">MySQL</span>
+                                </div>
+                                <pre class="sql-code">
+<span class="comment">-- Add a new column</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">ADD COLUMN</span> phone_number <span class="keyword">VARCHAR</span>(<span class="number">20</span>);
+
+<span class="comment">-- Modify column data type</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">MODIFY COLUMN</span> phone_number <span class="keyword">VARCHAR</span>(<span class="number">30</span>);
+
+<span class="comment">-- Drop a column</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">DROP COLUMN</span> phone_number;
+
+<span class="comment">-- Rename a column</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">CHANGE COLUMN</span> email email_address <span class="keyword">VARCHAR</span>(<span class="number">100</span>);
+
+<span class="comment">-- Add a constraint</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">ADD CONSTRAINT</span> chk_salary <span class="keyword">CHECK</span> (salary >= <span class="number">0</span>);
+
+<span class="comment">-- Drop a constraint</span>
+<span class="keyword">ALTER TABLE</span> employees
+<span class="keyword">DROP CONSTRAINT</span> chk_salary;
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>3. DROP and TRUNCATE</h3>
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>DROP and TRUNCATE - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- DROP TABLE - Removes table and all data permanently</span>
+<span class="keyword">DROP TABLE</span> employees;
+
+<span class="comment">-- DROP TABLE IF EXISTS (PostgreSQL, MySQL)</span>
+<span class="keyword">DROP TABLE IF EXISTS</span> employees;
+
+<span class="comment">-- DROP TABLE with CASCADE (removes dependent objects)</span>
+<span class="keyword">DROP TABLE</span> employees <span class="keyword">CASCADE</span>;
+
+<span class="comment">-- TRUNCATE - Removes all data but keeps structure</span>
+<span class="keyword">TRUNCATE TABLE</span> employees;
+
+<span class="comment">-- TRUNCATE with RESTART IDENTITY (PostgreSQL)</span>
+<span class="keyword">TRUNCATE TABLE</span> employees <span class="keyword">RESTART IDENTITY</span>;
+                        </pre>
+                    </div>
+
+                    <div class="info-box note">
+                        <span class="icon">📝</span>
+                        <div>
+                            <strong>DROP vs TRUNCATE vs DELETE:</strong>
+                            <ul>
+                                <li><strong>DROP:</strong> Removes table structure and data completely</li>
+                                <li><strong>TRUNCATE:</strong> Removes all data, keeps structure, resets identity, cannot be rolled back</li>
+                                <li><strong>DELETE:</strong> Removes data row by row, can be rolled back, can use WHERE clause</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Visual Comparison -->
+            <section class="visualization-3d">
+                <div class="title">DDL Operations Visualization</div>
+                <div class="table-3d">
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">Before CREATE</div>
+                            <table>
+                                <tr><th colspan="2">No Table Exists</th></tr>
+                                <tr><td colspan="2" style="text-align:center; color:#ef4444;">Empty Database</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">After CREATE</div>
+                            <table>
+                                <tr><th>id</th><th>name</th></tr>
+                                <tr class="highlight"><td>-</td><td>-</td></tr>
+                                <tr><td colspan="2" style="text-align:center; color:#10b981;">Structure Created</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">After ALTER (Add Column)</div>
+                            <table>
+                                <tr><th>id</th><th>name</th><th class="highlight-blue">email</th></tr>
+                                <tr><td>-</td><td>-</td><td class="highlight-blue">-</td></tr>
+                                <tr><td colspan="3" style="text-align:center; color:#3b82f6;">New Column Added</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

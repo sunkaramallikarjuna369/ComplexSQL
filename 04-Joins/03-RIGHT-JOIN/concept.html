@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIGHT JOIN - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>RIGHT JOIN (RIGHT OUTER JOIN)</h1>
+            <p class="subtitle">Return All Rows from Right Table with Matching Rows from Left</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Joins</a>
+            <span>›</span>
+            <span>RIGHT JOIN</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT is RIGHT JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <p>RIGHT JOIN (or RIGHT OUTER JOIN) returns all rows from the right table and the matching rows from the left table. If there's no match, NULL values are returned for columns from the left table. It's the mirror image of LEFT JOIN.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">RIGHT JOIN Visualization</div>
+                        <div style="display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap;">
+                            <svg width="300" height="200" viewBox="0 0 300 200">
+                                <!-- Left circle (Table A) - faded -->
+                                <circle cx="100" cy="100" r="80" fill="rgba(59, 130, 246, 0.3)" stroke="#3b82f6" stroke-width="2"/>
+                                <!-- Right circle (Table B) - fully highlighted -->
+                                <circle cx="200" cy="100" r="80" fill="rgba(139, 92, 246, 0.9)" stroke="#8b5cf6" stroke-width="3"/>
+                                <!-- Intersection overlay -->
+                                <path d="M150,34.02 A80,80 0 0,1 150,165.98 A80,80 0 0,1 150,34.02" fill="rgba(139, 92, 246, 0.9)" stroke="#8b5cf6" stroke-width="2"/>
+                                <!-- Labels -->
+                                <text x="60" y="105" fill="white" font-weight="bold" font-size="14">Table A</text>
+                                <text x="195" y="105" fill="white" font-weight="bold" font-size="14">Table B</text>
+                                <text x="195" y="125" fill="white" font-size="11">(All Rows)</text>
+                            </svg>
+                            <div style="color: white; text-align: left;">
+                                <p><strong style="color: #60a5fa;">Blue (faded):</strong> Non-matching Table A rows (excluded)</p>
+                                <p><strong style="color: #a78bfa;">Purple:</strong> All rows from Table B (included)</p>
+                                <p><strong style="color: #a78bfa;">Purple Center:</strong> Matching rows from both</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use RIGHT JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>Preserve All Right Data:</strong> Keep all records from the secondary table</li>
+                        <li><strong>Alternative to LEFT JOIN:</strong> Can be rewritten as LEFT JOIN by swapping tables</li>
+                        <li><strong>Readability:</strong> Sometimes makes query logic clearer</li>
+                        <li><strong>Legacy Code:</strong> May encounter in existing codebases</li>
+                    </ul>
+
+                    <div class="info-box note">
+                        <span class="icon">📝</span>
+                        <div>
+                            <strong>Note:</strong> RIGHT JOIN is less commonly used than LEFT JOIN. Most developers prefer to rewrite RIGHT JOINs as LEFT JOINs by swapping the table order for consistency.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use RIGHT JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>RIGHT JOIN - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Basic RIGHT JOIN</span>
+<span class="keyword">SELECT</span> 
+    e.first_name,
+    d.department_name
+<span class="keyword">FROM</span> employees e
+<span class="keyword">RIGHT JOIN</span> departments d 
+    <span class="keyword">ON</span> e.department_id = d.department_id;
+
+<span class="comment">-- Find departments with no employees</span>
+<span class="keyword">SELECT</span> 
+    d.department_id,
+    d.department_name
+<span class="keyword">FROM</span> employees e
+<span class="keyword">RIGHT JOIN</span> departments d 
+    <span class="keyword">ON</span> e.department_id = d.department_id
+<span class="keyword">WHERE</span> e.employee_id <span class="keyword">IS NULL</span>;
+
+<span class="comment">-- Equivalent LEFT JOIN (preferred style)</span>
+<span class="keyword">SELECT</span> 
+    d.department_id,
+    d.department_name
+<span class="keyword">FROM</span> departments d
+<span class="keyword">LEFT JOIN</span> employees e 
+    <span class="keyword">ON</span> d.department_id = e.department_id
+<span class="keyword">WHERE</span> e.employee_id <span class="keyword">IS NULL</span>;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sample Data Visualization -->
+            <section class="visualization-3d">
+                <div class="title">RIGHT JOIN Example with Sample Data</div>
+                <div class="table-3d">
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">employees (LEFT)</div>
+                            <table>
+                                <tr><th>emp_id</th><th>name</th><th>dept_id</th></tr>
+                                <tr class="highlight"><td>1</td><td>John</td><td>10</td></tr>
+                                <tr class="highlight"><td>2</td><td>Jane</td><td>20</td></tr>
+                                <tr class="highlight-red"><td>3</td><td>Bob</td><td>NULL</td></tr>
+                                <tr class="highlight"><td>4</td><td>Alice</td><td>10</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">departments (RIGHT)</div>
+                            <table>
+                                <tr><th>dept_id</th><th>dept_name</th></tr>
+                                <tr class="highlight"><td>10</td><td>Engineering</td></tr>
+                                <tr class="highlight"><td>20</td><td>Marketing</td></tr>
+                                <tr class="highlight-yellow"><td>30</td><td>Finance</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-3d-wrapper">
+                        <div class="table-visual">
+                            <div class="table-name">RIGHT JOIN Result</div>
+                            <table>
+                                <tr><th>name</th><th>dept_name</th></tr>
+                                <tr class="highlight"><td>John</td><td>Engineering</td></tr>
+                                <tr class="highlight"><td>Alice</td><td>Engineering</td></tr>
+                                <tr class="highlight"><td>Jane</td><td>Marketing</td></tr>
+                                <tr class="highlight-yellow"><td>NULL</td><td>Finance</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <p style="color: #facc15; text-align: center; margin-top: 20px;">
+                    Note: Finance dept is included with NULL employee. Bob (no dept) is excluded.
+                </p>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subqueries - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Subqueries</h1>
+            <p class="subtitle">Queries Within Queries - Scalar, Row, Table, Correlated</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Subqueries</a>
+            <span>›</span>
+            <span>Overview</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT are Subqueries?</span>
+                </div>
+                <div class="section-content">
+                    <p>A subquery is a query nested inside another query. It can appear in SELECT, FROM, WHERE, or HAVING clauses. Subqueries are executed first, and their results are used by the outer query.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">Types of Subqueries</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Scalar Subquery</div>
+                                    <table>
+                                        <tr><th>Returns</th></tr>
+                                        <tr class="highlight"><td>Single Value</td></tr>
+                                        <tr><td>One row, one column</td></tr>
+                                        <tr><td>Used in SELECT, WHERE</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Row Subquery</div>
+                                    <table>
+                                        <tr><th>Returns</th></tr>
+                                        <tr class="highlight-blue"><td>Single Row</td></tr>
+                                        <tr><td>One row, multiple columns</td></tr>
+                                        <tr><td>Used with row comparisons</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Table Subquery</div>
+                                    <table>
+                                        <tr><th>Returns</th></tr>
+                                        <tr class="highlight-yellow"><td>Multiple Rows</td></tr>
+                                        <tr><td>Multiple rows/columns</td></tr>
+                                        <tr><td>Used in FROM, IN, EXISTS</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Correlated</div>
+                                    <table>
+                                        <tr><th>Returns</th></tr>
+                                        <tr class="highlight-red"><td>Depends on Outer</td></tr>
+                                        <tr><td>References outer query</td></tr>
+                                        <tr><td>Executed per row</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use Subqueries?</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>Filter Based on Aggregates:</strong> Find rows above/below average</li>
+                        <li><strong>Existence Checks:</strong> Check if related data exists</li>
+                        <li><strong>Dynamic Values:</strong> Use calculated values in comparisons</li>
+                        <li><strong>Complex Logic:</strong> Break down complex queries into steps</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use Subqueries?</span>
+                </div>
+                <div class="section-content">
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Subquery Types - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- 1. SCALAR SUBQUERY (returns single value)</span>
+<span class="comment">-- In SELECT clause</span>
+<span class="keyword">SELECT</span> 
+    first_name,
+    salary,
+    (<span class="keyword">SELECT</span> <span class="function">AVG</span>(salary) <span class="keyword">FROM</span> employees) <span class="keyword">AS</span> avg_salary,
+    salary - (<span class="keyword">SELECT</span> <span class="function">AVG</span>(salary) <span class="keyword">FROM</span> employees) <span class="keyword">AS</span> diff
+<span class="keyword">FROM</span> employees;
+
+<span class="comment">-- In WHERE clause</span>
+<span class="keyword">SELECT</span> first_name, salary
+<span class="keyword">FROM</span> employees
+<span class="keyword">WHERE</span> salary > (<span class="keyword">SELECT</span> <span class="function">AVG</span>(salary) <span class="keyword">FROM</span> employees);
+
+<span class="comment">-- 2. TABLE SUBQUERY with IN</span>
+<span class="keyword">SELECT</span> first_name, department_id
+<span class="keyword">FROM</span> employees
+<span class="keyword">WHERE</span> department_id <span class="keyword">IN</span> (
+    <span class="keyword">SELECT</span> department_id 
+    <span class="keyword">FROM</span> departments 
+    <span class="keyword">WHERE</span> location_id = <span class="number">1700</span>
+);
+
+<span class="comment">-- 3. TABLE SUBQUERY with NOT IN</span>
+<span class="keyword">SELECT</span> department_name
+<span class="keyword">FROM</span> departments
+<span class="keyword">WHERE</span> department_id <span class="keyword">NOT IN</span> (
+    <span class="keyword">SELECT DISTINCT</span> department_id 
+    <span class="keyword">FROM</span> employees 
+    <span class="keyword">WHERE</span> department_id <span class="keyword">IS NOT NULL</span>
+);
+
+<span class="comment">-- 4. EXISTS (checks for existence)</span>
+<span class="keyword">SELECT</span> d.department_name
+<span class="keyword">FROM</span> departments d
+<span class="keyword">WHERE EXISTS</span> (
+    <span class="keyword">SELECT</span> <span class="number">1</span> 
+    <span class="keyword">FROM</span> employees e 
+    <span class="keyword">WHERE</span> e.department_id = d.department_id
+);
+
+<span class="comment">-- 5. NOT EXISTS</span>
+<span class="keyword">SELECT</span> d.department_name
+<span class="keyword">FROM</span> departments d
+<span class="keyword">WHERE NOT EXISTS</span> (
+    <span class="keyword">SELECT</span> <span class="number">1</span> 
+    <span class="keyword">FROM</span> employees e 
+    <span class="keyword">WHERE</span> e.department_id = d.department_id
+);
+
+<span class="comment">-- 6. CORRELATED SUBQUERY (references outer query)</span>
+<span class="keyword">SELECT</span> 
+    e.first_name,
+    e.salary,
+    e.department_id
+<span class="keyword">FROM</span> employees e
+<span class="keyword">WHERE</span> e.salary > (
+    <span class="keyword">SELECT</span> <span class="function">AVG</span>(e2.salary) 
+    <span class="keyword">FROM</span> employees e2 
+    <span class="keyword">WHERE</span> e2.department_id = e.department_id
+);
+
+<span class="comment">-- 7. SUBQUERY in FROM clause (Derived Table)</span>
+<span class="keyword">SELECT</span> 
+    dept_stats.department_id,
+    dept_stats.avg_salary,
+    dept_stats.emp_count
+<span class="keyword">FROM</span> (
+    <span class="keyword">SELECT</span> 
+        department_id,
+        <span class="function">AVG</span>(salary) <span class="keyword">AS</span> avg_salary,
+        <span class="function">COUNT</span>(*) <span class="keyword">AS</span> emp_count
+    <span class="keyword">FROM</span> employees
+    <span class="keyword">GROUP BY</span> department_id
+) <span class="keyword">AS</span> dept_stats
+<span class="keyword">WHERE</span> dept_stats.emp_count > <span class="number">5</span>;
+
+<span class="comment">-- 8. ALL operator</span>
+<span class="keyword">SELECT</span> first_name, salary
+<span class="keyword">FROM</span> employees
+<span class="keyword">WHERE</span> salary > <span class="keyword">ALL</span> (
+    <span class="keyword">SELECT</span> salary 
+    <span class="keyword">FROM</span> employees 
+    <span class="keyword">WHERE</span> department_id = <span class="number">50</span>
+);
+
+<span class="comment">-- 9. ANY/SOME operator</span>
+<span class="keyword">SELECT</span> first_name, salary
+<span class="keyword">FROM</span> employees
+<span class="keyword">WHERE</span> salary > <span class="keyword">ANY</span> (
+    <span class="keyword">SELECT</span> salary 
+    <span class="keyword">FROM</span> employees 
+    <span class="keyword">WHERE</span> department_id = <span class="number">50</span>
+);
+                        </pre>
+                    </div>
+
+                    <div class="info-box tip">
+                        <span class="icon">💡</span>
+                        <div>
+                            <strong>Performance Tip:</strong> EXISTS is often faster than IN for large datasets because it stops as soon as it finds a match. Correlated subqueries can be slow as they execute once per row - consider rewriting as JOINs when possible.
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

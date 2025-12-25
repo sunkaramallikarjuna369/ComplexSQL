@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Interview Questions - Hard - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>SQL Interview Questions - Hard</h1>
+            <p class="subtitle">Advanced Level Questions - FAANG Interview Style</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Interview Questions</a>
+            <span>›</span>
+            <span>Hard</span>
+        </nav>
+
+        <main class="content">
+            <!-- Question 1 -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">❓</span>
+                    <span>Q1: Trips and Users - Cancellation Rate</span>
+                </div>
+                <div class="section-content">
+                    <p><strong>Problem:</strong> Find the cancellation rate of requests with unbanned users (both client and driver must be unbanned) each day between "2013-10-01" and "2013-10-03". Round to 2 decimal places.</p>
+                    
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Solution</span>
+                            <span class="db-badge">All RDBMS</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Solution: Calculate cancellation rate per day</span>
+<span class="keyword">SELECT</span> 
+    t.request_at <span class="keyword">AS</span> Day,
+    <span class="function">ROUND</span>(
+        <span class="function">SUM</span>(<span class="keyword">CASE WHEN</span> t.status <span class="keyword">LIKE</span> <span class="string">'cancelled%'</span> <span class="keyword">THEN</span> <span class="number">1</span> <span class="keyword">ELSE</span> <span class="number">0</span> <span class="keyword">END</span>) * <span class="number">1.0</span> 
+        / <span class="function">COUNT</span>(*), 
+        <span class="number">2</span>
+    ) <span class="keyword">AS</span> <span class="string">'Cancellation Rate'</span>
+<span class="keyword">FROM</span> Trips t
+<span class="keyword">JOIN</span> Users c <span class="keyword">ON</span> t.client_id = c.users_id <span class="keyword">AND</span> c.banned = <span class="string">'No'</span>
+<span class="keyword">JOIN</span> Users d <span class="keyword">ON</span> t.driver_id = d.users_id <span class="keyword">AND</span> d.banned = <span class="string">'No'</span>
+<span class="keyword">WHERE</span> t.request_at <span class="keyword">BETWEEN</span> <span class="string">'2013-10-01'</span> <span class="keyword">AND</span> <span class="string">'2013-10-03'</span>
+<span class="keyword">GROUP BY</span> t.request_at;
+
+<span class="comment">-- Alternative with CTE</span>
+<span class="keyword">WITH</span> valid_trips <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        t.request_at,
+        t.status
+    <span class="keyword">FROM</span> Trips t
+    <span class="keyword">WHERE</span> t.client_id <span class="keyword">NOT IN</span> (<span class="keyword">SELECT</span> users_id <span class="keyword">FROM</span> Users <span class="keyword">WHERE</span> banned = <span class="string">'Yes'</span>)
+      <span class="keyword">AND</span> t.driver_id <span class="keyword">NOT IN</span> (<span class="keyword">SELECT</span> users_id <span class="keyword">FROM</span> Users <span class="keyword">WHERE</span> banned = <span class="string">'Yes'</span>)
+      <span class="keyword">AND</span> t.request_at <span class="keyword">BETWEEN</span> <span class="string">'2013-10-01'</span> <span class="keyword">AND</span> <span class="string">'2013-10-03'</span>
+)
+<span class="keyword">SELECT</span> 
+    request_at <span class="keyword">AS</span> Day,
+    <span class="function">ROUND</span>(
+        <span class="function">AVG</span>(<span class="keyword">CASE WHEN</span> status != <span class="string">'completed'</span> <span class="keyword">THEN</span> <span class="number">1.0</span> <span class="keyword">ELSE</span> <span class="number">0.0</span> <span class="keyword">END</span>), 
+        <span class="number">2</span>
+    ) <span class="keyword">AS</span> <span class="string">'Cancellation Rate'</span>
+<span class="keyword">FROM</span> valid_trips
+<span class="keyword">GROUP BY</span> request_at;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Question 2 -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">❓</span>
+                    <span>Q2: Human Traffic of Stadium</span>
+                </div>
+                <div class="section-content">
+                    <p><strong>Problem:</strong> Display records with three or more consecutive rows with people >= 100. Return the result ordered by visit_date in ascending order.</p>
+                    
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Solution</span>
+                            <span class="db-badge">All RDBMS</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Solution using window functions</span>
+<span class="keyword">WITH</span> high_traffic <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        id,
+        visit_date,
+        people,
+        id - <span class="function">ROW_NUMBER</span>() <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> id) <span class="keyword">AS</span> grp
+    <span class="keyword">FROM</span> Stadium
+    <span class="keyword">WHERE</span> people >= <span class="number">100</span>
+),
+consecutive_groups <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        grp,
+        <span class="function">COUNT</span>(*) <span class="keyword">AS</span> cnt
+    <span class="keyword">FROM</span> high_traffic
+    <span class="keyword">GROUP BY</span> grp
+    <span class="keyword">HAVING</span> <span class="function">COUNT</span>(*) >= <span class="number">3</span>
+)
+<span class="keyword">SELECT</span> 
+    h.id,
+    h.visit_date,
+    h.people
+<span class="keyword">FROM</span> high_traffic h
+<span class="keyword">JOIN</span> consecutive_groups c <span class="keyword">ON</span> h.grp = c.grp
+<span class="keyword">ORDER BY</span> h.visit_date;
+
+<span class="comment">-- Alternative using self-join</span>
+<span class="keyword">SELECT DISTINCT</span> s1.*
+<span class="keyword">FROM</span> Stadium s1, Stadium s2, Stadium s3
+<span class="keyword">WHERE</span> s1.people >= <span class="number">100</span> <span class="keyword">AND</span> s2.people >= <span class="number">100</span> <span class="keyword">AND</span> s3.people >= <span class="number">100</span>
+  <span class="keyword">AND</span> (
+    (s1.id = s2.id - <span class="number">1</span> <span class="keyword">AND</span> s2.id = s3.id - <span class="number">1</span>) <span class="keyword">OR</span>
+    (s1.id = s2.id + <span class="number">1</span> <span class="keyword">AND</span> s1.id = s3.id - <span class="number">1</span>) <span class="keyword">OR</span>
+    (s1.id = s2.id + <span class="number">1</span> <span class="keyword">AND</span> s2.id = s3.id + <span class="number">1</span>)
+  )
+<span class="keyword">ORDER BY</span> s1.visit_date;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Question 3 -->
+            <section class="section-4wh when">
+                <div class="section-header">
+                    <span class="icon">❓</span>
+                    <span>Q3: Median Employee Salary</span>
+                </div>
+                <div class="section-content">
+                    <p><strong>Problem:</strong> Find the median salary of each company. If there are even number of employees, return both middle values.</p>
+                    
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Solution</span>
+                            <span class="db-badge">All RDBMS</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Solution using ROW_NUMBER and COUNT</span>
+<span class="keyword">WITH</span> ranked <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        id,
+        company,
+        salary,
+        <span class="function">ROW_NUMBER</span>() <span class="keyword">OVER</span> (<span class="keyword">PARTITION BY</span> company <span class="keyword">ORDER BY</span> salary, id) <span class="keyword">AS</span> rn,
+        <span class="function">COUNT</span>(*) <span class="keyword">OVER</span> (<span class="keyword">PARTITION BY</span> company) <span class="keyword">AS</span> cnt
+    <span class="keyword">FROM</span> Employee
+)
+<span class="keyword">SELECT</span> 
+    id,
+    company,
+    salary
+<span class="keyword">FROM</span> ranked
+<span class="keyword">WHERE</span> rn <span class="keyword">BETWEEN</span> cnt/<span class="number">2.0</span> <span class="keyword">AND</span> cnt/<span class="number">2.0</span> + <span class="number">1</span>;
+
+<span class="comment">-- Alternative approach</span>
+<span class="keyword">WITH</span> ranked <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        id,
+        company,
+        salary,
+        <span class="function">ROW_NUMBER</span>() <span class="keyword">OVER</span> (<span class="keyword">PARTITION BY</span> company <span class="keyword">ORDER BY</span> salary <span class="keyword">ASC</span>, id <span class="keyword">ASC</span>) <span class="keyword">AS</span> rn_asc,
+        <span class="function">ROW_NUMBER</span>() <span class="keyword">OVER</span> (<span class="keyword">PARTITION BY</span> company <span class="keyword">ORDER BY</span> salary <span class="keyword">DESC</span>, id <span class="keyword">DESC</span>) <span class="keyword">AS</span> rn_desc
+    <span class="keyword">FROM</span> Employee
+)
+<span class="keyword">SELECT</span> id, company, salary
+<span class="keyword">FROM</span> ranked
+<span class="keyword">WHERE</span> <span class="function">ABS</span>(rn_asc - rn_desc) <= <span class="number">1</span>
+<span class="keyword">ORDER BY</span> company, salary;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Question 4 -->
+            <section class="section-4wh where">
+                <div class="section-header">
+                    <span class="icon">❓</span>
+                    <span>Q4: Department Budget - Running Total</span>
+                </div>
+                <div class="section-content">
+                    <p><strong>Problem:</strong> Calculate the running total of department budgets and find departments where the cumulative budget exceeds a threshold.</p>
+                    
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Solution</span>
+                            <span class="db-badge">All RDBMS</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Running total with window function</span>
+<span class="keyword">SELECT</span> 
+    department_id,
+    department_name,
+    budget,
+    <span class="function">SUM</span>(budget) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> department_id) <span class="keyword">AS</span> running_total,
+    <span class="function">AVG</span>(budget) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> department_id 
+        <span class="keyword">ROWS BETWEEN</span> <span class="number">2</span> <span class="keyword">PRECEDING AND CURRENT ROW</span>) <span class="keyword">AS</span> moving_avg_3
+<span class="keyword">FROM</span> departments
+<span class="keyword">ORDER BY</span> department_id;
+
+<span class="comment">-- Find first department where cumulative exceeds threshold</span>
+<span class="keyword">WITH</span> cumulative <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        department_id,
+        department_name,
+        budget,
+        <span class="function">SUM</span>(budget) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> budget <span class="keyword">DESC</span>) <span class="keyword">AS</span> running_total
+    <span class="keyword">FROM</span> departments
+)
+<span class="keyword">SELECT</span> *
+<span class="keyword">FROM</span> cumulative
+<span class="keyword">WHERE</span> running_total <= <span class="number">1000000</span>
+<span class="keyword">ORDER BY</span> budget <span class="keyword">DESC</span>;
+
+<span class="comment">-- Year-over-year budget comparison</span>
+<span class="keyword">SELECT</span> 
+    department_id,
+    fiscal_year,
+    budget,
+    <span class="function">LAG</span>(budget) <span class="keyword">OVER</span> (<span class="keyword">PARTITION BY</span> department_id <span class="keyword">ORDER BY</span> fiscal_year) <span class="keyword">AS</span> prev_year_budget,
+    budget - <span class="function">LAG</span>(budget) <span class="keyword">OVER</span> (<span class="keyword">PARTITION BY</span> department_id <span class="keyword">ORDER BY</span> fiscal_year) <span class="keyword">AS</span> yoy_change,
+    <span class="function">ROUND</span>(<span class="number">100.0</span> * (budget - <span class="function">LAG</span>(budget) <span class="keyword">OVER</span> (<span class="keyword">PARTITION BY</span> department_id <span class="keyword">ORDER BY</span> fiscal_year)) 
+        / <span class="function">NULLIF</span>(<span class="function">LAG</span>(budget) <span class="keyword">OVER</span> (<span class="keyword">PARTITION BY</span> department_id <span class="keyword">ORDER BY</span> fiscal_year), <span class="number">0</span>), <span class="number">2</span>) <span class="keyword">AS</span> yoy_pct_change
+<span class="keyword">FROM</span> department_budgets;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Question 5 -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">❓</span>
+                    <span>Q5: Find Gaps in Sequences</span>
+                </div>
+                <div class="section-content">
+                    <p><strong>Problem:</strong> Find all gaps in a sequence of IDs. Return the start and end of each gap.</p>
+                    
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Solution</span>
+                            <span class="db-badge">All RDBMS</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Find gaps in sequence</span>
+<span class="keyword">WITH</span> gaps <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        id,
+        <span class="function">LEAD</span>(id) <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> id) <span class="keyword">AS</span> next_id
+    <span class="keyword">FROM</span> sequence_table
+)
+<span class="keyword">SELECT</span> 
+    id + <span class="number">1</span> <span class="keyword">AS</span> gap_start,
+    next_id - <span class="number">1</span> <span class="keyword">AS</span> gap_end
+<span class="keyword">FROM</span> gaps
+<span class="keyword">WHERE</span> next_id - id > <span class="number">1</span>;
+
+<span class="comment">-- Find islands (consecutive sequences)</span>
+<span class="keyword">WITH</span> islands <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        id,
+        id - <span class="function">ROW_NUMBER</span>() <span class="keyword">OVER</span> (<span class="keyword">ORDER BY</span> id) <span class="keyword">AS</span> grp
+    <span class="keyword">FROM</span> sequence_table
+)
+<span class="keyword">SELECT</span> 
+    <span class="function">MIN</span>(id) <span class="keyword">AS</span> island_start,
+    <span class="function">MAX</span>(id) <span class="keyword">AS</span> island_end,
+    <span class="function">COUNT</span>(*) <span class="keyword">AS</span> island_size
+<span class="keyword">FROM</span> islands
+<span class="keyword">GROUP BY</span> grp
+<span class="keyword">ORDER BY</span> island_start;
+
+<span class="comment">-- Find missing dates in a date range</span>
+<span class="keyword">WITH RECURSIVE</span> date_range <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> <span class="function">MIN</span>(date_col) <span class="keyword">AS</span> dt <span class="keyword">FROM</span> events
+    <span class="keyword">UNION ALL</span>
+    <span class="keyword">SELECT</span> dt + <span class="keyword">INTERVAL</span> <span class="string">'1 day'</span>
+    <span class="keyword">FROM</span> date_range
+    <span class="keyword">WHERE</span> dt < (<span class="keyword">SELECT</span> <span class="function">MAX</span>(date_col) <span class="keyword">FROM</span> events)
+)
+<span class="keyword">SELECT</span> dr.dt <span class="keyword">AS</span> missing_date
+<span class="keyword">FROM</span> date_range dr
+<span class="keyword">LEFT JOIN</span> events e <span class="keyword">ON</span> dr.dt = e.date_col
+<span class="keyword">WHERE</span> e.date_col <span class="keyword">IS NULL</span>;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

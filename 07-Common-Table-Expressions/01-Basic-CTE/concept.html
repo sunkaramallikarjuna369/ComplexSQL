@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Common Table Expressions (CTE) - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Common Table Expressions (CTE)</h1>
+            <p class="subtitle">WITH Clause - Temporary Named Result Sets</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">CTEs</a>
+            <span>›</span>
+            <span>Basic CTE</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT is a CTE?</span>
+                </div>
+                <div class="section-content">
+                    <p>A Common Table Expression (CTE) is a temporary named result set that you can reference within a SELECT, INSERT, UPDATE, or DELETE statement. CTEs make complex queries more readable by breaking them into logical building blocks.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">CTE Structure</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">CTE Syntax</div>
+                                    <table>
+                                        <tr><th>Component</th><th>Purpose</th></tr>
+                                        <tr class="highlight"><td>WITH</td><td>Keyword to start CTE</td></tr>
+                                        <tr class="highlight-blue"><td>cte_name</td><td>Name of the CTE</td></tr>
+                                        <tr class="highlight-yellow"><td>AS (...)</td><td>CTE query definition</td></tr>
+                                        <tr class="highlight"><td>Main Query</td><td>Uses the CTE</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use CTEs?</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>Readability:</strong> Break complex queries into logical, named parts</li>
+                        <li><strong>Reusability:</strong> Reference the same subquery multiple times</li>
+                        <li><strong>Recursion:</strong> Enable recursive queries (hierarchical data)</li>
+                        <li><strong>Maintainability:</strong> Easier to debug and modify</li>
+                        <li><strong>Self-documenting:</strong> CTE names describe their purpose</li>
+                    </ul>
+
+                    <div class="info-box tip">
+                        <span class="icon">💡</span>
+                        <div>
+                            <strong>CTE vs Subquery:</strong> CTEs are often more readable than nested subqueries, especially when the same logic is needed multiple times. However, they have the same performance in most cases.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHEN Section -->
+            <section class="section-4wh when">
+                <div class="section-header">
+                    <span class="icon">⏰</span>
+                    <span>WHEN to use CTEs?</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Scenario</th>
+                                <th>Example</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Complex multi-step calculations</td>
+                                <td>Calculate totals, then percentages</td>
+                            </tr>
+                            <tr>
+                                <td>Hierarchical data traversal</td>
+                                <td>Org charts, category trees</td>
+                            </tr>
+                            <tr>
+                                <td>Reusing the same subquery</td>
+                                <td>Compare current vs average</td>
+                            </tr>
+                            <tr>
+                                <td>Simplifying complex JOINs</td>
+                                <td>Pre-aggregate before joining</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- WHERE Section -->
+            <section class="section-4wh where">
+                <div class="section-header">
+                    <span class="icon">🌍</span>
+                    <span>WHERE - RDBMS Support</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>RDBMS</th>
+                                <th>Basic CTE</th>
+                                <th>Recursive CTE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>SQL Server</td><td>Since 2005</td><td>Since 2005</td></tr>
+                            <tr><td>Oracle</td><td>Since 9i R2</td><td>Since 11g R2</td></tr>
+                            <tr><td>PostgreSQL</td><td>Since 8.4</td><td>Since 8.4</td></tr>
+                            <tr><td>MySQL</td><td>Since 8.0</td><td>Since 8.0</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use CTEs?</span>
+                </div>
+                <div class="section-content">
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>Basic CTE - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Basic CTE syntax</span>
+<span class="keyword">WITH</span> high_earners <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        employee_id,
+        first_name,
+        salary,
+        department_id
+    <span class="keyword">FROM</span> employees
+    <span class="keyword">WHERE</span> salary > <span class="number">70000</span>
+)
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> high_earners;
+
+<span class="comment">-- CTE with aggregation</span>
+<span class="keyword">WITH</span> dept_stats <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        department_id,
+        <span class="function">COUNT</span>(*) <span class="keyword">AS</span> emp_count,
+        <span class="function">AVG</span>(salary) <span class="keyword">AS</span> avg_salary,
+        <span class="function">SUM</span>(salary) <span class="keyword">AS</span> total_salary
+    <span class="keyword">FROM</span> employees
+    <span class="keyword">GROUP BY</span> department_id
+)
+<span class="keyword">SELECT</span> 
+    d.department_name,
+    ds.emp_count,
+    ds.avg_salary,
+    ds.total_salary
+<span class="keyword">FROM</span> dept_stats ds
+<span class="keyword">JOIN</span> departments d <span class="keyword">ON</span> ds.department_id = d.department_id
+<span class="keyword">ORDER BY</span> ds.total_salary <span class="keyword">DESC</span>;
+
+<span class="comment">-- Multiple CTEs</span>
+<span class="keyword">WITH</span> 
+dept_totals <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        department_id,
+        <span class="function">SUM</span>(salary) <span class="keyword">AS</span> dept_total
+    <span class="keyword">FROM</span> employees
+    <span class="keyword">GROUP BY</span> department_id
+),
+company_total <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> <span class="function">SUM</span>(dept_total) <span class="keyword">AS</span> grand_total
+    <span class="keyword">FROM</span> dept_totals
+)
+<span class="keyword">SELECT</span> 
+    d.department_name,
+    dt.dept_total,
+    <span class="function">ROUND</span>(<span class="number">100.0</span> * dt.dept_total / ct.grand_total, <span class="number">2</span>) <span class="keyword">AS</span> pct_of_total
+<span class="keyword">FROM</span> dept_totals dt
+<span class="keyword">CROSS JOIN</span> company_total ct
+<span class="keyword">JOIN</span> departments d <span class="keyword">ON</span> dt.department_id = d.department_id;
+
+<span class="comment">-- CTE used multiple times</span>
+<span class="keyword">WITH</span> avg_salary <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> <span class="function">AVG</span>(salary) <span class="keyword">AS</span> avg_sal <span class="keyword">FROM</span> employees
+)
+<span class="keyword">SELECT</span> 
+    first_name,
+    salary,
+    (SELECT avg_sal FROM avg_salary) <span class="keyword">AS</span> company_avg,
+    salary - (SELECT avg_sal FROM avg_salary) <span class="keyword">AS</span> diff_from_avg,
+    <span class="keyword">CASE</span> 
+        <span class="keyword">WHEN</span> salary > (SELECT avg_sal FROM avg_salary) <span class="keyword">THEN</span> <span class="string">'Above Average'</span>
+        <span class="keyword">WHEN</span> salary < (SELECT avg_sal FROM avg_salary) <span class="keyword">THEN</span> <span class="string">'Below Average'</span>
+        <span class="keyword">ELSE</span> <span class="string">'At Average'</span>
+    <span class="keyword">END AS</span> status
+<span class="keyword">FROM</span> employees;
+
+<span class="comment">-- CTE for data transformation</span>
+<span class="keyword">WITH</span> cleaned_data <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> 
+        <span class="function">TRIM</span>(<span class="function">UPPER</span>(first_name)) <span class="keyword">AS</span> first_name,
+        <span class="function">TRIM</span>(<span class="function">UPPER</span>(last_name)) <span class="keyword">AS</span> last_name,
+        <span class="function">LOWER</span>(email) <span class="keyword">AS</span> email,
+        <span class="function">COALESCE</span>(salary, <span class="number">0</span>) <span class="keyword">AS</span> salary
+    <span class="keyword">FROM</span> raw_employees
+    <span class="keyword">WHERE</span> first_name <span class="keyword">IS NOT NULL</span>
+)
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> cleaned_data;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CROSS JOIN - ComplexSQL Tutorial</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>CROSS JOIN (Cartesian Product)</h1>
+            <p class="subtitle">Return All Possible Combinations of Rows</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="../../README.md">Home</a>
+            <span>›</span>
+            <a href="../">Joins</a>
+            <span>›</span>
+            <span>CROSS JOIN</span>
+        </nav>
+
+        <main class="content">
+            <!-- WHAT Section -->
+            <section class="section-4wh what">
+                <div class="section-header">
+                    <span class="icon">📘</span>
+                    <span>WHAT is CROSS JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <p>CROSS JOIN returns the Cartesian product of two tables - every row from the first table combined with every row from the second table. If Table A has M rows and Table B has N rows, the result will have M × N rows.</p>
+                    
+                    <div class="visualization-3d">
+                        <div class="title">CROSS JOIN = M × N Combinations</div>
+                        <div class="table-3d">
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Table A (3 rows)</div>
+                                    <table>
+                                        <tr><th>id</th><th>color</th></tr>
+                                        <tr><td>1</td><td>Red</td></tr>
+                                        <tr><td>2</td><td>Blue</td></tr>
+                                        <tr><td>3</td><td>Green</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Table B (2 rows)</div>
+                                    <table>
+                                        <tr><th>id</th><th>size</th></tr>
+                                        <tr><td>1</td><td>Small</td></tr>
+                                        <tr><td>2</td><td>Large</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-3d-wrapper">
+                                <div class="table-visual">
+                                    <div class="table-name">Result (3 × 2 = 6 rows)</div>
+                                    <table>
+                                        <tr><th>color</th><th>size</th></tr>
+                                        <tr><td>Red</td><td>Small</td></tr>
+                                        <tr><td>Red</td><td>Large</td></tr>
+                                        <tr><td>Blue</td><td>Small</td></tr>
+                                        <tr><td>Blue</td><td>Large</td></tr>
+                                        <tr><td>Green</td><td>Small</td></tr>
+                                        <tr><td>Green</td><td>Large</td></tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WHY Section -->
+            <section class="section-4wh why">
+                <div class="section-header">
+                    <span class="icon">🎯</span>
+                    <span>WHY use CROSS JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li><strong>Generate Combinations:</strong> Create all possible pairings (sizes × colors)</li>
+                        <li><strong>Test Data:</strong> Generate large datasets for testing</li>
+                        <li><strong>Calendar/Time Tables:</strong> Create date ranges with all time slots</li>
+                        <li><strong>Matrix Reports:</strong> Create pivot-style reports</li>
+                    </ul>
+
+                    <div class="info-box warning">
+                        <span class="icon">⚠️</span>
+                        <div>
+                            <strong>Warning:</strong> CROSS JOIN can produce massive result sets! A join between tables with 1000 rows each produces 1,000,000 rows. Use with caution and always limit results during development.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- HOW Section -->
+            <section class="section-4wh how">
+                <div class="section-header">
+                    <span class="icon">🔧</span>
+                    <span>HOW to use CROSS JOIN?</span>
+                </div>
+                <div class="section-content">
+                    <div class="sql-container">
+                        <div class="sql-header">
+                            <span>CROSS JOIN - All RDBMS</span>
+                            <span class="db-badge">Universal</span>
+                        </div>
+                        <pre class="sql-code">
+<span class="comment">-- Explicit CROSS JOIN syntax</span>
+<span class="keyword">SELECT</span> 
+    c.color_name,
+    s.size_name
+<span class="keyword">FROM</span> colors c
+<span class="keyword">CROSS JOIN</span> sizes s;
+
+<span class="comment">-- Implicit syntax (comma-separated tables)</span>
+<span class="keyword">SELECT</span> 
+    c.color_name,
+    s.size_name
+<span class="keyword">FROM</span> colors c, sizes s;
+
+<span class="comment">-- Generate all date-hour combinations</span>
+<span class="keyword">SELECT</span> 
+    d.date_value,
+    h.hour_value
+<span class="keyword">FROM</span> dates d
+<span class="keyword">CROSS JOIN</span> hours h
+<span class="keyword">ORDER BY</span> d.date_value, h.hour_value;
+
+<span class="comment">-- Product variants (all color-size combinations)</span>
+<span class="keyword">SELECT</span> 
+    p.product_name,
+    c.color_name,
+    s.size_name,
+    <span class="function">CONCAT</span>(p.product_name, <span class="string">' - '</span>, c.color_name, <span class="string">' - '</span>, s.size_name) <span class="keyword">AS</span> variant_name
+<span class="keyword">FROM</span> products p
+<span class="keyword">CROSS JOIN</span> colors c
+<span class="keyword">CROSS JOIN</span> sizes s;
+
+<span class="comment">-- Generate number sequence (useful for reports)</span>
+<span class="keyword">WITH</span> numbers <span class="keyword">AS</span> (
+    <span class="keyword">SELECT</span> <span class="number">1</span> <span class="keyword">AS</span> n <span class="keyword">UNION ALL SELECT</span> <span class="number">2</span> <span class="keyword">UNION ALL SELECT</span> <span class="number">3</span>
+)
+<span class="keyword">SELECT</span> a.n * <span class="number">10</span> + b.n <span class="keyword">AS</span> number
+<span class="keyword">FROM</span> numbers a
+<span class="keyword">CROSS JOIN</span> numbers b;
+                        </pre>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../assets/js/main.js"></script>
+</body>
+</html>
