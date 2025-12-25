@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce - Scenario-Based SQL Questions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .schema-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .schema-section h2 { color: #ffd700; margin-bottom: 15px; }
+        .tables-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .table-3d {
+            background: linear-gradient(145deg, #5a67d8, #434190);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: perspective(1000px) rotateX(5deg);
+            transition: transform 0.3s ease;
+            min-width: 220px;
+        }
+        .table-3d:hover { transform: perspective(1000px) rotateX(0deg) scale(1.02); }
+        .table-name {
+            background: linear-gradient(90deg, #ffd700, #ff6b35);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #000;
+        }
+        .columns { font-size: 0.85em; }
+        .column {
+            padding: 4px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+        }
+        .pk { color: #ffd700; }
+        .fk { color: #00ff88; }
+        .question-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffd700;
+            transition: all 0.3s ease;
+        }
+        .question-card:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateX(10px);
+        }
+        .question-number {
+            background: linear-gradient(90deg, #ffd700, #ff6b35);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #000;
+        }
+        .scenario { color: #ffd700; font-style: italic; margin-bottom: 10px; }
+        .question-text { font-size: 1.1em; margin-bottom: 15px; }
+        .sql-code {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85em;
+        }
+        .sql-code pre { margin: 0; white-space: pre-wrap; }
+        .difficulty {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .easy { background: #00ff88; color: #000; }
+        .medium { background: #ffd700; color: #000; }
+        .hard { background: #ff4757; color: #fff; }
+        .concept-tag {
+            display: inline-block;
+            background: rgba(255,215,0,0.2);
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin: 2px;
+        }
+        .funnel-visual {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        .funnel-stage {
+            margin: 10px auto;
+            padding: 15px;
+            text-align: center;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .funnel-stage:hover { transform: scale(1.02); }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .metric-card {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        .metric-label { font-size: 0.9em; opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>E-Commerce SQL Scenarios</h1>
+        
+        <div class="schema-section">
+            <h2>Database Schema</h2>
+            <div class="tables-container">
+                <div class="table-3d">
+                    <div class="table-name">USERS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">user_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>username</span><span>VARCHAR</span></div>
+                        <div class="column"><span>email</span><span>VARCHAR</span></div>
+                        <div class="column"><span>registration_date</span><span>DATE</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">PRODUCTS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">product_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>product_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>price</span><span>DECIMAL</span></div>
+                        <div class="column"><span>stock_quantity</span><span>INT</span></div>
+                        <div class="column"><span>rating</span><span>DECIMAL</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">ORDERS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">order_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">user_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>order_date</span><span>TIMESTAMP</span></div>
+                        <div class="column"><span>status</span><span>VARCHAR</span></div>
+                        <div class="column"><span>total_amount</span><span>DECIMAL</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">ORDER_ITEMS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">item_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">order_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">product_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>quantity</span><span>INT</span></div>
+                        <div class="column"><span>unit_price</span><span>DECIMAL</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">CART</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">cart_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">user_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">product_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>quantity</span><span>INT</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-section">
+            <div class="question-card">
+                <span class="question-number">Q81</span>
+                <span class="difficulty medium">Medium</span>
+                <span class="concept-tag">CTE</span>
+                <span class="concept-tag">Cart Analysis</span>
+                <p class="scenario">Scenario: Identify users who added items but didn't purchase</p>
+                <p class="question-text">Calculate cart abandonment rate</p>
+                <div class="sql-code">
+                    <pre>WITH cart_users AS (
+    SELECT DISTINCT user_id FROM cart
+    WHERE added_date >= CURRENT_DATE - INTERVAL '30 days'
+),
+purchasers AS (
+    SELECT DISTINCT user_id FROM orders
+    WHERE order_date >= CURRENT_DATE - INTERVAL '30 days'
+)
+SELECT COUNT(DISTINCT cu.user_id) AS users_with_cart,
+       COUNT(DISTINCT p.user_id) AS users_who_purchased,
+       ROUND(100.0 * (COUNT(DISTINCT cu.user_id) - COUNT(DISTINCT p.user_id)) / 
+             NULLIF(COUNT(DISTINCT cu.user_id), 0), 2) AS abandonment_rate_pct
+FROM cart_users cu LEFT JOIN purchasers p ON cu.user_id = p.user_id;</pre>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">1,250</div>
+                        <div class="metric-label">Users with Cart</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">425</div>
+                        <div class="metric-label">Purchased</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">66%</div>
+                        <div class="metric-label">Abandonment Rate</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q86</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Funnel Analysis</span>
+                <span class="concept-tag">Conversion</span>
+                <p class="scenario">Scenario: Identify drop-off points in purchase flow</p>
+                <p class="question-text">Analyze conversion funnel</p>
+                <div class="sql-code">
+                    <pre>WITH funnel_stages AS (
+    SELECT DATE(event_date) AS event_date,
+           COUNT(DISTINCT CASE WHEN event_type = 'page_view' THEN session_id END) AS page_views,
+           COUNT(DISTINCT CASE WHEN event_type = 'product_view' THEN session_id END) AS product_views,
+           COUNT(DISTINCT CASE WHEN event_type = 'add_to_cart' THEN session_id END) AS add_to_cart,
+           COUNT(DISTINCT CASE WHEN event_type = 'purchase' THEN session_id END) AS purchases
+    FROM user_events GROUP BY DATE(event_date)
+)
+SELECT event_date, page_views, product_views,
+       ROUND(100.0 * purchases / NULLIF(page_views, 0), 2) AS conversion_rate
+FROM funnel_stages;</pre>
+                </div>
+                <div class="funnel-visual">
+                    <h4>Conversion Funnel</h4>
+                    <div class="funnel-stage" style="width:100%; background: linear-gradient(90deg, #667eea, #764ba2);">Page Views: 10,000 (100%)</div>
+                    <div class="funnel-stage" style="width:70%; background: linear-gradient(90deg, #667eea, #764ba2);">Product Views: 7,000 (70%)</div>
+                    <div class="funnel-stage" style="width:30%; background: linear-gradient(90deg, #667eea, #764ba2);">Add to Cart: 3,000 (30%)</div>
+                    <div class="funnel-stage" style="width:15%; background: linear-gradient(90deg, #ffd700, #ff6b35);">Checkout: 1,500 (15%)</div>
+                    <div class="funnel-stage" style="width:10%; background: linear-gradient(90deg, #00ff88, #00d4aa);">Purchase: 1,000 (10%)</div>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q85</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">CLV</span>
+                <span class="concept-tag">Segmentation</span>
+                <p class="scenario">Scenario: Customer segmentation for marketing</p>
+                <p class="question-text">Calculate customer lifetime value (CLV)</p>
+                <div class="sql-code">
+                    <pre>WITH customer_metrics AS (
+    SELECT u.user_id, u.username, COUNT(DISTINCT o.order_id) AS total_orders,
+           SUM(o.total_amount) AS total_spent, AVG(o.total_amount) AS avg_order_value,
+           EXTRACT(DAYS FROM MAX(o.order_date) - MIN(o.order_date)) / 
+               NULLIF(COUNT(o.order_id) - 1, 0) AS avg_days_between
+    FROM users u LEFT JOIN orders o ON u.user_id = o.user_id
+    WHERE o.status = 'COMPLETED' GROUP BY u.user_id, u.username
+)
+SELECT user_id, username, total_orders, total_spent,
+       ROUND(avg_order_value * (365.0 / NULLIF(avg_days_between, 0)) * 3, 2) AS estimated_3yr_clv,
+       NTILE(5) OVER (ORDER BY total_spent DESC) AS value_segment
+FROM customer_metrics WHERE total_orders > 0;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q97</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Cohort Analysis</span>
+                <span class="concept-tag">Retention</span>
+                <p class="scenario">Scenario: Measure long-term customer engagement</p>
+                <p class="question-text">Calculate customer cohort retention</p>
+                <div class="sql-code">
+                    <pre>WITH first_purchase AS (
+    SELECT user_id, DATE_TRUNC('month', MIN(order_date)) AS cohort_month
+    FROM orders WHERE status = 'COMPLETED' GROUP BY user_id
+),
+cohort_activity AS (
+    SELECT fp.cohort_month, DATE_TRUNC('month', o.order_date) AS activity_month,
+           COUNT(DISTINCT o.user_id) AS active_users
+    FROM first_purchase fp
+    JOIN orders o ON fp.user_id = o.user_id
+    GROUP BY fp.cohort_month, DATE_TRUNC('month', o.order_date)
+)
+SELECT cohort_month, activity_month, active_users,
+       FIRST_VALUE(active_users) OVER (PARTITION BY cohort_month ORDER BY activity_month) AS cohort_size,
+       ROUND(100.0 * active_users / FIRST_VALUE(active_users) 
+             OVER (PARTITION BY cohort_month ORDER BY activity_month), 2) AS retention_pct
+FROM cohort_activity;</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

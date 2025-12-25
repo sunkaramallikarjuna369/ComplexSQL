@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logistics - Scenario-Based SQL Questions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 50%, #2980b9 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .schema-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .schema-section h2 { color: #fff; margin-bottom: 15px; }
+        .tables-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .table-3d {
+            background: linear-gradient(145deg, #34495e, #2c3e50);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: perspective(1000px) rotateX(5deg);
+            transition: transform 0.3s ease;
+            min-width: 200px;
+        }
+        .table-3d:hover { transform: perspective(1000px) rotateX(0deg) scale(1.02); }
+        .table-name {
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        .columns { font-size: 0.85em; }
+        .column {
+            padding: 4px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            display: flex;
+            justify-content: space-between;
+        }
+        .pk { color: #ffd700; }
+        .fk { color: #90EE90; }
+        .question-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
+        }
+        .question-card:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateX(10px);
+        }
+        .question-number {
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .scenario { color: #3498db; font-style: italic; margin-bottom: 10px; }
+        .question-text { font-size: 1.1em; margin-bottom: 15px; }
+        .sql-code {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85em;
+        }
+        .sql-code pre { margin: 0; white-space: pre-wrap; }
+        .difficulty {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .easy { background: #00ff88; color: #000; }
+        .medium { background: #ffd700; color: #000; }
+        .hard { background: #ff4757; color: #fff; }
+        .concept-tag {
+            display: inline-block;
+            background: rgba(52,152,219,0.3);
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin: 2px;
+        }
+        .logistics-visual {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        .carrier-card {
+            background: linear-gradient(145deg, #34495e, #2c3e50);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .score-badge {
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .score-high { background: #00ff88; color: #000; }
+        .score-medium { background: #ffd700; color: #000; }
+        .score-low { background: #ff4757; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Logistics SQL Scenarios</h1>
+        
+        <div class="schema-section">
+            <h2>Database Schema</h2>
+            <div class="tables-container">
+                <div class="table-3d">
+                    <div class="table-name">SHIPMENTS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">shipment_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">carrier_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>tracking_number</span><span>VARCHAR</span></div>
+                        <div class="column"><span>status</span><span>VARCHAR</span></div>
+                        <div class="column"><span>expected_delivery</span><span>DATE</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">WAREHOUSES</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">warehouse_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>warehouse_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>city</span><span>VARCHAR</span></div>
+                        <div class="column"><span>capacity_sqft</span><span>INT</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">CARRIERS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">carrier_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>carrier_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>service_type</span><span>VARCHAR</span></div>
+                        <div class="column"><span>base_rate</span><span>DECIMAL</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">ROUTES</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">route_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>origin_id</span><span>INT</span></div>
+                        <div class="column"><span>destination_id</span><span>INT</span></div>
+                        <div class="column"><span>distance_miles</span><span>DECIMAL</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-section">
+            <div class="question-card">
+                <span class="question-number">Q161</span>
+                <span class="difficulty medium">Medium</span>
+                <span class="concept-tag">Aggregation</span>
+                <span class="concept-tag">Performance Metrics</span>
+                <p class="scenario">Scenario: Carrier performance evaluation</p>
+                <p class="question-text">Calculate on-time delivery rate</p>
+                <div class="sql-code">
+                    <pre>SELECT c.carrier_id, c.carrier_name, COUNT(*) AS total_deliveries,
+       COUNT(CASE WHEN s.actual_delivery <= s.expected_delivery THEN 1 END) AS on_time,
+       ROUND(100.0 * COUNT(CASE WHEN s.actual_delivery <= s.expected_delivery THEN 1 END) / COUNT(*), 2) AS on_time_pct
+FROM carriers c
+JOIN shipments s ON c.carrier_id = s.carrier_id
+WHERE s.actual_delivery IS NOT NULL
+GROUP BY c.carrier_id, c.carrier_name
+ORDER BY on_time_pct DESC;</pre>
+                </div>
+                <div class="logistics-visual">
+                    <h4>Carrier Performance</h4>
+                    <div class="carrier-card">
+                        <div>FedEx Express</div>
+                        <span class="score-badge score-high">98.5% On-Time</span>
+                    </div>
+                    <div class="carrier-card">
+                        <div>UPS Ground</div>
+                        <span class="score-badge score-high">96.2% On-Time</span>
+                    </div>
+                    <div class="carrier-card">
+                        <div>Regional Carrier</div>
+                        <span class="score-badge score-medium">87.4% On-Time</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q165</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">CTE</span>
+                <span class="concept-tag">Route Optimization</span>
+                <p class="scenario">Scenario: Route planning optimization</p>
+                <p class="question-text">Find optimal route selection</p>
+                <div class="sql-code">
+                    <pre>WITH route_performance AS (
+    SELECT r.route_id, r.origin_id, r.destination_id, r.distance_miles, r.estimated_hours,
+           COUNT(s.shipment_id) AS times_used,
+           AVG(EXTRACT(EPOCH FROM (s.actual_delivery - s.ship_date)) / 3600) AS actual_avg_hours,
+           AVG(EXTRACT(EPOCH FROM (s.actual_delivery - s.ship_date)) / 3600) - r.estimated_hours AS variance
+    FROM routes r
+    LEFT JOIN shipments s ON r.origin_id = s.origin_warehouse_id
+    GROUP BY r.route_id, r.origin_id, r.destination_id, r.distance_miles, r.estimated_hours
+)
+SELECT route_id, distance_miles, estimated_hours, actual_avg_hours, variance,
+       CASE WHEN variance > 2 THEN 'UNDERPERFORMING'
+            WHEN variance < -1 THEN 'OVERPERFORMING' ELSE 'ON TARGET' END AS status
+FROM route_performance;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q180</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Scorecard</span>
+                <span class="concept-tag">Weighted Average</span>
+                <p class="scenario">Scenario: Vendor performance management</p>
+                <p class="question-text">Generate carrier scorecard</p>
+                <div class="sql-code">
+                    <pre>SELECT c.carrier_id, c.carrier_name,
+       ROUND(100.0 * COUNT(CASE WHEN s.actual_delivery <= s.expected_delivery THEN 1 END) / COUNT(*), 2) AS on_time_score,
+       ROUND(100.0 * COUNT(CASE WHEN s.status NOT IN ('LOST', 'DAMAGED') THEN 1 END) / COUNT(*), 2) AS damage_free_score,
+       ROUND(AVG(s.customer_rating) * 20, 2) AS customer_score,
+       ROUND((on_time_score * 0.4 + damage_free_score * 0.3 + customer_score * 0.2 + billing_accuracy * 0.1), 2) AS overall_score
+FROM carriers c
+JOIN shipments s ON c.carrier_id = s.carrier_id
+GROUP BY c.carrier_id, c.carrier_name
+ORDER BY overall_score DESC;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q169</span>
+                <span class="difficulty medium">Medium</span>
+                <span class="concept-tag">Window Functions</span>
+                <span class="concept-tag">Forecasting</span>
+                <p class="scenario">Scenario: Capacity planning</p>
+                <p class="question-text">Forecast shipping demand</p>
+                <div class="sql-code">
+                    <pre>WITH daily_shipments AS (
+    SELECT DATE(ship_date) AS ship_date, COUNT(*) AS shipment_count
+    FROM shipments WHERE ship_date >= CURRENT_DATE - INTERVAL '90 days'
+    GROUP BY DATE(ship_date)
+)
+SELECT ship_date, shipment_count,
+       AVG(shipment_count) OVER (ORDER BY ship_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS moving_avg_7d,
+       AVG(shipment_count) OVER (ORDER BY ship_date ROWS BETWEEN 29 PRECEDING AND CURRENT ROW) AS moving_avg_30d,
+       CASE WHEN shipment_count > moving_avg_30d * 1.2 THEN 'ABOVE TREND'
+            WHEN shipment_count < moving_avg_30d * 0.8 THEN 'BELOW TREND' ELSE 'NORMAL' END AS trend_status
+FROM daily_shipments;</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

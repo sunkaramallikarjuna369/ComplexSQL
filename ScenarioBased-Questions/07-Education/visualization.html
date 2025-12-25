@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Education - Scenario-Based SQL Questions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #4568dc 0%, #b06ab3 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .schema-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .schema-section h2 { color: #fff; margin-bottom: 15px; }
+        .tables-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .table-3d {
+            background: linear-gradient(145deg, #5a6fd6, #9b59b6);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: perspective(1000px) rotateX(5deg);
+            transition: transform 0.3s ease;
+            min-width: 200px;
+        }
+        .table-3d:hover { transform: perspective(1000px) rotateX(0deg) scale(1.02); }
+        .table-name {
+            background: linear-gradient(90deg, #fff, #e0e0e0);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #4568dc;
+        }
+        .columns { font-size: 0.85em; }
+        .column {
+            padding: 4px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            display: flex;
+            justify-content: space-between;
+        }
+        .pk { color: #ffd700; }
+        .fk { color: #90EE90; }
+        .question-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffd700;
+            transition: all 0.3s ease;
+        }
+        .question-card:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateX(10px);
+        }
+        .question-number {
+            background: linear-gradient(90deg, #ffd700, #ff6b35);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #000;
+        }
+        .scenario { color: #ffd700; font-style: italic; margin-bottom: 10px; }
+        .question-text { font-size: 1.1em; margin-bottom: 15px; }
+        .sql-code {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85em;
+        }
+        .sql-code pre { margin: 0; white-space: pre-wrap; }
+        .difficulty {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .easy { background: #00ff88; color: #000; }
+        .medium { background: #ffd700; color: #000; }
+        .hard { background: #ff4757; color: #fff; }
+        .concept-tag {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin: 2px;
+        }
+        .grade-visual {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        .grade-bar {
+            display: flex;
+            height: 30px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .grade-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .grade-a { background: #00ff88; color: #000; }
+        .grade-b { background: #90EE90; color: #000; }
+        .grade-c { background: #ffd700; color: #000; }
+        .grade-d { background: #ff9f43; color: #000; }
+        .grade-f { background: #ff4757; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Education SQL Scenarios</h1>
+        
+        <div class="schema-section">
+            <h2>Database Schema</h2>
+            <div class="tables-container">
+                <div class="table-3d">
+                    <div class="table-name">STUDENTS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">student_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>first_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>last_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>enrollment_date</span><span>DATE</span></div>
+                        <div class="column"><span>gpa</span><span>DECIMAL</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">COURSES</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">course_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>course_code</span><span>VARCHAR</span></div>
+                        <div class="column"><span>course_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>credits</span><span>INT</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">ENROLLMENTS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">enrollment_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">student_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">course_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>semester</span><span>VARCHAR</span></div>
+                        <div class="column"><span>grade</span><span>VARCHAR</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">INSTRUCTORS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">instructor_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>first_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>last_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>department_id</span><span>INT</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-section">
+            <div class="question-card">
+                <span class="question-number">Q121</span>
+                <span class="difficulty medium">Medium</span>
+                <span class="concept-tag">Aggregation</span>
+                <span class="concept-tag">GPA Calculation</span>
+                <p class="scenario">Scenario: Academic performance tracking</p>
+                <p class="question-text">Calculate student GPA by semester</p>
+                <div class="sql-code">
+                    <pre>SELECT s.student_id, s.first_name || ' ' || s.last_name AS student_name,
+       e.semester,
+       SUM(e.grade_points * c.credits) / SUM(c.credits) AS semester_gpa,
+       SUM(c.credits) AS credits_attempted
+FROM students s
+JOIN enrollments e ON s.student_id = e.student_id
+JOIN courses c ON e.course_id = c.course_id
+WHERE e.grade IS NOT NULL
+GROUP BY s.student_id, s.first_name, s.last_name, e.semester
+ORDER BY s.student_id, e.semester;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q126</span>
+                <span class="difficulty medium">Medium</span>
+                <span class="concept-tag">CASE Statement</span>
+                <span class="concept-tag">Grade Distribution</span>
+                <p class="scenario">Scenario: Course difficulty analysis</p>
+                <p class="question-text">Calculate grade distribution by course</p>
+                <div class="sql-code">
+                    <pre>SELECT c.course_code, c.course_name, COUNT(*) AS total_students,
+       ROUND(100.0 * COUNT(CASE WHEN e.grade IN ('A', 'A-') THEN 1 END) / COUNT(*), 1) AS pct_a,
+       ROUND(100.0 * COUNT(CASE WHEN e.grade IN ('B+', 'B', 'B-') THEN 1 END) / COUNT(*), 1) AS pct_b,
+       ROUND(100.0 * COUNT(CASE WHEN e.grade IN ('C+', 'C', 'C-') THEN 1 END) / COUNT(*), 1) AS pct_c,
+       ROUND(100.0 * COUNT(CASE WHEN e.grade = 'F' THEN 1 END) / COUNT(*), 1) AS pct_f
+FROM courses c
+JOIN enrollments e ON c.course_id = e.course_id
+WHERE e.grade IS NOT NULL
+GROUP BY c.course_code, c.course_name;</pre>
+                </div>
+                <div class="grade-visual">
+                    <h4>Grade Distribution - CS101</h4>
+                    <div class="grade-bar">
+                        <div class="grade-segment grade-a" style="width:25%">A: 25%</div>
+                        <div class="grade-segment grade-b" style="width:35%">B: 35%</div>
+                        <div class="grade-segment grade-c" style="width:25%">C: 25%</div>
+                        <div class="grade-segment grade-d" style="width:10%">D: 10%</div>
+                        <div class="grade-segment grade-f" style="width:5%">F: 5%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q129</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Cohort Analysis</span>
+                <span class="concept-tag">Retention</span>
+                <p class="scenario">Scenario: Student success metrics</p>
+                <p class="question-text">Calculate retention rate by cohort</p>
+                <div class="sql-code">
+                    <pre>WITH enrollment_cohorts AS (
+    SELECT student_id, DATE_TRUNC('year', enrollment_date) AS cohort_year
+    FROM students
+),
+yearly_enrollment AS (
+    SELECT ec.cohort_year, DATE_TRUNC('year', e.semester_start_date) AS academic_year,
+           COUNT(DISTINCT e.student_id) AS enrolled_students
+    FROM enrollment_cohorts ec
+    JOIN enrollments e ON ec.student_id = e.student_id
+    GROUP BY ec.cohort_year, DATE_TRUNC('year', e.semester_start_date)
+)
+SELECT cohort_year, academic_year, enrolled_students,
+       FIRST_VALUE(enrolled_students) OVER (PARTITION BY cohort_year ORDER BY academic_year) AS cohort_size,
+       ROUND(100.0 * enrolled_students / FIRST_VALUE(enrolled_students) 
+             OVER (PARTITION BY cohort_year ORDER BY academic_year), 2) AS retention_rate
+FROM yearly_enrollment;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q125</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Recursive CTE</span>
+                <span class="concept-tag">Prerequisites</span>
+                <p class="scenario">Scenario: Degree planning assistance</p>
+                <p class="question-text">Find prerequisite chain for courses</p>
+                <div class="sql-code">
+                    <pre>WITH RECURSIVE prereq_chain AS (
+    SELECT course_id, course_code, course_name, prerequisite_id, 1 AS level,
+           CAST(course_code AS VARCHAR(500)) AS path
+    FROM courses WHERE course_id = 301
+    UNION ALL
+    SELECT c.course_id, c.course_code, c.course_name, c.prerequisite_id, pc.level + 1,
+           CAST(c.course_code || ' -> ' || pc.path AS VARCHAR(500))
+    FROM courses c
+    JOIN prereq_chain pc ON c.course_id = pc.prerequisite_id
+    WHERE pc.level < 10
+)
+SELECT course_code, course_name, level, path FROM prereq_chain ORDER BY level DESC;</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

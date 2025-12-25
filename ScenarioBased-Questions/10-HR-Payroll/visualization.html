@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR & Payroll - Scenario-Based SQL Questions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 50%, #ff9ff3 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            color: #2d3436;
+        }
+        .schema-section {
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .schema-section h2 { color: #2d3436; margin-bottom: 15px; }
+        .tables-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .table-3d {
+            background: linear-gradient(145deg, #ee5a24, #d63031);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: perspective(1000px) rotateX(5deg);
+            transition: transform 0.3s ease;
+            min-width: 200px;
+        }
+        .table-3d:hover { transform: perspective(1000px) rotateX(0deg) scale(1.02); }
+        .table-name {
+            background: linear-gradient(90deg, #fff, #f5f6fa);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #d63031;
+        }
+        .columns { font-size: 0.85em; }
+        .column {
+            padding: 4px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            display: flex;
+            justify-content: space-between;
+        }
+        .pk { color: #ffd700; }
+        .fk { color: #90EE90; }
+        .question-card {
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #d63031;
+            transition: all 0.3s ease;
+        }
+        .question-card:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateX(10px);
+        }
+        .question-number {
+            background: linear-gradient(90deg, #d63031, #ee5a24);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .scenario { color: #2d3436; font-style: italic; margin-bottom: 10px; }
+        .question-text { font-size: 1.1em; margin-bottom: 15px; color: #2d3436; }
+        .sql-code {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85em;
+            color: #fff;
+        }
+        .sql-code pre { margin: 0; white-space: pre-wrap; }
+        .difficulty {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .easy { background: #00ff88; color: #000; }
+        .medium { background: #ffd700; color: #000; }
+        .hard { background: #ff4757; color: #fff; }
+        .concept-tag {
+            display: inline-block;
+            background: rgba(214,48,49,0.3);
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin: 2px;
+            color: #2d3436;
+        }
+        .hr-visual {
+            background: rgba(0,0,0,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        .employee-card {
+            background: linear-gradient(145deg, #fff, #f5f6fa);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            color: #2d3436;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .salary-bar {
+            height: 20px;
+            background: #dfe6e9;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+        .salary-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #d63031, #feca57);
+            border-radius: 10px;
+        }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .metric-card {
+            background: rgba(255,255,255,0.9);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            color: #2d3436;
+        }
+        .metric-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #d63031;
+        }
+        .metric-label { font-size: 0.9em; opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>HR & Payroll SQL Scenarios</h1>
+        
+        <div class="schema-section">
+            <h2>Database Schema</h2>
+            <div class="tables-container">
+                <div class="table-3d">
+                    <div class="table-name">EMPLOYEES</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">employee_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>first_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>last_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>hire_date</span><span>DATE</span></div>
+                        <div class="column"><span>salary</span><span>DECIMAL</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">PAYROLL</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">payroll_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">employee_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>gross_pay</span><span>DECIMAL</span></div>
+                        <div class="column"><span>deductions</span><span>DECIMAL</span></div>
+                        <div class="column"><span>net_pay</span><span>DECIMAL</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">BENEFITS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">benefit_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">employee_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>benefit_type</span><span>VARCHAR</span></div>
+                        <div class="column"><span>contribution</span><span>DECIMAL</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">TIME_OFF</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">request_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">employee_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>leave_type</span><span>VARCHAR</span></div>
+                        <div class="column"><span>hours_requested</span><span>DECIMAL</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-section">
+            <div class="question-card">
+                <span class="question-number">Q181</span>
+                <span class="difficulty medium">Medium</span>
+                <span class="concept-tag">Aggregation</span>
+                <span class="concept-tag">Compensation</span>
+                <p class="scenario">Scenario: Compensation analysis for budgeting</p>
+                <p class="question-text">Calculate total compensation by employee</p>
+                <div class="sql-code">
+                    <pre>SELECT e.employee_id, e.first_name || ' ' || e.last_name AS employee_name,
+       e.salary AS base_salary,
+       COALESCE(e.salary * e.commission_pct, 0) AS commission,
+       COALESCE(SUM(b.employer_contribution * 12), 0) AS annual_benefits,
+       e.salary + COALESCE(e.salary * e.commission_pct, 0) + 
+           COALESCE(SUM(b.employer_contribution * 12), 0) AS total_compensation
+FROM employees e
+LEFT JOIN benefits b ON e.employee_id = b.employee_id
+WHERE e.status = 'ACTIVE'
+GROUP BY e.employee_id, e.first_name, e.last_name, e.salary, e.commission_pct;</pre>
+                </div>
+                <div class="hr-visual">
+                    <h4>Total Compensation Breakdown</h4>
+                    <div class="employee-card">
+                        <div>
+                            <strong>John Smith</strong>
+                            <div>Base: $85,000 | Commission: $12,750 | Benefits: $18,000</div>
+                        </div>
+                        <div style="font-size:1.2em; font-weight:bold; color:#d63031;">$115,750</div>
+                    </div>
+                    <div class="employee-card">
+                        <div>
+                            <strong>Sarah Johnson</strong>
+                            <div>Base: $72,000 | Commission: $0 | Benefits: $15,600</div>
+                        </div>
+                        <div style="font-size:1.2em; font-weight:bold; color:#d63031;">$87,600</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q185</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Window Functions</span>
+                <span class="concept-tag">Salary Analysis</span>
+                <p class="scenario">Scenario: Compensation equity analysis</p>
+                <p class="question-text">Identify salary compression issues</p>
+                <div class="sql-code">
+                    <pre>WITH salary_stats AS (
+    SELECT e.job_id, j.job_title, e.employee_id, e.first_name || ' ' || e.last_name AS name,
+           EXTRACT(YEAR FROM AGE(CURRENT_DATE, e.hire_date)) AS tenure_years, e.salary,
+           AVG(e.salary) OVER (PARTITION BY e.job_id) AS avg_job_salary
+    FROM employees e JOIN jobs j ON e.job_id = j.job_id WHERE e.status = 'ACTIVE'
+)
+SELECT job_title, name, tenure_years, salary, avg_job_salary,
+       ROUND(100.0 * (salary - avg_job_salary) / avg_job_salary, 2) AS pct_from_avg,
+       CASE WHEN tenure_years > 5 AND salary < avg_job_salary THEN 'COMPRESSION RISK'
+            ELSE 'NORMAL' END AS salary_status
+FROM salary_stats WHERE tenure_years > 5 AND salary < avg_job_salary;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q189</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">CTE</span>
+                <span class="concept-tag">Turnover Analysis</span>
+                <p class="scenario">Scenario: Retention analysis</p>
+                <p class="question-text">Analyze turnover by department</p>
+                <div class="sql-code">
+                    <pre>WITH terminations AS (
+    SELECT department_id, COUNT(*) AS terminated_count
+    FROM employees WHERE status = 'TERMINATED'
+    AND termination_date >= CURRENT_DATE - INTERVAL '1 year'
+    GROUP BY department_id
+)
+SELECT d.department_name, COALESCE(t.terminated_count, 0) AS terminations,
+       ROUND(100.0 * COALESCE(t.terminated_count, 0) / NULLIF(avg_headcount, 0), 2) AS turnover_rate,
+       CASE WHEN turnover_rate > 20 THEN 'HIGH'
+            WHEN turnover_rate > 10 THEN 'MODERATE' ELSE 'LOW' END AS turnover_risk
+FROM departments d LEFT JOIN terminations t ON d.department_id = t.department_id;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q200</span>
+                <span class="difficulty medium">Medium</span>
+                <span class="concept-tag">UNION</span>
+                <span class="concept-tag">Dashboard</span>
+                <p class="scenario">Scenario: Executive HR dashboard</p>
+                <p class="question-text">Generate workforce analytics dashboard</p>
+                <div class="sql-code">
+                    <pre>SELECT 'Total Headcount' AS metric, COUNT(*)::TEXT AS value
+FROM employees WHERE status = 'ACTIVE'
+UNION ALL
+SELECT 'Average Tenure (Years)', ROUND(AVG(EXTRACT(YEAR FROM AGE(CURRENT_DATE, hire_date))), 1)::TEXT
+FROM employees WHERE status = 'ACTIVE'
+UNION ALL
+SELECT 'Average Salary', '$' || TO_CHAR(ROUND(AVG(salary), 0), 'FM999,999,999')
+FROM employees WHERE status = 'ACTIVE'
+UNION ALL
+SELECT 'Turnover Rate (12mo)', ROUND(100.0 * terminated / total, 2)::TEXT || '%'
+FROM (SELECT COUNT(*) FILTER (WHERE status = 'TERMINATED') AS terminated, COUNT(*) AS total FROM employees);</pre>
+                </div>
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-value">1,247</div>
+                        <div class="metric-label">Total Headcount</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">4.2</div>
+                        <div class="metric-label">Avg Tenure (Years)</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">$78,500</div>
+                        <div class="metric-label">Average Salary</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">12.3%</div>
+                        <div class="metric-label">Turnover Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

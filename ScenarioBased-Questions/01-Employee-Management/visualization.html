@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management - Scenario-Based SQL Questions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .schema-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .schema-section h2 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+        }
+        .tables-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .table-3d {
+            background: linear-gradient(145deg, #2d2d44, #1a1a2e);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 
+                0 10px 30px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+            transform: perspective(1000px) rotateX(5deg);
+            transition: transform 0.3s ease;
+            min-width: 280px;
+        }
+        .table-3d:hover {
+            transform: perspective(1000px) rotateX(0deg) scale(1.02);
+        }
+        .table-name {
+            background: linear-gradient(90deg, #7b2cbf, #00d4ff);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .columns {
+            font-size: 0.9em;
+        }
+        .column {
+            padding: 5px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+        }
+        .column:last-child {
+            border-bottom: none;
+        }
+        .pk {
+            color: #ffd700;
+        }
+        .fk {
+            color: #00ff88;
+        }
+        .questions-section {
+            margin-top: 30px;
+        }
+        .question-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #7b2cbf;
+            transition: all 0.3s ease;
+        }
+        .question-card:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(10px);
+        }
+        .question-number {
+            background: linear-gradient(90deg, #7b2cbf, #00d4ff);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .scenario {
+            color: #00d4ff;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+        .question-text {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+        .sql-code {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        .sql-code pre {
+            margin: 0;
+            white-space: pre-wrap;
+        }
+        .rdbms-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .rdbms-tab {
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        .rdbms-tab:hover, .rdbms-tab.active {
+            background: #7b2cbf;
+        }
+        .result-visualization {
+            background: rgba(0,212,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .result-table th {
+            background: #7b2cbf;
+            padding: 10px;
+            text-align: left;
+        }
+        .result-table td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .result-table tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .difficulty {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .easy { background: #00ff88; color: #000; }
+        .medium { background: #ffd700; color: #000; }
+        .hard { background: #ff4757; color: #fff; }
+        .concept-tag {
+            display: inline-block;
+            background: rgba(0,212,255,0.2);
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Employee Management SQL Scenarios</h1>
+        
+        <div class="schema-section">
+            <h2>Database Schema</h2>
+            <div class="tables-container">
+                <div class="table-3d">
+                    <div class="table-name">EMPLOYEES</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">employee_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>first_name</span><span>VARCHAR(50)</span></div>
+                        <div class="column"><span>last_name</span><span>VARCHAR(50)</span></div>
+                        <div class="column"><span>email</span><span>VARCHAR(100)</span></div>
+                        <div class="column"><span>hire_date</span><span>DATE</span></div>
+                        <div class="column"><span>salary</span><span>DECIMAL</span></div>
+                        <div class="column"><span class="fk">manager_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">department_id (FK)</span><span>INT</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">DEPARTMENTS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">department_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>department_name</span><span>VARCHAR(100)</span></div>
+                        <div class="column"><span class="fk">manager_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">location_id (FK)</span><span>INT</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">JOBS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">job_id (PK)</span><span>VARCHAR(20)</span></div>
+                        <div class="column"><span>job_title</span><span>VARCHAR(100)</span></div>
+                        <div class="column"><span>min_salary</span><span>DECIMAL</span></div>
+                        <div class="column"><span>max_salary</span><span>DECIMAL</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">JOB_HISTORY</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">employee_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="pk">start_date (PK)</span><span>DATE</span></div>
+                        <div class="column"><span>end_date</span><span>DATE</span></div>
+                        <div class="column"><span class="fk">job_id (FK)</span><span>VARCHAR(20)</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-section">
+            <div class="question-card">
+                <span class="question-number">Q1</span>
+                <span class="difficulty easy">Easy</span>
+                <span class="concept-tag">Date Functions</span>
+                <span class="concept-tag">WHERE Clause</span>
+                <p class="scenario">Scenario: HR needs to identify new hires for orientation program</p>
+                <p class="question-text">Find all employees hired in the last 90 days</p>
+                <div class="sql-code">
+                    <pre>-- PostgreSQL
+SELECT employee_id, first_name, last_name, hire_date
+FROM employees
+WHERE hire_date >= CURRENT_DATE - INTERVAL '90 days'
+ORDER BY hire_date DESC;</pre>
+                </div>
+                <div class="result-visualization">
+                    <h4>Sample Result:</h4>
+                    <table class="result-table">
+                        <tr><th>employee_id</th><th>first_name</th><th>last_name</th><th>hire_date</th></tr>
+                        <tr><td>207</td><td>Sarah</td><td>Johnson</td><td>2024-11-15</td></tr>
+                        <tr><td>208</td><td>Michael</td><td>Chen</td><td>2024-10-28</td></tr>
+                        <tr><td>209</td><td>Emily</td><td>Davis</td><td>2024-10-05</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q2</span>
+                <span class="difficulty easy">Easy</span>
+                <span class="concept-tag">Date Calculations</span>
+                <span class="concept-tag">DATEDIFF</span>
+                <p class="scenario">Scenario: Generate service anniversary report</p>
+                <p class="question-text">Calculate years of service for each employee</p>
+                <div class="sql-code">
+                    <pre>-- PostgreSQL
+SELECT 
+    employee_id, first_name, last_name, hire_date,
+    EXTRACT(YEAR FROM AGE(CURRENT_DATE, hire_date)) AS years_of_service
+FROM employees
+ORDER BY years_of_service DESC;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q3</span>
+                <span class="difficulty medium">Medium</span>
+                <span class="concept-tag">Subquery</span>
+                <span class="concept-tag">Window Functions</span>
+                <p class="scenario">Scenario: Identify high performers for bonus consideration</p>
+                <p class="question-text">Find employees earning above their department average</p>
+                <div class="sql-code">
+                    <pre>SELECT 
+    employee_id, first_name, salary, department_id,
+    avg_salary, salary - avg_salary AS above_avg
+FROM (
+    SELECT *, AVG(salary) OVER (PARTITION BY department_id) AS avg_salary
+    FROM employees
+) t
+WHERE salary > avg_salary
+ORDER BY above_avg DESC;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q4</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Recursive CTE</span>
+                <span class="concept-tag">Hierarchy</span>
+                <p class="scenario">Scenario: Display org chart path from employee to CEO</p>
+                <p class="question-text">Find the complete reporting hierarchy for an employee</p>
+                <div class="sql-code">
+                    <pre>WITH RECURSIVE hierarchy AS (
+    SELECT employee_id, first_name, manager_id, 1 AS level,
+           CAST(first_name AS VARCHAR(1000)) AS path
+    FROM employees WHERE employee_id = 110
+    UNION ALL
+    SELECT e.employee_id, e.first_name, e.manager_id, h.level + 1,
+           CAST(e.first_name || ' -> ' || h.path AS VARCHAR(1000))
+    FROM employees e
+    JOIN hierarchy h ON e.employee_id = h.manager_id
+)
+SELECT * FROM hierarchy ORDER BY level DESC;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q5</span>
+                <span class="difficulty medium">Medium</span>
+                <span class="concept-tag">Self Join</span>
+                <p class="scenario">Scenario: Identify potential internal transfer candidates</p>
+                <p class="question-text">Find employees with same job title in different departments</p>
+                <div class="sql-code">
+                    <pre>SELECT 
+    e1.employee_id AS emp1_id, e1.first_name AS emp1_name,
+    e1.department_id AS emp1_dept,
+    e2.employee_id AS emp2_id, e2.first_name AS emp2_name,
+    e2.department_id AS emp2_dept, e1.job_id
+FROM employees e1
+JOIN employees e2 ON e1.job_id = e2.job_id 
+    AND e1.department_id < e2.department_id;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q6</span>
+                <span class="difficulty medium">Medium</span>
+                <span class="concept-tag">PERCENT_RANK</span>
+                <span class="concept-tag">NTILE</span>
+                <p class="scenario">Scenario: Compensation analysis for salary bands</p>
+                <p class="question-text">Calculate salary percentile for each employee</p>
+                <div class="sql-code">
+                    <pre>SELECT 
+    employee_id, first_name, salary,
+    PERCENT_RANK() OVER (ORDER BY salary) * 100 AS salary_percentile,
+    NTILE(4) OVER (ORDER BY salary) AS salary_quartile
+FROM employees
+ORDER BY salary DESC;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q7</span>
+                <span class="difficulty easy">Easy</span>
+                <span class="concept-tag">LEFT JOIN</span>
+                <span class="concept-tag">NOT EXISTS</span>
+                <p class="scenario">Scenario: Identify inactive departments for restructuring</p>
+                <p class="question-text">Find departments with no employees</p>
+                <div class="sql-code">
+                    <pre>SELECT d.department_id, d.department_name
+FROM departments d
+LEFT JOIN employees e ON d.department_id = e.department_id
+WHERE e.employee_id IS NULL;
+
+-- Alternative
+SELECT department_id, department_name
+FROM departments d
+WHERE NOT EXISTS (
+    SELECT 1 FROM employees e WHERE e.department_id = d.department_id
+);</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q8</span>
+                <span class="difficulty medium">Medium</span>
+                <span class="concept-tag">GROUP BY</span>
+                <span class="concept-tag">HAVING</span>
+                <p class="scenario">Scenario: Identify employees with diverse experience</p>
+                <p class="question-text">Find employees who changed jobs more than twice</p>
+                <div class="sql-code">
+                    <pre>SELECT 
+    e.employee_id, e.first_name, e.last_name,
+    COUNT(jh.job_id) AS job_changes
+FROM employees e
+JOIN job_history jh ON e.employee_id = jh.employee_id
+GROUP BY e.employee_id, e.first_name, e.last_name
+HAVING COUNT(jh.job_id) > 2
+ORDER BY job_changes DESC;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q9</span>
+                <span class="difficulty medium">Medium</span>
+                <span class="concept-tag">Self Join</span>
+                <span class="concept-tag">Calculations</span>
+                <p class="scenario">Scenario: Analyze compensation equity</p>
+                <p class="question-text">Calculate the salary gap between employee and manager</p>
+                <div class="sql-code">
+                    <pre>SELECT 
+    e.employee_id, e.first_name AS employee_name,
+    e.salary AS employee_salary,
+    m.first_name AS manager_name, m.salary AS manager_salary,
+    m.salary - e.salary AS salary_gap,
+    ROUND(100.0 * e.salary / m.salary, 2) AS pct_of_manager
+FROM employees e
+JOIN employees m ON e.manager_id = m.employee_id
+ORDER BY salary_gap DESC;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q10</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">DENSE_RANK</span>
+                <span class="concept-tag">CTE</span>
+                <p class="scenario">Scenario: Identify backup candidates for leadership roles</p>
+                <p class="question-text">Find the second highest salary in each department</p>
+                <div class="sql-code">
+                    <pre>WITH ranked AS (
+    SELECT employee_id, first_name, department_id, salary,
+           DENSE_RANK() OVER (PARTITION BY department_id 
+                              ORDER BY salary DESC) AS rank
+    FROM employees
+)
+SELECT employee_id, first_name, department_id, salary
+FROM ranked WHERE rank = 2;</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.question-card').forEach(card => {
+            card.addEventListener('click', function() {
+                this.classList.toggle('expanded');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking & Finance - Scenario-Based SQL Questions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 50%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(90deg, #ffd700, #ff6b35);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .schema-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .schema-section h2 { color: #ffd700; margin-bottom: 15px; }
+        .tables-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .table-3d {
+            background: linear-gradient(145deg, #1e3a5f, #0f2744);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            transform: perspective(1000px) rotateX(5deg);
+            transition: transform 0.3s ease;
+            min-width: 250px;
+        }
+        .table-3d:hover { transform: perspective(1000px) rotateX(0deg) scale(1.02); }
+        .table-name {
+            background: linear-gradient(90deg, #ffd700, #ff6b35);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #000;
+        }
+        .columns { font-size: 0.9em; }
+        .column {
+            padding: 5px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+        }
+        .pk { color: #ffd700; }
+        .fk { color: #00ff88; }
+        .question-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffd700;
+            transition: all 0.3s ease;
+        }
+        .question-card:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(10px);
+        }
+        .question-number {
+            background: linear-gradient(90deg, #ffd700, #ff6b35);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #000;
+        }
+        .scenario { color: #ffd700; font-style: italic; margin-bottom: 10px; }
+        .question-text { font-size: 1.1em; margin-bottom: 15px; }
+        .sql-code {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+        .sql-code pre { margin: 0; white-space: pre-wrap; }
+        .difficulty {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .easy { background: #00ff88; color: #000; }
+        .medium { background: #ffd700; color: #000; }
+        .hard { background: #ff4757; color: #fff; }
+        .concept-tag {
+            display: inline-block;
+            background: rgba(255,215,0,0.2);
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin: 2px;
+        }
+        .finance-visual {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        .account-card {
+            background: linear-gradient(145deg, #1e3a5f, #0f2744);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 3px solid #ffd700;
+        }
+        .balance { font-size: 1.5em; color: #00ff88; }
+        .transaction-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .credit { color: #00ff88; }
+        .debit { color: #ff4757; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Banking & Finance SQL Scenarios</h1>
+        
+        <div class="schema-section">
+            <h2>Database Schema</h2>
+            <div class="tables-container">
+                <div class="table-3d">
+                    <div class="table-name">ACCOUNTS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">account_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">customer_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>account_type</span><span>VARCHAR</span></div>
+                        <div class="column"><span>balance</span><span>DECIMAL</span></div>
+                        <div class="column"><span>interest_rate</span><span>DECIMAL</span></div>
+                        <div class="column"><span>status</span><span>VARCHAR</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">TRANSACTIONS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">transaction_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">account_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>transaction_type</span><span>VARCHAR</span></div>
+                        <div class="column"><span>amount</span><span>DECIMAL</span></div>
+                        <div class="column"><span>transaction_date</span><span>TIMESTAMP</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">CUSTOMERS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">customer_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span>first_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>last_name</span><span>VARCHAR</span></div>
+                        <div class="column"><span>credit_score</span><span>INT</span></div>
+                        <div class="column"><span>customer_since</span><span>DATE</span></div>
+                    </div>
+                </div>
+                <div class="table-3d">
+                    <div class="table-name">LOANS</div>
+                    <div class="columns">
+                        <div class="column"><span class="pk">loan_id (PK)</span><span>INT</span></div>
+                        <div class="column"><span class="fk">customer_id (FK)</span><span>INT</span></div>
+                        <div class="column"><span>loan_type</span><span>VARCHAR</span></div>
+                        <div class="column"><span>principal</span><span>DECIMAL</span></div>
+                        <div class="column"><span>interest_rate</span><span>DECIMAL</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-section">
+            <div class="question-card">
+                <span class="question-number">Q61</span>
+                <span class="difficulty medium">Medium</span>
+                <span class="concept-tag">Window Functions</span>
+                <span class="concept-tag">Running Balance</span>
+                <p class="scenario">Scenario: Generate account statement with running balance</p>
+                <p class="question-text">Calculate daily account balance</p>
+                <div class="sql-code">
+                    <pre>SELECT t.transaction_date, t.transaction_type, t.description,
+       CASE WHEN t.transaction_type IN ('DEPOSIT', 'INTEREST') THEN t.amount ELSE 0 END AS credit,
+       CASE WHEN t.transaction_type IN ('WITHDRAWAL', 'FEE') THEN t.amount ELSE 0 END AS debit,
+       SUM(CASE WHEN t.transaction_type IN ('DEPOSIT', 'INTEREST') THEN t.amount 
+                ELSE -t.amount END) OVER (ORDER BY t.transaction_date) AS running_balance
+FROM transactions t WHERE t.account_id = 1001;</pre>
+                </div>
+                <div class="finance-visual">
+                    <h4>Account Statement</h4>
+                    <div class="account-card">
+                        <div>Account: Checking #1001</div>
+                        <div class="balance">Balance: $12,450.00</div>
+                    </div>
+                    <div class="transaction-list">
+                        <div class="transaction-item"><span>Dec 20 - Deposit</span><span class="credit">+$2,500.00</span></div>
+                        <div class="transaction-item"><span>Dec 18 - Bill Pay</span><span class="debit">-$150.00</span></div>
+                        <div class="transaction-item"><span>Dec 15 - ATM</span><span class="debit">-$200.00</span></div>
+                        <div class="transaction-item"><span>Dec 10 - Direct Deposit</span><span class="credit">+$3,200.00</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q62</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Fraud Detection</span>
+                <span class="concept-tag">Z-Score</span>
+                <p class="scenario">Scenario: Flag transactions significantly above customer's average</p>
+                <p class="question-text">Detect potential fraud - unusual transactions</p>
+                <div class="sql-code">
+                    <pre>WITH customer_stats AS (
+    SELECT a.customer_id, AVG(t.amount) AS avg_trans, STDDEV(t.amount) AS stddev_trans
+    FROM transactions t JOIN accounts a ON t.account_id = a.account_id
+    WHERE t.transaction_date >= CURRENT_DATE - INTERVAL '90 days'
+    GROUP BY a.customer_id
+)
+SELECT t.transaction_id, c.customer_id, t.amount, cs.avg_trans,
+       ROUND((t.amount - cs.avg_trans) / NULLIF(cs.stddev_trans, 0), 2) AS z_score
+FROM transactions t
+JOIN accounts a ON t.account_id = a.account_id
+JOIN customers c ON a.customer_id = c.customer_id
+JOIN customer_stats cs ON c.customer_id = cs.customer_id
+WHERE (t.amount - cs.avg_trans) / NULLIF(cs.stddev_trans, 0) > 3;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q66</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">AML</span>
+                <span class="concept-tag">Structuring</span>
+                <p class="scenario">Scenario: Find multiple deposits just under reporting threshold</p>
+                <p class="question-text">Detect money laundering patterns (structuring)</p>
+                <div class="sql-code">
+                    <pre>SELECT a.customer_id, c.first_name || ' ' || c.last_name AS customer_name,
+       DATE(t.transaction_date) AS transaction_date,
+       COUNT(*) AS num_deposits, SUM(t.amount) AS total_amount
+FROM transactions t
+JOIN accounts a ON t.account_id = a.account_id
+JOIN customers c ON a.customer_id = c.customer_id
+WHERE t.transaction_type = 'DEPOSIT'
+AND t.amount BETWEEN 8000 AND 9999  -- Just under $10K threshold
+GROUP BY a.customer_id, c.first_name, c.last_name, DATE(t.transaction_date)
+HAVING COUNT(*) >= 3 OR SUM(t.amount) >= 25000;</pre>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <span class="question-number">Q68</span>
+                <span class="difficulty hard">Hard</span>
+                <span class="concept-tag">Risk Analysis</span>
+                <span class="concept-tag">Default Prediction</span>
+                <p class="scenario">Scenario: Identify loans at risk of default</p>
+                <p class="question-text">Loan default risk analysis</p>
+                <div class="sql-code">
+                    <pre>WITH payment_history AS (
+    SELECT l.loan_id, l.customer_id,
+           COUNT(CASE WHEN t.amount < expected_payment THEN 1 END) AS missed_payments,
+           MAX(t.transaction_date) AS last_payment_date
+    FROM loans l
+    LEFT JOIN transactions t ON l.loan_id = t.reference_id
+    GROUP BY l.loan_id, l.customer_id
+)
+SELECT l.loan_id, c.first_name || ' ' || c.last_name AS customer_name,
+       c.credit_score, l.principal, ph.missed_payments,
+       CASE WHEN ph.missed_payments >= 3 THEN 'HIGH'
+            WHEN ph.missed_payments >= 1 THEN 'MEDIUM'
+            ELSE 'LOW' END AS risk_level
+FROM loans l
+JOIN customers c ON l.customer_id = c.customer_id
+JOIN payment_history ph ON l.loan_id = ph.loan_id;</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
