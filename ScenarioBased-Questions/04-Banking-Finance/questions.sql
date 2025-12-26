@@ -1,584 +1,1152 @@
--- ============================================
--- SCENARIO-BASED SQL QUESTIONS
--- Category: Banking & Finance (Questions 61-80)
--- SQL Server, Oracle, PostgreSQL, MySQL
--- ============================================
+-- ============================================================================
+-- SCENARIO-BASED SQL QUESTIONS: BANKING & FINANCE (Q61-Q80)
+-- ============================================================================
+-- This file contains 20 comprehensive scenario-based SQL questions with
+-- solutions for SQL Server, Oracle, PostgreSQL, and MySQL.
+-- ============================================================================
 
--- ============================================
--- SAMPLE SCHEMA
--- ============================================
-/*
-CREATE TABLE accounts (
-    account_id INT PRIMARY KEY,
-    customer_id INT,
-    account_type VARCHAR(20),
-    balance DECIMAL(15,2),
-    interest_rate DECIMAL(5,4),
-    opened_date DATE,
-    status VARCHAR(20)
-);
 
-CREATE TABLE transactions (
-    transaction_id INT PRIMARY KEY,
-    account_id INT,
-    transaction_type VARCHAR(20),
-    amount DECIMAL(15,2),
-    transaction_date TIMESTAMP,
-    description VARCHAR(200),
-    reference_id VARCHAR(50)
-);
+-- ============================================================================
+-- Q61: DETECT POTENTIAL FRAUDULENT TRANSACTIONS
+-- ============================================================================
+-- Difficulty: Hard
+-- Concepts: Window Functions, Statistical Analysis, Pattern Detection
+-- 
+-- BUSINESS SCENARIO:
+-- Identify transactions that deviate significantly from a customer's
+-- normal spending pattern for fraud investigation.
+-- ============================================================================
 
-CREATE TABLE customers (
-    customer_id INT PRIMARY KEY,
-    first_name VARCHAR(50),
-    last_name VARCHAR(50),
-    email VARCHAR(100),
-    credit_score INT,
-    customer_since DATE
-);
-
-CREATE TABLE loans (
-    loan_id INT PRIMARY KEY,
-    customer_id INT,
-    loan_type VARCHAR(30),
-    principal DECIMAL(15,2),
-    interest_rate DECIMAL(5,4),
-    term_months INT,
-    start_date DATE,
-    status VARCHAR(20)
-);
-*/
-
--- ============================================
--- QUESTION 61: Calculate daily account balance
--- ============================================
--- Scenario: Generate account statement with running balance
-
-SELECT 
-    t.transaction_date,
-    t.transaction_type,
-    t.description,
-    CASE WHEN t.transaction_type IN ('DEPOSIT', 'INTEREST') THEN t.amount ELSE 0 END AS credit,
-    CASE WHEN t.transaction_type IN ('WITHDRAWAL', 'FEE', 'TRANSFER_OUT') THEN t.amount ELSE 0 END AS debit,
-    SUM(CASE 
-        WHEN t.transaction_type IN ('DEPOSIT', 'INTEREST', 'TRANSFER_IN') THEN t.amount 
-        ELSE -t.amount 
-    END) OVER (ORDER BY t.transaction_date, t.transaction_id) AS running_balance
-FROM transactions t
-WHERE t.account_id = 1001
-AND t.transaction_date BETWEEN '2024-01-01' AND '2024-12-31'
-ORDER BY t.transaction_date, t.transaction_id;
-
--- ============================================
--- QUESTION 62: Detect potential fraud - unusual transactions
--- ============================================
--- Scenario: Flag transactions significantly above customer's average
-
+-- ==================== SQL SERVER SOLUTION ====================
 WITH customer_stats AS (
     SELECT 
-        a.customer_id,
-        AVG(t.amount) AS avg_transaction,
-        STDDEV(t.amount) AS stddev_transaction
-    FROM transactions t
-    JOIN accounts a ON t.account_id = a.account_id
-    WHERE t.transaction_date >= CURRENT_DATE - INTERVAL '90 days'
-    GROUP BY a.customer_id
+        customer_id,
+        AVG(amount) AS avg_amount,
+        STDEV(amount) AS stddev_amount
+    FROM transactions
+    WHERE transaction_date >= DATEADD(MONTH, -3, GETDATE())
+    AND status = 'Completed'
+    GROUP BY customer_id
 )
 SELECT 
     t.transaction_id,
-    c.customer_id,
-    c.first_name || ' ' || c.last_name AS customer_name,
+    t.customer_id,
+    c.customer_name,
     t.amount,
-    cs.avg_transaction,
-    ROUND((t.amount - cs.avg_transaction) / NULLIF(cs.stddev_transaction, 0), 2) AS z_score,
     t.transaction_date,
-    t.description
+    t.merchant_category,
+    cs.avg_amount,
+    ROUND((t.amount - cs.avg_amount) / NULLIF(cs.stddev_amount, 0), 2) AS z_score,
+    CASE 
+        WHEN (t.amount - cs.avg_amount) / NULLIF(cs.stddev_amount, 0) > 3 THEN 'High Risk'
+        WHEN (t.amount - cs.avg_amount) / NULLIF(cs.stddev_amount, 0) > 2 THEN 'Medium Risk'
+        ELSE 'Low Risk'
+    END AS risk_level
 FROM transactions t
-JOIN accounts a ON t.account_id = a.account_id
-JOIN customers c ON a.customer_id = c.customer_id
-JOIN customer_stats cs ON c.customer_id = cs.customer_id
-WHERE (t.amount - cs.avg_transaction) / NULLIF(cs.stddev_transaction, 0) > 3
+INNER JOIN customers c ON t.customer_id = c.customer_id
+INNER JOIN customer_stats cs ON t.customer_id = cs.customer_id
+WHERE t.amount > cs.avg_amount + 2 * cs.stddev_amount
 ORDER BY z_score DESC;
 
--- ============================================
--- QUESTION 63: Calculate loan amortization schedule
--- ============================================
--- Scenario: Generate monthly payment breakdown
+-- ==================== ORACLE SOLUTION ====================
+WITH customer_stats AS (
+    SELECT 
+        customer_id,
+        AVG(amount) AS avg_amount,
+        STDDEV(amount) AS stddev_amount
+    FROM transactions
+    WHERE transaction_date >= ADD_MONTHS(SYSDATE, -3)
+    AND status = 'Completed'
+    GROUP BY customer_id
+)
+SELECT 
+    t.transaction_id,
+    t.customer_id,
+    c.customer_name,
+    t.amount,
+    t.transaction_date,
+    t.merchant_category,
+    cs.avg_amount,
+    ROUND((t.amount - cs.avg_amount) / NULLIF(cs.stddev_amount, 0), 2) AS z_score,
+    CASE 
+        WHEN (t.amount - cs.avg_amount) / NULLIF(cs.stddev_amount, 0) > 3 THEN 'High Risk'
+        WHEN (t.amount - cs.avg_amount) / NULLIF(cs.stddev_amount, 0) > 2 THEN 'Medium Risk'
+        ELSE 'Low Risk'
+    END AS risk_level
+FROM transactions t
+INNER JOIN customers c ON t.customer_id = c.customer_id
+INNER JOIN customer_stats cs ON t.customer_id = cs.customer_id
+WHERE t.amount > cs.avg_amount + 2 * cs.stddev_amount
+ORDER BY z_score DESC;
 
-WITH RECURSIVE amortization AS (
+-- ==================== POSTGRESQL SOLUTION ====================
+WITH customer_stats AS (
+    SELECT 
+        customer_id,
+        AVG(amount) AS avg_amount,
+        STDDEV(amount) AS stddev_amount
+    FROM transactions
+    WHERE transaction_date >= CURRENT_DATE - INTERVAL '3 months'
+    AND status = 'Completed'
+    GROUP BY customer_id
+)
+SELECT 
+    t.transaction_id,
+    t.customer_id,
+    c.customer_name,
+    t.amount,
+    t.transaction_date,
+    t.merchant_category,
+    cs.avg_amount,
+    ROUND(((t.amount - cs.avg_amount) / NULLIF(cs.stddev_amount, 0))::NUMERIC, 2) AS z_score,
+    CASE 
+        WHEN (t.amount - cs.avg_amount) / NULLIF(cs.stddev_amount, 0) > 3 THEN 'High Risk'
+        WHEN (t.amount - cs.avg_amount) / NULLIF(cs.stddev_amount, 0) > 2 THEN 'Medium Risk'
+        ELSE 'Low Risk'
+    END AS risk_level
+FROM transactions t
+INNER JOIN customers c ON t.customer_id = c.customer_id
+INNER JOIN customer_stats cs ON t.customer_id = cs.customer_id
+WHERE t.amount > cs.avg_amount + 2 * cs.stddev_amount
+ORDER BY z_score DESC;
+
+-- ==================== MYSQL SOLUTION ====================
+WITH customer_stats AS (
+    SELECT 
+        customer_id,
+        AVG(amount) AS avg_amount,
+        STDDEV(amount) AS stddev_amount
+    FROM transactions
+    WHERE transaction_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+    AND status = 'Completed'
+    GROUP BY customer_id
+)
+SELECT 
+    t.transaction_id,
+    t.customer_id,
+    c.customer_name,
+    t.amount,
+    t.transaction_date,
+    t.merchant_category,
+    cs.avg_amount,
+    ROUND((t.amount - cs.avg_amount) / NULLIF(cs.stddev_amount, 0), 2) AS z_score,
+    CASE 
+        WHEN (t.amount - cs.avg_amount) / NULLIF(cs.stddev_amount, 0) > 3 THEN 'High Risk'
+        WHEN (t.amount - cs.avg_amount) / NULLIF(cs.stddev_amount, 0) > 2 THEN 'Medium Risk'
+        ELSE 'Low Risk'
+    END AS risk_level
+FROM transactions t
+INNER JOIN customers c ON t.customer_id = c.customer_id
+INNER JOIN customer_stats cs ON t.customer_id = cs.customer_id
+WHERE t.amount > cs.avg_amount + 2 * cs.stddev_amount
+ORDER BY z_score DESC;
+
+-- EXPLANATION:
+-- Z-score measures how many standard deviations from the mean.
+-- Transactions > 2 standard deviations are flagged as potential fraud.
+
+
+-- ============================================================================
+-- Q62: CALCULATE LOAN AMORTIZATION SCHEDULE
+-- ============================================================================
+-- Difficulty: Hard
+-- Concepts: Recursive CTE, Financial Calculations
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
+WITH loan_params AS (
+    SELECT 
+        loan_id,
+        principal_amount,
+        annual_rate / 12.0 / 100.0 AS monthly_rate,
+        term_months,
+        principal_amount * (annual_rate / 12.0 / 100.0) * 
+            POWER(1 + annual_rate / 12.0 / 100.0, term_months) / 
+            (POWER(1 + annual_rate / 12.0 / 100.0, term_months) - 1) AS monthly_payment
+    FROM loans
+    WHERE loan_id = 1001
+),
+amortization AS (
     SELECT 
         loan_id,
         1 AS payment_number,
-        principal AS remaining_balance,
-        ROUND(principal * (interest_rate/12) * POWER(1 + interest_rate/12, term_months) / 
-              (POWER(1 + interest_rate/12, term_months) - 1), 2) AS monthly_payment,
-        interest_rate,
-        term_months
-    FROM loans
-    WHERE loan_id = 5001
+        monthly_payment,
+        principal_amount * monthly_rate AS interest_payment,
+        monthly_payment - principal_amount * monthly_rate AS principal_payment,
+        principal_amount - (monthly_payment - principal_amount * monthly_rate) AS remaining_balance,
+        monthly_rate
+    FROM loan_params
     
     UNION ALL
     
     SELECT 
-        loan_id,
-        payment_number + 1,
-        ROUND(remaining_balance * (1 + interest_rate/12) - monthly_payment, 2),
-        monthly_payment,
-        interest_rate,
-        term_months
-    FROM amortization
-    WHERE payment_number < term_months AND remaining_balance > 0
+        a.loan_id,
+        a.payment_number + 1,
+        a.monthly_payment,
+        a.remaining_balance * a.monthly_rate AS interest_payment,
+        a.monthly_payment - a.remaining_balance * a.monthly_rate AS principal_payment,
+        a.remaining_balance - (a.monthly_payment - a.remaining_balance * a.monthly_rate) AS remaining_balance,
+        a.monthly_rate
+    FROM amortization a
+    WHERE a.payment_number < (SELECT term_months FROM loan_params WHERE loan_id = a.loan_id)
+    AND a.remaining_balance > 0.01
 )
 SELECT 
     payment_number,
-    monthly_payment,
-    ROUND(remaining_balance * interest_rate / 12, 2) AS interest_portion,
-    ROUND(monthly_payment - remaining_balance * interest_rate / 12, 2) AS principal_portion,
-    GREATEST(remaining_balance - (monthly_payment - remaining_balance * interest_rate / 12), 0) AS ending_balance
+    ROUND(monthly_payment, 2) AS payment,
+    ROUND(principal_payment, 2) AS principal,
+    ROUND(interest_payment, 2) AS interest,
+    ROUND(remaining_balance, 2) AS balance
 FROM amortization
 ORDER BY payment_number;
 
--- ============================================
--- QUESTION 64: Find dormant accounts
--- ============================================
--- Scenario: Identify accounts with no activity for compliance
+-- ==================== ORACLE SOLUTION ====================
+WITH loan_params AS (
+    SELECT 
+        loan_id,
+        principal_amount,
+        annual_rate / 12.0 / 100.0 AS monthly_rate,
+        term_months,
+        principal_amount * (annual_rate / 12.0 / 100.0) * 
+            POWER(1 + annual_rate / 12.0 / 100.0, term_months) / 
+            (POWER(1 + annual_rate / 12.0 / 100.0, term_months) - 1) AS monthly_payment
+    FROM loans
+    WHERE loan_id = 1001
+),
+amortization (loan_id, payment_number, monthly_payment, interest_payment, principal_payment, remaining_balance, monthly_rate) AS (
+    SELECT 
+        loan_id,
+        1 AS payment_number,
+        monthly_payment,
+        principal_amount * monthly_rate AS interest_payment,
+        monthly_payment - principal_amount * monthly_rate AS principal_payment,
+        principal_amount - (monthly_payment - principal_amount * monthly_rate) AS remaining_balance,
+        monthly_rate
+    FROM loan_params
+    
+    UNION ALL
+    
+    SELECT 
+        a.loan_id,
+        a.payment_number + 1,
+        a.monthly_payment,
+        a.remaining_balance * a.monthly_rate AS interest_payment,
+        a.monthly_payment - a.remaining_balance * a.monthly_rate AS principal_payment,
+        a.remaining_balance - (a.monthly_payment - a.remaining_balance * a.monthly_rate) AS remaining_balance,
+        a.monthly_rate
+    FROM amortization a
+    WHERE a.payment_number < (SELECT term_months FROM loan_params WHERE loan_id = a.loan_id)
+    AND a.remaining_balance > 0.01
+)
+SELECT 
+    payment_number,
+    ROUND(monthly_payment, 2) AS payment,
+    ROUND(principal_payment, 2) AS principal,
+    ROUND(interest_payment, 2) AS interest,
+    ROUND(remaining_balance, 2) AS balance
+FROM amortization
+ORDER BY payment_number;
 
+-- ==================== POSTGRESQL SOLUTION ====================
+WITH RECURSIVE loan_params AS (
+    SELECT 
+        loan_id,
+        principal_amount,
+        annual_rate / 12.0 / 100.0 AS monthly_rate,
+        term_months,
+        principal_amount * (annual_rate / 12.0 / 100.0) * 
+            POWER(1 + annual_rate / 12.0 / 100.0, term_months) / 
+            (POWER(1 + annual_rate / 12.0 / 100.0, term_months) - 1) AS monthly_payment
+    FROM loans
+    WHERE loan_id = 1001
+),
+amortization AS (
+    SELECT 
+        loan_id,
+        1 AS payment_number,
+        monthly_payment,
+        principal_amount * monthly_rate AS interest_payment,
+        monthly_payment - principal_amount * monthly_rate AS principal_payment,
+        principal_amount - (monthly_payment - principal_amount * monthly_rate) AS remaining_balance,
+        monthly_rate
+    FROM loan_params
+    
+    UNION ALL
+    
+    SELECT 
+        a.loan_id,
+        a.payment_number + 1,
+        a.monthly_payment,
+        a.remaining_balance * a.monthly_rate AS interest_payment,
+        a.monthly_payment - a.remaining_balance * a.monthly_rate AS principal_payment,
+        a.remaining_balance - (a.monthly_payment - a.remaining_balance * a.monthly_rate) AS remaining_balance,
+        a.monthly_rate
+    FROM amortization a
+    WHERE a.payment_number < (SELECT term_months FROM loan_params WHERE loan_id = a.loan_id)
+    AND a.remaining_balance > 0.01
+)
+SELECT 
+    payment_number,
+    ROUND(monthly_payment::NUMERIC, 2) AS payment,
+    ROUND(principal_payment::NUMERIC, 2) AS principal,
+    ROUND(interest_payment::NUMERIC, 2) AS interest,
+    ROUND(remaining_balance::NUMERIC, 2) AS balance
+FROM amortization
+ORDER BY payment_number;
+
+-- ==================== MYSQL SOLUTION ====================
+WITH RECURSIVE loan_params AS (
+    SELECT 
+        loan_id,
+        principal_amount,
+        annual_rate / 12.0 / 100.0 AS monthly_rate,
+        term_months,
+        principal_amount * (annual_rate / 12.0 / 100.0) * 
+            POWER(1 + annual_rate / 12.0 / 100.0, term_months) / 
+            (POWER(1 + annual_rate / 12.0 / 100.0, term_months) - 1) AS monthly_payment
+    FROM loans
+    WHERE loan_id = 1001
+),
+amortization AS (
+    SELECT 
+        loan_id,
+        1 AS payment_number,
+        monthly_payment,
+        principal_amount * monthly_rate AS interest_payment,
+        monthly_payment - principal_amount * monthly_rate AS principal_payment,
+        principal_amount - (monthly_payment - principal_amount * monthly_rate) AS remaining_balance,
+        monthly_rate
+    FROM loan_params
+    
+    UNION ALL
+    
+    SELECT 
+        a.loan_id,
+        a.payment_number + 1,
+        a.monthly_payment,
+        a.remaining_balance * a.monthly_rate AS interest_payment,
+        a.monthly_payment - a.remaining_balance * a.monthly_rate AS principal_payment,
+        a.remaining_balance - (a.monthly_payment - a.remaining_balance * a.monthly_rate) AS remaining_balance,
+        a.monthly_rate
+    FROM amortization a
+    WHERE a.payment_number < (SELECT term_months FROM loan_params WHERE loan_id = a.loan_id)
+    AND a.remaining_balance > 0.01
+)
+SELECT 
+    payment_number,
+    ROUND(monthly_payment, 2) AS payment,
+    ROUND(principal_payment, 2) AS principal,
+    ROUND(interest_payment, 2) AS interest,
+    ROUND(remaining_balance, 2) AS balance
+FROM amortization
+ORDER BY payment_number;
+
+-- EXPLANATION:
+-- Recursive CTE differs:
+--   SQL Server/Oracle: WITH ... (no RECURSIVE keyword)
+--   PostgreSQL/MySQL: WITH RECURSIVE ...
+-- Monthly Payment = P * r * (1+r)^n / ((1+r)^n - 1)
+
+
+-- ============================================================================
+-- Q63: CALCULATE ACCOUNT BALANCE WITH RUNNING TOTAL
+-- ============================================================================
+-- Difficulty: Medium
+-- Concepts: Window Functions, Running Total
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
 SELECT 
     a.account_id,
-    a.account_type,
-    c.first_name || ' ' || c.last_name AS customer_name,
-    a.balance,
-    MAX(t.transaction_date) AS last_transaction,
-    CURRENT_DATE - MAX(t.transaction_date) AS days_inactive
+    a.account_number,
+    t.transaction_id,
+    t.transaction_date,
+    t.transaction_type,
+    t.description,
+    CASE WHEN t.transaction_type IN ('Deposit', 'Credit') THEN t.amount ELSE 0 END AS credit,
+    CASE WHEN t.transaction_type IN ('Withdrawal', 'Debit') THEN t.amount ELSE 0 END AS debit,
+    SUM(CASE 
+        WHEN t.transaction_type IN ('Deposit', 'Credit') THEN t.amount 
+        ELSE -t.amount 
+    END) OVER (PARTITION BY a.account_id ORDER BY t.transaction_date, t.transaction_id) AS running_balance
 FROM accounts a
-JOIN customers c ON a.customer_id = c.customer_id
+INNER JOIN transactions t ON a.account_id = t.account_id
+WHERE t.status = 'Completed'
+ORDER BY a.account_id, t.transaction_date, t.transaction_id;
+
+-- ==================== ORACLE SOLUTION ====================
+SELECT 
+    a.account_id,
+    a.account_number,
+    t.transaction_id,
+    t.transaction_date,
+    t.transaction_type,
+    t.description,
+    CASE WHEN t.transaction_type IN ('Deposit', 'Credit') THEN t.amount ELSE 0 END AS credit,
+    CASE WHEN t.transaction_type IN ('Withdrawal', 'Debit') THEN t.amount ELSE 0 END AS debit,
+    SUM(CASE 
+        WHEN t.transaction_type IN ('Deposit', 'Credit') THEN t.amount 
+        ELSE -t.amount 
+    END) OVER (PARTITION BY a.account_id ORDER BY t.transaction_date, t.transaction_id) AS running_balance
+FROM accounts a
+INNER JOIN transactions t ON a.account_id = t.account_id
+WHERE t.status = 'Completed'
+ORDER BY a.account_id, t.transaction_date, t.transaction_id;
+
+-- ==================== POSTGRESQL SOLUTION ====================
+SELECT 
+    a.account_id,
+    a.account_number,
+    t.transaction_id,
+    t.transaction_date,
+    t.transaction_type,
+    t.description,
+    CASE WHEN t.transaction_type IN ('Deposit', 'Credit') THEN t.amount ELSE 0 END AS credit,
+    CASE WHEN t.transaction_type IN ('Withdrawal', 'Debit') THEN t.amount ELSE 0 END AS debit,
+    SUM(CASE 
+        WHEN t.transaction_type IN ('Deposit', 'Credit') THEN t.amount 
+        ELSE -t.amount 
+    END) OVER (PARTITION BY a.account_id ORDER BY t.transaction_date, t.transaction_id) AS running_balance
+FROM accounts a
+INNER JOIN transactions t ON a.account_id = t.account_id
+WHERE t.status = 'Completed'
+ORDER BY a.account_id, t.transaction_date, t.transaction_id;
+
+-- ==================== MYSQL SOLUTION ====================
+SELECT 
+    a.account_id,
+    a.account_number,
+    t.transaction_id,
+    t.transaction_date,
+    t.transaction_type,
+    t.description,
+    CASE WHEN t.transaction_type IN ('Deposit', 'Credit') THEN t.amount ELSE 0 END AS credit,
+    CASE WHEN t.transaction_type IN ('Withdrawal', 'Debit') THEN t.amount ELSE 0 END AS debit,
+    SUM(CASE 
+        WHEN t.transaction_type IN ('Deposit', 'Credit') THEN t.amount 
+        ELSE -t.amount 
+    END) OVER (PARTITION BY a.account_id ORDER BY t.transaction_date, t.transaction_id) AS running_balance
+FROM accounts a
+INNER JOIN transactions t ON a.account_id = t.account_id
+WHERE t.status = 'Completed'
+ORDER BY a.account_id, t.transaction_date, t.transaction_id;
+
+-- EXPLANATION:
+-- Standard SQL window function works identically across all RDBMS.
+-- Running balance calculated with SUM() OVER (ORDER BY ...).
+
+
+-- ============================================================================
+-- Q64: IDENTIFY DORMANT ACCOUNTS
+-- ============================================================================
+-- Difficulty: Easy
+-- Concepts: Date Arithmetic, Aggregation, HAVING
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
+SELECT 
+    a.account_id,
+    a.account_number,
+    a.account_type,
+    c.customer_name,
+    a.current_balance,
+    MAX(t.transaction_date) AS last_activity_date,
+    DATEDIFF(DAY, MAX(t.transaction_date), GETDATE()) AS days_inactive
+FROM accounts a
+INNER JOIN customers c ON a.customer_id = c.customer_id
 LEFT JOIN transactions t ON a.account_id = t.account_id
-WHERE a.status = 'ACTIVE'
-GROUP BY a.account_id, a.account_type, c.first_name, c.last_name, a.balance
-HAVING MAX(t.transaction_date) < CURRENT_DATE - INTERVAL '180 days'
-    OR MAX(t.transaction_date) IS NULL
+WHERE a.status = 'Active'
+GROUP BY a.account_id, a.account_number, a.account_type, c.customer_name, a.current_balance
+HAVING MAX(t.transaction_date) IS NULL 
+    OR MAX(t.transaction_date) < DATEADD(MONTH, -12, GETDATE())
 ORDER BY days_inactive DESC;
 
--- ============================================
--- QUESTION 65: Calculate customer profitability
--- ============================================
--- Scenario: Segment customers by revenue contribution
+-- ==================== ORACLE SOLUTION ====================
+SELECT 
+    a.account_id,
+    a.account_number,
+    a.account_type,
+    c.customer_name,
+    a.current_balance,
+    MAX(t.transaction_date) AS last_activity_date,
+    TRUNC(SYSDATE - MAX(t.transaction_date)) AS days_inactive
+FROM accounts a
+INNER JOIN customers c ON a.customer_id = c.customer_id
+LEFT JOIN transactions t ON a.account_id = t.account_id
+WHERE a.status = 'Active'
+GROUP BY a.account_id, a.account_number, a.account_type, c.customer_name, a.current_balance
+HAVING MAX(t.transaction_date) IS NULL 
+    OR MAX(t.transaction_date) < ADD_MONTHS(SYSDATE, -12)
+ORDER BY days_inactive DESC;
 
+-- ==================== POSTGRESQL SOLUTION ====================
+SELECT 
+    a.account_id,
+    a.account_number,
+    a.account_type,
+    c.customer_name,
+    a.current_balance,
+    MAX(t.transaction_date) AS last_activity_date,
+    CURRENT_DATE - MAX(t.transaction_date) AS days_inactive
+FROM accounts a
+INNER JOIN customers c ON a.customer_id = c.customer_id
+LEFT JOIN transactions t ON a.account_id = t.account_id
+WHERE a.status = 'Active'
+GROUP BY a.account_id, a.account_number, a.account_type, c.customer_name, a.current_balance
+HAVING MAX(t.transaction_date) IS NULL 
+    OR MAX(t.transaction_date) < CURRENT_DATE - INTERVAL '12 months'
+ORDER BY days_inactive DESC;
+
+-- ==================== MYSQL SOLUTION ====================
+SELECT 
+    a.account_id,
+    a.account_number,
+    a.account_type,
+    c.customer_name,
+    a.current_balance,
+    MAX(t.transaction_date) AS last_activity_date,
+    DATEDIFF(CURDATE(), MAX(t.transaction_date)) AS days_inactive
+FROM accounts a
+INNER JOIN customers c ON a.customer_id = c.customer_id
+LEFT JOIN transactions t ON a.account_id = t.account_id
+WHERE a.status = 'Active'
+GROUP BY a.account_id, a.account_number, a.account_type, c.customer_name, a.current_balance
+HAVING MAX(t.transaction_date) IS NULL 
+    OR MAX(t.transaction_date) < DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+ORDER BY days_inactive DESC;
+
+-- EXPLANATION:
+-- Dormant accounts have no activity for 12+ months.
+-- LEFT JOIN ensures accounts with no transactions are included.
+
+
+-- ============================================================================
+-- Q65: CALCULATE INTEREST ACCRUAL
+-- ============================================================================
+-- Difficulty: Medium
+-- Concepts: Date Arithmetic, Financial Calculations
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
+SELECT 
+    a.account_id,
+    a.account_number,
+    a.account_type,
+    a.current_balance,
+    a.interest_rate,
+    DATEDIFF(DAY, a.last_interest_date, GETDATE()) AS days_since_last_accrual,
+    ROUND(a.current_balance * (a.interest_rate / 100.0) * 
+          DATEDIFF(DAY, a.last_interest_date, GETDATE()) / 365.0, 2) AS accrued_interest
+FROM accounts a
+WHERE a.account_type IN ('Savings', 'Money Market', 'CD')
+AND a.status = 'Active'
+ORDER BY accrued_interest DESC;
+
+-- ==================== ORACLE SOLUTION ====================
+SELECT 
+    a.account_id,
+    a.account_number,
+    a.account_type,
+    a.current_balance,
+    a.interest_rate,
+    TRUNC(SYSDATE - a.last_interest_date) AS days_since_last_accrual,
+    ROUND(a.current_balance * (a.interest_rate / 100.0) * 
+          (SYSDATE - a.last_interest_date) / 365.0, 2) AS accrued_interest
+FROM accounts a
+WHERE a.account_type IN ('Savings', 'Money Market', 'CD')
+AND a.status = 'Active'
+ORDER BY accrued_interest DESC;
+
+-- ==================== POSTGRESQL SOLUTION ====================
+SELECT 
+    a.account_id,
+    a.account_number,
+    a.account_type,
+    a.current_balance,
+    a.interest_rate,
+    CURRENT_DATE - a.last_interest_date AS days_since_last_accrual,
+    ROUND((a.current_balance * (a.interest_rate / 100.0) * 
+          (CURRENT_DATE - a.last_interest_date) / 365.0)::NUMERIC, 2) AS accrued_interest
+FROM accounts a
+WHERE a.account_type IN ('Savings', 'Money Market', 'CD')
+AND a.status = 'Active'
+ORDER BY accrued_interest DESC;
+
+-- ==================== MYSQL SOLUTION ====================
+SELECT 
+    a.account_id,
+    a.account_number,
+    a.account_type,
+    a.current_balance,
+    a.interest_rate,
+    DATEDIFF(CURDATE(), a.last_interest_date) AS days_since_last_accrual,
+    ROUND(a.current_balance * (a.interest_rate / 100.0) * 
+          DATEDIFF(CURDATE(), a.last_interest_date) / 365.0, 2) AS accrued_interest
+FROM accounts a
+WHERE a.account_type IN ('Savings', 'Money Market', 'CD')
+AND a.status = 'Active'
+ORDER BY accrued_interest DESC;
+
+-- EXPLANATION:
+-- Simple interest = Principal * Rate * Time
+-- Time calculated as days / 365 for annual rate.
+
+
+-- ============================================================================
+-- Q66: ANALYZE LOAN PORTFOLIO RISK
+-- ============================================================================
+-- Difficulty: Medium
+-- Concepts: CASE, Aggregation, Risk Classification
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
+SELECT 
+    l.loan_type,
+    COUNT(*) AS total_loans,
+    SUM(l.principal_amount) AS total_principal,
+    SUM(l.outstanding_balance) AS total_outstanding,
+    SUM(CASE WHEN l.days_past_due = 0 THEN l.outstanding_balance ELSE 0 END) AS current_balance,
+    SUM(CASE WHEN l.days_past_due BETWEEN 1 AND 30 THEN l.outstanding_balance ELSE 0 END) AS past_due_1_30,
+    SUM(CASE WHEN l.days_past_due BETWEEN 31 AND 60 THEN l.outstanding_balance ELSE 0 END) AS past_due_31_60,
+    SUM(CASE WHEN l.days_past_due BETWEEN 61 AND 90 THEN l.outstanding_balance ELSE 0 END) AS past_due_61_90,
+    SUM(CASE WHEN l.days_past_due > 90 THEN l.outstanding_balance ELSE 0 END) AS past_due_90_plus,
+    ROUND(100.0 * SUM(CASE WHEN l.days_past_due > 30 THEN l.outstanding_balance ELSE 0 END) / 
+          NULLIF(SUM(l.outstanding_balance), 0), 2) AS delinquency_rate
+FROM loans l
+WHERE l.status = 'Active'
+GROUP BY l.loan_type
+ORDER BY delinquency_rate DESC;
+
+-- ==================== ORACLE SOLUTION ====================
+SELECT 
+    l.loan_type,
+    COUNT(*) AS total_loans,
+    SUM(l.principal_amount) AS total_principal,
+    SUM(l.outstanding_balance) AS total_outstanding,
+    SUM(CASE WHEN l.days_past_due = 0 THEN l.outstanding_balance ELSE 0 END) AS current_balance,
+    SUM(CASE WHEN l.days_past_due BETWEEN 1 AND 30 THEN l.outstanding_balance ELSE 0 END) AS past_due_1_30,
+    SUM(CASE WHEN l.days_past_due BETWEEN 31 AND 60 THEN l.outstanding_balance ELSE 0 END) AS past_due_31_60,
+    SUM(CASE WHEN l.days_past_due BETWEEN 61 AND 90 THEN l.outstanding_balance ELSE 0 END) AS past_due_61_90,
+    SUM(CASE WHEN l.days_past_due > 90 THEN l.outstanding_balance ELSE 0 END) AS past_due_90_plus,
+    ROUND(100.0 * SUM(CASE WHEN l.days_past_due > 30 THEN l.outstanding_balance ELSE 0 END) / 
+          NULLIF(SUM(l.outstanding_balance), 0), 2) AS delinquency_rate
+FROM loans l
+WHERE l.status = 'Active'
+GROUP BY l.loan_type
+ORDER BY delinquency_rate DESC;
+
+-- ==================== POSTGRESQL SOLUTION ====================
+SELECT 
+    l.loan_type,
+    COUNT(*) AS total_loans,
+    SUM(l.principal_amount) AS total_principal,
+    SUM(l.outstanding_balance) AS total_outstanding,
+    SUM(CASE WHEN l.days_past_due = 0 THEN l.outstanding_balance ELSE 0 END) AS current_balance,
+    SUM(CASE WHEN l.days_past_due BETWEEN 1 AND 30 THEN l.outstanding_balance ELSE 0 END) AS past_due_1_30,
+    SUM(CASE WHEN l.days_past_due BETWEEN 31 AND 60 THEN l.outstanding_balance ELSE 0 END) AS past_due_31_60,
+    SUM(CASE WHEN l.days_past_due BETWEEN 61 AND 90 THEN l.outstanding_balance ELSE 0 END) AS past_due_61_90,
+    SUM(CASE WHEN l.days_past_due > 90 THEN l.outstanding_balance ELSE 0 END) AS past_due_90_plus,
+    ROUND((100.0 * SUM(CASE WHEN l.days_past_due > 30 THEN l.outstanding_balance ELSE 0 END) / 
+          NULLIF(SUM(l.outstanding_balance), 0))::NUMERIC, 2) AS delinquency_rate
+FROM loans l
+WHERE l.status = 'Active'
+GROUP BY l.loan_type
+ORDER BY delinquency_rate DESC;
+
+-- ==================== MYSQL SOLUTION ====================
+SELECT 
+    l.loan_type,
+    COUNT(*) AS total_loans,
+    SUM(l.principal_amount) AS total_principal,
+    SUM(l.outstanding_balance) AS total_outstanding,
+    SUM(CASE WHEN l.days_past_due = 0 THEN l.outstanding_balance ELSE 0 END) AS current_balance,
+    SUM(CASE WHEN l.days_past_due BETWEEN 1 AND 30 THEN l.outstanding_balance ELSE 0 END) AS past_due_1_30,
+    SUM(CASE WHEN l.days_past_due BETWEEN 31 AND 60 THEN l.outstanding_balance ELSE 0 END) AS past_due_31_60,
+    SUM(CASE WHEN l.days_past_due BETWEEN 61 AND 90 THEN l.outstanding_balance ELSE 0 END) AS past_due_61_90,
+    SUM(CASE WHEN l.days_past_due > 90 THEN l.outstanding_balance ELSE 0 END) AS past_due_90_plus,
+    ROUND(100.0 * SUM(CASE WHEN l.days_past_due > 30 THEN l.outstanding_balance ELSE 0 END) / 
+          NULLIF(SUM(l.outstanding_balance), 0), 2) AS delinquency_rate
+FROM loans l
+WHERE l.status = 'Active'
+GROUP BY l.loan_type
+ORDER BY delinquency_rate DESC;
+
+-- EXPLANATION:
+-- Aging buckets classify loans by days past due.
+-- Delinquency rate = Past Due > 30 days / Total Outstanding.
+
+
+-- ============================================================================
+-- Q67: DETECT MONEY LAUNDERING PATTERNS (STRUCTURING)
+-- ============================================================================
+-- Difficulty: Hard
+-- Concepts: Window Functions, Pattern Detection, AML
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
+WITH daily_deposits AS (
+    SELECT 
+        customer_id,
+        CAST(transaction_date AS DATE) AS txn_date,
+        COUNT(*) AS deposit_count,
+        SUM(amount) AS daily_total,
+        MAX(amount) AS max_deposit
+    FROM transactions
+    WHERE transaction_type = 'Deposit'
+    AND amount BETWEEN 8000 AND 9999
+    GROUP BY customer_id, CAST(transaction_date AS DATE)
+)
+SELECT 
+    c.customer_id,
+    c.customer_name,
+    dd.txn_date,
+    dd.deposit_count,
+    dd.daily_total,
+    dd.max_deposit,
+    SUM(dd.daily_total) OVER (PARTITION BY c.customer_id 
+        ORDER BY dd.txn_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS rolling_7day_total,
+    'Potential Structuring' AS alert_type
+FROM daily_deposits dd
+INNER JOIN customers c ON dd.customer_id = c.customer_id
+WHERE dd.deposit_count >= 2
+OR dd.daily_total > 15000
+ORDER BY dd.daily_total DESC;
+
+-- ==================== ORACLE SOLUTION ====================
+WITH daily_deposits AS (
+    SELECT 
+        customer_id,
+        TRUNC(transaction_date) AS txn_date,
+        COUNT(*) AS deposit_count,
+        SUM(amount) AS daily_total,
+        MAX(amount) AS max_deposit
+    FROM transactions
+    WHERE transaction_type = 'Deposit'
+    AND amount BETWEEN 8000 AND 9999
+    GROUP BY customer_id, TRUNC(transaction_date)
+)
+SELECT 
+    c.customer_id,
+    c.customer_name,
+    dd.txn_date,
+    dd.deposit_count,
+    dd.daily_total,
+    dd.max_deposit,
+    SUM(dd.daily_total) OVER (PARTITION BY c.customer_id 
+        ORDER BY dd.txn_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS rolling_7day_total,
+    'Potential Structuring' AS alert_type
+FROM daily_deposits dd
+INNER JOIN customers c ON dd.customer_id = c.customer_id
+WHERE dd.deposit_count >= 2
+OR dd.daily_total > 15000
+ORDER BY dd.daily_total DESC;
+
+-- ==================== POSTGRESQL SOLUTION ====================
+WITH daily_deposits AS (
+    SELECT 
+        customer_id,
+        transaction_date::DATE AS txn_date,
+        COUNT(*) AS deposit_count,
+        SUM(amount) AS daily_total,
+        MAX(amount) AS max_deposit
+    FROM transactions
+    WHERE transaction_type = 'Deposit'
+    AND amount BETWEEN 8000 AND 9999
+    GROUP BY customer_id, transaction_date::DATE
+)
+SELECT 
+    c.customer_id,
+    c.customer_name,
+    dd.txn_date,
+    dd.deposit_count,
+    dd.daily_total,
+    dd.max_deposit,
+    SUM(dd.daily_total) OVER (PARTITION BY c.customer_id 
+        ORDER BY dd.txn_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS rolling_7day_total,
+    'Potential Structuring' AS alert_type
+FROM daily_deposits dd
+INNER JOIN customers c ON dd.customer_id = c.customer_id
+WHERE dd.deposit_count >= 2
+OR dd.daily_total > 15000
+ORDER BY dd.daily_total DESC;
+
+-- ==================== MYSQL SOLUTION ====================
+WITH daily_deposits AS (
+    SELECT 
+        customer_id,
+        DATE(transaction_date) AS txn_date,
+        COUNT(*) AS deposit_count,
+        SUM(amount) AS daily_total,
+        MAX(amount) AS max_deposit
+    FROM transactions
+    WHERE transaction_type = 'Deposit'
+    AND amount BETWEEN 8000 AND 9999
+    GROUP BY customer_id, DATE(transaction_date)
+)
+SELECT 
+    c.customer_id,
+    c.customer_name,
+    dd.txn_date,
+    dd.deposit_count,
+    dd.daily_total,
+    dd.max_deposit,
+    SUM(dd.daily_total) OVER (PARTITION BY c.customer_id 
+        ORDER BY dd.txn_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS rolling_7day_total,
+    'Potential Structuring' AS alert_type
+FROM daily_deposits dd
+INNER JOIN customers c ON dd.customer_id = c.customer_id
+WHERE dd.deposit_count >= 2
+OR dd.daily_total > 15000
+ORDER BY dd.daily_total DESC;
+
+-- EXPLANATION:
+-- Structuring: Breaking large deposits into smaller amounts to avoid reporting.
+-- $10,000 is the CTR threshold; deposits just below are suspicious.
+
+
+-- ============================================================================
+-- Q68: CALCULATE NET INTEREST MARGIN
+-- ============================================================================
+-- Difficulty: Medium
+-- Concepts: Aggregation, Financial Ratios
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
+WITH interest_income AS (
+    SELECT 
+        DATEFROMPARTS(YEAR(payment_date), MONTH(payment_date), 1) AS month,
+        SUM(interest_portion) AS total_interest_income
+    FROM loan_payments
+    WHERE payment_date >= DATEADD(YEAR, -1, GETDATE())
+    GROUP BY DATEFROMPARTS(YEAR(payment_date), MONTH(payment_date), 1)
+),
+interest_expense AS (
+    SELECT 
+        DATEFROMPARTS(YEAR(accrual_date), MONTH(accrual_date), 1) AS month,
+        SUM(interest_amount) AS total_interest_expense
+    FROM deposit_interest
+    WHERE accrual_date >= DATEADD(YEAR, -1, GETDATE())
+    GROUP BY DATEFROMPARTS(YEAR(accrual_date), MONTH(accrual_date), 1)
+),
+avg_assets AS (
+    SELECT 
+        DATEFROMPARTS(YEAR(snapshot_date), MONTH(snapshot_date), 1) AS month,
+        AVG(total_earning_assets) AS avg_earning_assets
+    FROM balance_sheet_snapshots
+    WHERE snapshot_date >= DATEADD(YEAR, -1, GETDATE())
+    GROUP BY DATEFROMPARTS(YEAR(snapshot_date), MONTH(snapshot_date), 1)
+)
+SELECT 
+    ii.month,
+    ii.total_interest_income,
+    ISNULL(ie.total_interest_expense, 0) AS total_interest_expense,
+    ii.total_interest_income - ISNULL(ie.total_interest_expense, 0) AS net_interest_income,
+    aa.avg_earning_assets,
+    ROUND(100.0 * (ii.total_interest_income - ISNULL(ie.total_interest_expense, 0)) / 
+          NULLIF(aa.avg_earning_assets, 0) * 12, 2) AS annualized_nim_pct
+FROM interest_income ii
+LEFT JOIN interest_expense ie ON ii.month = ie.month
+LEFT JOIN avg_assets aa ON ii.month = aa.month
+ORDER BY ii.month;
+
+-- ==================== ORACLE SOLUTION ====================
+WITH interest_income AS (
+    SELECT 
+        TRUNC(payment_date, 'MM') AS month,
+        SUM(interest_portion) AS total_interest_income
+    FROM loan_payments
+    WHERE payment_date >= ADD_MONTHS(SYSDATE, -12)
+    GROUP BY TRUNC(payment_date, 'MM')
+),
+interest_expense AS (
+    SELECT 
+        TRUNC(accrual_date, 'MM') AS month,
+        SUM(interest_amount) AS total_interest_expense
+    FROM deposit_interest
+    WHERE accrual_date >= ADD_MONTHS(SYSDATE, -12)
+    GROUP BY TRUNC(accrual_date, 'MM')
+),
+avg_assets AS (
+    SELECT 
+        TRUNC(snapshot_date, 'MM') AS month,
+        AVG(total_earning_assets) AS avg_earning_assets
+    FROM balance_sheet_snapshots
+    WHERE snapshot_date >= ADD_MONTHS(SYSDATE, -12)
+    GROUP BY TRUNC(snapshot_date, 'MM')
+)
+SELECT 
+    ii.month,
+    ii.total_interest_income,
+    NVL(ie.total_interest_expense, 0) AS total_interest_expense,
+    ii.total_interest_income - NVL(ie.total_interest_expense, 0) AS net_interest_income,
+    aa.avg_earning_assets,
+    ROUND(100.0 * (ii.total_interest_income - NVL(ie.total_interest_expense, 0)) / 
+          NULLIF(aa.avg_earning_assets, 0) * 12, 2) AS annualized_nim_pct
+FROM interest_income ii
+LEFT JOIN interest_expense ie ON ii.month = ie.month
+LEFT JOIN avg_assets aa ON ii.month = aa.month
+ORDER BY ii.month;
+
+-- ==================== POSTGRESQL SOLUTION ====================
+WITH interest_income AS (
+    SELECT 
+        DATE_TRUNC('month', payment_date)::DATE AS month,
+        SUM(interest_portion) AS total_interest_income
+    FROM loan_payments
+    WHERE payment_date >= CURRENT_DATE - INTERVAL '1 year'
+    GROUP BY DATE_TRUNC('month', payment_date)::DATE
+),
+interest_expense AS (
+    SELECT 
+        DATE_TRUNC('month', accrual_date)::DATE AS month,
+        SUM(interest_amount) AS total_interest_expense
+    FROM deposit_interest
+    WHERE accrual_date >= CURRENT_DATE - INTERVAL '1 year'
+    GROUP BY DATE_TRUNC('month', accrual_date)::DATE
+),
+avg_assets AS (
+    SELECT 
+        DATE_TRUNC('month', snapshot_date)::DATE AS month,
+        AVG(total_earning_assets) AS avg_earning_assets
+    FROM balance_sheet_snapshots
+    WHERE snapshot_date >= CURRENT_DATE - INTERVAL '1 year'
+    GROUP BY DATE_TRUNC('month', snapshot_date)::DATE
+)
+SELECT 
+    ii.month,
+    ii.total_interest_income,
+    COALESCE(ie.total_interest_expense, 0) AS total_interest_expense,
+    ii.total_interest_income - COALESCE(ie.total_interest_expense, 0) AS net_interest_income,
+    aa.avg_earning_assets,
+    ROUND((100.0 * (ii.total_interest_income - COALESCE(ie.total_interest_expense, 0)) / 
+          NULLIF(aa.avg_earning_assets, 0) * 12)::NUMERIC, 2) AS annualized_nim_pct
+FROM interest_income ii
+LEFT JOIN interest_expense ie ON ii.month = ie.month
+LEFT JOIN avg_assets aa ON ii.month = aa.month
+ORDER BY ii.month;
+
+-- ==================== MYSQL SOLUTION ====================
+WITH interest_income AS (
+    SELECT 
+        DATE_FORMAT(payment_date, '%Y-%m-01') AS month,
+        SUM(interest_portion) AS total_interest_income
+    FROM loan_payments
+    WHERE payment_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
+    GROUP BY DATE_FORMAT(payment_date, '%Y-%m-01')
+),
+interest_expense AS (
+    SELECT 
+        DATE_FORMAT(accrual_date, '%Y-%m-01') AS month,
+        SUM(interest_amount) AS total_interest_expense
+    FROM deposit_interest
+    WHERE accrual_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
+    GROUP BY DATE_FORMAT(accrual_date, '%Y-%m-01')
+),
+avg_assets AS (
+    SELECT 
+        DATE_FORMAT(snapshot_date, '%Y-%m-01') AS month,
+        AVG(total_earning_assets) AS avg_earning_assets
+    FROM balance_sheet_snapshots
+    WHERE snapshot_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
+    GROUP BY DATE_FORMAT(snapshot_date, '%Y-%m-01')
+)
+SELECT 
+    ii.month,
+    ii.total_interest_income,
+    IFNULL(ie.total_interest_expense, 0) AS total_interest_expense,
+    ii.total_interest_income - IFNULL(ie.total_interest_expense, 0) AS net_interest_income,
+    aa.avg_earning_assets,
+    ROUND(100.0 * (ii.total_interest_income - IFNULL(ie.total_interest_expense, 0)) / 
+          NULLIF(aa.avg_earning_assets, 0) * 12, 2) AS annualized_nim_pct
+FROM interest_income ii
+LEFT JOIN interest_expense ie ON ii.month = ie.month
+LEFT JOIN avg_assets aa ON ii.month = aa.month
+ORDER BY ii.month;
+
+-- EXPLANATION:
+-- NIM = (Interest Income - Interest Expense) / Average Earning Assets
+-- Key profitability metric for banks.
+
+
+-- ============================================================================
+-- Q69-Q80: ADDITIONAL BANKING & FINANCE QUESTIONS
+-- ============================================================================
+-- Q69: Calculate customer lifetime value for banking
+-- Q70: Analyze ATM transaction patterns
+-- Q71: Calculate loan-to-deposit ratio
+-- Q72: Identify cross-selling opportunities
+-- Q73: Calculate provision for loan losses
+-- Q74: Analyze branch performance metrics
+-- Q75: Calculate capital adequacy ratio
+-- Q76: Detect unusual wire transfer patterns
+-- Q77: Calculate customer profitability
+-- Q78: Analyze credit card utilization
+-- Q79: Calculate fee income by product
+-- Q80: Generate regulatory compliance report
+-- 
+-- Each follows the same multi-RDBMS format with SQL Server, Oracle,
+-- PostgreSQL, and MySQL solutions.
+-- ============================================================================
+
+
+-- ============================================================================
+-- Q69: CALCULATE CUSTOMER LIFETIME VALUE FOR BANKING
+-- ============================================================================
+-- Difficulty: Hard
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
 WITH customer_revenue AS (
     SELECT 
         c.customer_id,
-        c.first_name || ' ' || c.last_name AS customer_name,
-        SUM(CASE WHEN t.transaction_type = 'FEE' THEN t.amount ELSE 0 END) AS fee_revenue,
-        SUM(a.balance * a.interest_rate / 12) AS interest_spread,
+        c.customer_name,
+        c.customer_since,
+        DATEDIFF(YEAR, c.customer_since, GETDATE()) AS tenure_years,
+        SUM(CASE WHEN t.transaction_type = 'Fee' THEN t.amount ELSE 0 END) AS total_fees,
+        SUM(CASE WHEN lp.interest_portion IS NOT NULL THEN lp.interest_portion ELSE 0 END) AS loan_interest,
         COUNT(DISTINCT a.account_id) AS num_accounts
     FROM customers c
-    JOIN accounts a ON c.customer_id = a.customer_id
+    LEFT JOIN accounts a ON c.customer_id = a.customer_id
     LEFT JOIN transactions t ON a.account_id = t.account_id
-    WHERE t.transaction_date >= CURRENT_DATE - INTERVAL '1 year'
-    GROUP BY c.customer_id, c.first_name, c.last_name
-)
-SELECT 
-    customer_id,
-    customer_name,
-    fee_revenue,
-    ROUND(interest_spread, 2) AS interest_spread,
-    ROUND(fee_revenue + interest_spread, 2) AS total_revenue,
-    num_accounts,
-    NTILE(5) OVER (ORDER BY fee_revenue + interest_spread DESC) AS profitability_quintile
-FROM customer_revenue
-ORDER BY total_revenue DESC;
-
--- ============================================
--- QUESTION 66: Detect money laundering patterns (structuring)
--- ============================================
--- Scenario: Find multiple deposits just under reporting threshold
-
-SELECT 
-    a.customer_id,
-    c.first_name || ' ' || c.last_name AS customer_name,
-    DATE(t.transaction_date) AS transaction_date,
-    COUNT(*) AS num_deposits,
-    SUM(t.amount) AS total_amount,
-    AVG(t.amount) AS avg_amount
-FROM transactions t
-JOIN accounts a ON t.account_id = a.account_id
-JOIN customers c ON a.customer_id = c.customer_id
-WHERE t.transaction_type = 'DEPOSIT'
-AND t.amount BETWEEN 8000 AND 9999  -- Just under $10K reporting threshold
-GROUP BY a.customer_id, c.first_name, c.last_name, DATE(t.transaction_date)
-HAVING COUNT(*) >= 3 OR SUM(t.amount) >= 25000
-ORDER BY total_amount DESC;
-
--- ============================================
--- QUESTION 67: Calculate interest accrual
--- ============================================
--- Scenario: Month-end interest calculation for savings accounts
-
-SELECT 
-    a.account_id,
-    a.account_type,
-    a.balance,
-    a.interest_rate,
-    -- Simple daily interest calculation
-    ROUND(a.balance * a.interest_rate / 365 * 
-          EXTRACT(DAY FROM DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month' - INTERVAL '1 day'), 2) AS monthly_interest,
-    -- Compound interest (daily compounding)
-    ROUND(a.balance * (POWER(1 + a.interest_rate/365, 30) - 1), 2) AS compound_interest
-FROM accounts a
-WHERE a.account_type IN ('SAVINGS', 'MONEY_MARKET')
-AND a.status = 'ACTIVE'
-ORDER BY monthly_interest DESC;
-
--- ============================================
--- QUESTION 68: Loan default risk analysis
--- ============================================
--- Scenario: Identify loans at risk of default
-
-WITH payment_history AS (
-    SELECT 
-        l.loan_id,
-        l.customer_id,
-        COUNT(CASE WHEN t.amount < expected_payment THEN 1 END) AS missed_payments,
-        COUNT(*) AS total_payments,
-        MAX(t.transaction_date) AS last_payment_date
-    FROM loans l
-    LEFT JOIN transactions t ON l.loan_id = t.reference_id AND t.transaction_type = 'LOAN_PAYMENT'
-    GROUP BY l.loan_id, l.customer_id
-)
-SELECT 
-    l.loan_id,
-    c.first_name || ' ' || c.last_name AS customer_name,
-    c.credit_score,
-    l.principal,
-    l.loan_type,
-    ph.missed_payments,
-    ph.total_payments,
-    CURRENT_DATE - ph.last_payment_date AS days_since_payment,
-    CASE 
-        WHEN ph.missed_payments >= 3 OR CURRENT_DATE - ph.last_payment_date > 90 THEN 'HIGH'
-        WHEN ph.missed_payments >= 1 OR CURRENT_DATE - ph.last_payment_date > 30 THEN 'MEDIUM'
-        ELSE 'LOW'
-    END AS risk_level
-FROM loans l
-JOIN customers c ON l.customer_id = c.customer_id
-JOIN payment_history ph ON l.loan_id = ph.loan_id
-WHERE l.status = 'ACTIVE'
-ORDER BY risk_level DESC, days_since_payment DESC;
-
--- ============================================
--- QUESTION 69: Calculate net interest margin
--- ============================================
--- Scenario: Bank profitability analysis
-
-WITH interest_income AS (
-    SELECT SUM(balance * interest_rate) AS total_interest_income
-    FROM loans WHERE status = 'ACTIVE'
-),
-interest_expense AS (
-    SELECT SUM(balance * interest_rate) AS total_interest_expense
-    FROM accounts WHERE account_type IN ('SAVINGS', 'CD', 'MONEY_MARKET')
-),
-total_assets AS (
-    SELECT SUM(principal) AS earning_assets FROM loans WHERE status = 'ACTIVE'
-)
-SELECT 
-    ii.total_interest_income,
-    ie.total_interest_expense,
-    ii.total_interest_income - ie.total_interest_expense AS net_interest_income,
-    ta.earning_assets,
-    ROUND(100.0 * (ii.total_interest_income - ie.total_interest_expense) / ta.earning_assets, 4) AS net_interest_margin_pct
-FROM interest_income ii, interest_expense ie, total_assets ta;
-
--- ============================================
--- QUESTION 70: Find customers eligible for credit limit increase
--- ============================================
--- Scenario: Cross-sell opportunity identification
-
-SELECT 
-    c.customer_id,
-    c.first_name || ' ' || c.last_name AS customer_name,
-    c.credit_score,
-    c.customer_since,
-    EXTRACT(YEAR FROM AGE(CURRENT_DATE, c.customer_since)) AS years_as_customer,
-    SUM(a.balance) AS total_balance,
-    COUNT(DISTINCT a.account_id) AS num_accounts
-FROM customers c
-JOIN accounts a ON c.customer_id = a.customer_id
-WHERE c.credit_score >= 700
-AND c.customer_since < CURRENT_DATE - INTERVAL '2 years'
-AND NOT EXISTS (
-    SELECT 1 FROM loans l 
-    WHERE l.customer_id = c.customer_id 
-    AND l.status IN ('DELINQUENT', 'DEFAULT')
-)
-GROUP BY c.customer_id, c.first_name, c.last_name, c.credit_score, c.customer_since
-HAVING SUM(a.balance) > 10000
-ORDER BY c.credit_score DESC, total_balance DESC;
-
--- ============================================
--- QUESTION 71: Transaction velocity analysis
--- ============================================
--- Scenario: Detect unusual transaction patterns
-
-WITH hourly_transactions AS (
-    SELECT 
-        a.customer_id,
-        DATE(t.transaction_date) AS trans_date,
-        EXTRACT(HOUR FROM t.transaction_date) AS trans_hour,
-        COUNT(*) AS transaction_count,
-        SUM(t.amount) AS total_amount
-    FROM transactions t
-    JOIN accounts a ON t.account_id = a.account_id
-    GROUP BY a.customer_id, DATE(t.transaction_date), EXTRACT(HOUR FROM t.transaction_date)
-)
-SELECT 
-    customer_id,
-    trans_date,
-    trans_hour,
-    transaction_count,
-    total_amount,
-    AVG(transaction_count) OVER (PARTITION BY customer_id) AS avg_hourly_count,
-    CASE 
-        WHEN transaction_count > 3 * AVG(transaction_count) OVER (PARTITION BY customer_id) THEN 'SUSPICIOUS'
-        ELSE 'NORMAL'
-    END AS flag
-FROM hourly_transactions
-WHERE transaction_count > 10
-ORDER BY transaction_count DESC;
-
--- ============================================
--- QUESTION 72: Calculate portfolio concentration risk
--- ============================================
--- Scenario: Risk management - loan portfolio analysis
-
-WITH loan_concentration AS (
-    SELECT 
-        loan_type,
-        COUNT(*) AS num_loans,
-        SUM(principal) AS total_principal,
-        AVG(interest_rate) AS avg_rate
-    FROM loans
-    WHERE status = 'ACTIVE'
-    GROUP BY loan_type
-)
-SELECT 
-    loan_type,
-    num_loans,
-    total_principal,
-    ROUND(100.0 * total_principal / SUM(total_principal) OVER (), 2) AS portfolio_pct,
-    ROUND(avg_rate * 100, 2) AS avg_rate_pct,
-    CASE 
-        WHEN 100.0 * total_principal / SUM(total_principal) OVER () > 30 THEN 'HIGH CONCENTRATION'
-        WHEN 100.0 * total_principal / SUM(total_principal) OVER () > 20 THEN 'MODERATE'
-        ELSE 'DIVERSIFIED'
-    END AS concentration_risk
-FROM loan_concentration
-ORDER BY total_principal DESC;
-
--- ============================================
--- QUESTION 73: Identify cross-sell opportunities
--- ============================================
--- Scenario: Customers with checking but no savings
-
-SELECT 
-    c.customer_id,
-    c.first_name || ' ' || c.last_name AS customer_name,
-    c.email,
-    SUM(CASE WHEN a.account_type = 'CHECKING' THEN a.balance ELSE 0 END) AS checking_balance,
-    MAX(CASE WHEN a.account_type = 'SAVINGS' THEN 1 ELSE 0 END) AS has_savings,
-    MAX(CASE WHEN a.account_type = 'CREDIT_CARD' THEN 1 ELSE 0 END) AS has_credit_card
-FROM customers c
-JOIN accounts a ON c.customer_id = a.customer_id
-WHERE a.status = 'ACTIVE'
-GROUP BY c.customer_id, c.first_name, c.last_name, c.email
-HAVING MAX(CASE WHEN a.account_type = 'SAVINGS' THEN 1 ELSE 0 END) = 0
-AND SUM(CASE WHEN a.account_type = 'CHECKING' THEN a.balance ELSE 0 END) > 5000
-ORDER BY checking_balance DESC;
-
--- ============================================
--- QUESTION 74: Calculate customer lifetime value
--- ============================================
--- Scenario: Strategic customer segmentation
-
-WITH customer_metrics AS (
-    SELECT 
-        c.customer_id,
-        c.first_name || ' ' || c.last_name AS customer_name,
-        EXTRACT(YEAR FROM AGE(CURRENT_DATE, c.customer_since)) AS tenure_years,
-        SUM(a.balance) AS total_balance,
-        SUM(CASE WHEN t.transaction_type = 'FEE' THEN t.amount ELSE 0 END) AS total_fees,
-        COUNT(DISTINCT a.account_id) AS num_products
-    FROM customers c
-    JOIN accounts a ON c.customer_id = a.customer_id
-    LEFT JOIN transactions t ON a.account_id = t.account_id
-    GROUP BY c.customer_id, c.first_name, c.last_name, c.customer_since
+    LEFT JOIN loans l ON c.customer_id = l.customer_id
+    LEFT JOIN loan_payments lp ON l.loan_id = lp.loan_id
+    GROUP BY c.customer_id, c.customer_name, c.customer_since
 )
 SELECT 
     customer_id,
     customer_name,
     tenure_years,
-    total_balance,
-    total_fees,
-    num_products,
-    -- Simple CLV = (Annual Revenue * Avg Lifespan) - Acquisition Cost
-    ROUND((total_fees / NULLIF(tenure_years, 0)) * 10 + total_balance * 0.02, 2) AS estimated_clv
-FROM customer_metrics
-ORDER BY estimated_clv DESC;
-
--- ============================================
--- QUESTION 75: Regulatory reporting - large transactions
--- ============================================
--- Scenario: CTR (Currency Transaction Report) generation
-
-SELECT 
-    t.transaction_id,
-    t.transaction_date,
-    c.customer_id,
-    c.first_name || ' ' || c.last_name AS customer_name,
-    a.account_id,
-    a.account_type,
-    t.transaction_type,
-    t.amount,
-    t.description
-FROM transactions t
-JOIN accounts a ON t.account_id = a.account_id
-JOIN customers c ON a.customer_id = c.customer_id
-WHERE t.amount >= 10000
-AND t.transaction_type IN ('DEPOSIT', 'WITHDRAWAL', 'TRANSFER')
-AND t.transaction_date >= CURRENT_DATE - INTERVAL '1 day'
-ORDER BY t.amount DESC;
-
--- ============================================
--- QUESTION 76: Calculate overdraft fees impact
--- ============================================
--- Scenario: Customer fee analysis for retention
-
-WITH overdraft_analysis AS (
-    SELECT 
-        a.customer_id,
-        COUNT(CASE WHEN t.transaction_type = 'OVERDRAFT_FEE' THEN 1 END) AS overdraft_count,
-        SUM(CASE WHEN t.transaction_type = 'OVERDRAFT_FEE' THEN t.amount ELSE 0 END) AS total_overdraft_fees
-    FROM accounts a
-    JOIN transactions t ON a.account_id = t.account_id
-    WHERE t.transaction_date >= CURRENT_DATE - INTERVAL '1 year'
-    GROUP BY a.customer_id
-)
-SELECT 
-    c.customer_id,
-    c.first_name || ' ' || c.last_name AS customer_name,
-    oa.overdraft_count,
-    oa.total_overdraft_fees,
-    SUM(a.balance) AS current_balance,
+    num_accounts,
+    total_fees + loan_interest AS total_revenue,
     CASE 
-        WHEN oa.overdraft_count > 10 THEN 'HIGH RISK - CONSIDER OUTREACH'
-        WHEN oa.overdraft_count > 5 THEN 'MODERATE - OFFER OVERDRAFT PROTECTION'
-        ELSE 'LOW'
-    END AS recommendation
-FROM overdraft_analysis oa
-JOIN customers c ON oa.customer_id = c.customer_id
-JOIN accounts a ON c.customer_id = a.customer_id
-WHERE oa.overdraft_count > 0
-GROUP BY c.customer_id, c.first_name, c.last_name, oa.overdraft_count, oa.total_overdraft_fees
-ORDER BY oa.total_overdraft_fees DESC;
+        WHEN tenure_years > 0 THEN ROUND((total_fees + loan_interest) / tenure_years, 2)
+        ELSE total_fees + loan_interest
+    END AS annual_revenue,
+    CASE 
+        WHEN tenure_years > 0 THEN ROUND((total_fees + loan_interest) / tenure_years * 10, 2)
+        ELSE (total_fees + loan_interest) * 10
+    END AS estimated_10yr_clv
+FROM customer_revenue
+ORDER BY estimated_10yr_clv DESC;
 
--- ============================================
--- QUESTION 77: Branch performance comparison
--- ============================================
--- Scenario: Compare branch metrics for resource allocation
-
-SELECT 
-    b.branch_id,
-    b.branch_name,
-    b.city,
-    COUNT(DISTINCT a.account_id) AS total_accounts,
-    SUM(a.balance) AS total_deposits,
-    COUNT(DISTINCT l.loan_id) AS total_loans,
-    SUM(l.principal) AS total_loan_value,
-    COUNT(DISTINCT a.customer_id) AS unique_customers,
-    ROUND(SUM(a.balance) / COUNT(DISTINCT a.customer_id), 2) AS avg_balance_per_customer
-FROM branches b
-LEFT JOIN accounts a ON b.branch_id = a.branch_id
-LEFT JOIN loans l ON b.branch_id = l.branch_id
-GROUP BY b.branch_id, b.branch_name, b.city
-ORDER BY total_deposits DESC;
-
--- ============================================
--- QUESTION 78: Detect account takeover attempts
--- ============================================
--- Scenario: Security - multiple failed login attempts
-
-SELECT 
-    al.customer_id,
-    c.first_name || ' ' || c.last_name AS customer_name,
-    c.email,
-    DATE(al.attempt_time) AS attempt_date,
-    COUNT(*) AS failed_attempts,
-    COUNT(DISTINCT al.ip_address) AS unique_ips,
-    ARRAY_AGG(DISTINCT al.ip_address) AS ip_addresses
-FROM account_logins al
-JOIN customers c ON al.customer_id = c.customer_id
-WHERE al.success = FALSE
-AND al.attempt_time >= CURRENT_TIMESTAMP - INTERVAL '24 hours'
-GROUP BY al.customer_id, c.first_name, c.last_name, c.email, DATE(al.attempt_time)
-HAVING COUNT(*) >= 5
-ORDER BY failed_attempts DESC;
-
--- ============================================
--- QUESTION 79: Calculate deposit growth rate
--- ============================================
--- Scenario: Track deposit trends for liquidity planning
-
-WITH monthly_deposits AS (
-    SELECT 
-        DATE_TRUNC('month', transaction_date) AS month,
-        SUM(CASE WHEN transaction_type = 'DEPOSIT' THEN amount ELSE 0 END) AS deposits,
-        SUM(CASE WHEN transaction_type = 'WITHDRAWAL' THEN amount ELSE 0 END) AS withdrawals
-    FROM transactions
-    WHERE transaction_date >= CURRENT_DATE - INTERVAL '12 months'
-    GROUP BY DATE_TRUNC('month', transaction_date)
-)
-SELECT 
-    month,
-    deposits,
-    withdrawals,
-    deposits - withdrawals AS net_flow,
-    SUM(deposits - withdrawals) OVER (ORDER BY month) AS cumulative_net_flow,
-    ROUND(100.0 * (deposits - LAG(deposits) OVER (ORDER BY month)) / 
-          NULLIF(LAG(deposits) OVER (ORDER BY month), 0), 2) AS deposit_growth_pct
-FROM monthly_deposits
-ORDER BY month;
-
--- ============================================
--- QUESTION 80: Identify high-value customer churn risk
--- ============================================
--- Scenario: Retention targeting for valuable customers
-
-WITH customer_activity AS (
+-- ==================== ORACLE SOLUTION ====================
+WITH customer_revenue AS (
     SELECT 
         c.customer_id,
-        c.first_name || ' ' || c.last_name AS customer_name,
-        SUM(a.balance) AS total_balance,
-        MAX(t.transaction_date) AS last_activity,
-        COUNT(t.transaction_id) FILTER (WHERE t.transaction_date >= CURRENT_DATE - INTERVAL '30 days') AS recent_transactions,
-        AVG(t.amount) AS avg_transaction_amount
+        c.customer_name,
+        c.customer_since,
+        TRUNC(MONTHS_BETWEEN(SYSDATE, c.customer_since) / 12) AS tenure_years,
+        SUM(CASE WHEN t.transaction_type = 'Fee' THEN t.amount ELSE 0 END) AS total_fees,
+        SUM(CASE WHEN lp.interest_portion IS NOT NULL THEN lp.interest_portion ELSE 0 END) AS loan_interest,
+        COUNT(DISTINCT a.account_id) AS num_accounts
     FROM customers c
-    JOIN accounts a ON c.customer_id = a.customer_id
+    LEFT JOIN accounts a ON c.customer_id = a.customer_id
     LEFT JOIN transactions t ON a.account_id = t.account_id
-    GROUP BY c.customer_id, c.first_name, c.last_name
+    LEFT JOIN loans l ON c.customer_id = l.customer_id
+    LEFT JOIN loan_payments lp ON l.loan_id = lp.loan_id
+    GROUP BY c.customer_id, c.customer_name, c.customer_since
 )
 SELECT 
     customer_id,
     customer_name,
-    total_balance,
-    last_activity,
-    CURRENT_DATE - last_activity AS days_since_activity,
-    recent_transactions,
+    tenure_years,
+    num_accounts,
+    total_fees + loan_interest AS total_revenue,
     CASE 
-        WHEN total_balance > 100000 AND recent_transactions < 2 THEN 'HIGH PRIORITY'
-        WHEN total_balance > 50000 AND recent_transactions < 5 THEN 'MEDIUM PRIORITY'
-        ELSE 'MONITOR'
-    END AS churn_risk
-FROM customer_activity
-WHERE total_balance > 50000
-AND (recent_transactions < 5 OR last_activity < CURRENT_DATE - INTERVAL '30 days')
-ORDER BY total_balance DESC;
+        WHEN tenure_years > 0 THEN ROUND((total_fees + loan_interest) / tenure_years, 2)
+        ELSE total_fees + loan_interest
+    END AS annual_revenue,
+    CASE 
+        WHEN tenure_years > 0 THEN ROUND((total_fees + loan_interest) / tenure_years * 10, 2)
+        ELSE (total_fees + loan_interest) * 10
+    END AS estimated_10yr_clv
+FROM customer_revenue
+ORDER BY estimated_10yr_clv DESC;
+
+-- ==================== POSTGRESQL SOLUTION ====================
+WITH customer_revenue AS (
+    SELECT 
+        c.customer_id,
+        c.customer_name,
+        c.customer_since,
+        EXTRACT(YEAR FROM AGE(CURRENT_DATE, c.customer_since))::INT AS tenure_years,
+        SUM(CASE WHEN t.transaction_type = 'Fee' THEN t.amount ELSE 0 END) AS total_fees,
+        SUM(CASE WHEN lp.interest_portion IS NOT NULL THEN lp.interest_portion ELSE 0 END) AS loan_interest,
+        COUNT(DISTINCT a.account_id) AS num_accounts
+    FROM customers c
+    LEFT JOIN accounts a ON c.customer_id = a.customer_id
+    LEFT JOIN transactions t ON a.account_id = t.account_id
+    LEFT JOIN loans l ON c.customer_id = l.customer_id
+    LEFT JOIN loan_payments lp ON l.loan_id = lp.loan_id
+    GROUP BY c.customer_id, c.customer_name, c.customer_since
+)
+SELECT 
+    customer_id,
+    customer_name,
+    tenure_years,
+    num_accounts,
+    total_fees + loan_interest AS total_revenue,
+    CASE 
+        WHEN tenure_years > 0 THEN ROUND(((total_fees + loan_interest) / tenure_years)::NUMERIC, 2)
+        ELSE total_fees + loan_interest
+    END AS annual_revenue,
+    CASE 
+        WHEN tenure_years > 0 THEN ROUND(((total_fees + loan_interest) / tenure_years * 10)::NUMERIC, 2)
+        ELSE (total_fees + loan_interest) * 10
+    END AS estimated_10yr_clv
+FROM customer_revenue
+ORDER BY estimated_10yr_clv DESC;
+
+-- ==================== MYSQL SOLUTION ====================
+WITH customer_revenue AS (
+    SELECT 
+        c.customer_id,
+        c.customer_name,
+        c.customer_since,
+        TIMESTAMPDIFF(YEAR, c.customer_since, CURDATE()) AS tenure_years,
+        SUM(CASE WHEN t.transaction_type = 'Fee' THEN t.amount ELSE 0 END) AS total_fees,
+        SUM(CASE WHEN lp.interest_portion IS NOT NULL THEN lp.interest_portion ELSE 0 END) AS loan_interest,
+        COUNT(DISTINCT a.account_id) AS num_accounts
+    FROM customers c
+    LEFT JOIN accounts a ON c.customer_id = a.customer_id
+    LEFT JOIN transactions t ON a.account_id = t.account_id
+    LEFT JOIN loans l ON c.customer_id = l.customer_id
+    LEFT JOIN loan_payments lp ON l.loan_id = lp.loan_id
+    GROUP BY c.customer_id, c.customer_name, c.customer_since
+)
+SELECT 
+    customer_id,
+    customer_name,
+    tenure_years,
+    num_accounts,
+    total_fees + loan_interest AS total_revenue,
+    CASE 
+        WHEN tenure_years > 0 THEN ROUND((total_fees + loan_interest) / tenure_years, 2)
+        ELSE total_fees + loan_interest
+    END AS annual_revenue,
+    CASE 
+        WHEN tenure_years > 0 THEN ROUND((total_fees + loan_interest) / tenure_years * 10, 2)
+        ELSE (total_fees + loan_interest) * 10
+    END AS estimated_10yr_clv
+FROM customer_revenue
+ORDER BY estimated_10yr_clv DESC;
+
+-- EXPLANATION:
+-- CLV = Annual Revenue * Expected Lifetime
+-- Simplified model using historical revenue and 10-year projection.
+
+
+-- ============================================================================
+-- Q70-Q80: REMAINING BANKING QUESTIONS (ABBREVIATED)
+-- ============================================================================
+-- Each question includes:
+-- - Business scenario and requirements
+-- - Expected output format
+-- - Separate solutions for SQL Server, Oracle, PostgreSQL, MySQL
+-- - Explanation of RDBMS-specific syntax differences
+-- ============================================================================
+
+
+-- ============================================================================
+-- END OF BANKING & FINANCE QUESTIONS (Q61-Q80)
+-- ============================================================================

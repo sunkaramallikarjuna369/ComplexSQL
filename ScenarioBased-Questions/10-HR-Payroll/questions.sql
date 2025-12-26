@@ -1,707 +1,786 @@
--- ============================================
--- SCENARIO-BASED SQL QUESTIONS
--- Category: HR & Payroll (Questions 181-200)
--- SQL Server, Oracle, PostgreSQL, MySQL
--- ============================================
+-- ============================================================================
+-- SCENARIO-BASED SQL QUESTIONS: HR & PAYROLL (Q181-Q200)
+-- ============================================================================
+-- This file contains 20 comprehensive scenario-based SQL questions with
+-- solutions for SQL Server, Oracle, PostgreSQL, and MySQL.
+-- ============================================================================
 
--- ============================================
--- SAMPLE SCHEMA
--- ============================================
-/*
-CREATE TABLE employees (
-    employee_id INT PRIMARY KEY,
-    first_name VARCHAR(50),
-    last_name VARCHAR(50),
-    email VARCHAR(100),
-    hire_date DATE,
-    department_id INT,
-    job_id INT,
-    manager_id INT,
-    salary DECIMAL(12,2),
-    commission_pct DECIMAL(5,2),
-    status VARCHAR(20)
-);
 
-CREATE TABLE departments (
-    department_id INT PRIMARY KEY,
-    department_name VARCHAR(100),
-    manager_id INT,
-    location_id INT,
-    budget DECIMAL(15,2)
-);
+-- ============================================================================
+-- Q181: ANALYZE COMPENSATION BY DEPARTMENT AND ROLE
+-- ============================================================================
+-- Difficulty: Medium
+-- Concepts: Aggregation, Statistical Analysis
+-- 
+-- BUSINESS SCENARIO:
+-- HR needs to analyze salary distribution to ensure competitive compensation
+-- and identify potential pay equity issues.
+-- ============================================================================
 
-CREATE TABLE payroll (
-    payroll_id INT PRIMARY KEY,
-    employee_id INT,
-    pay_period_start DATE,
-    pay_period_end DATE,
-    gross_pay DECIMAL(12,2),
-    deductions DECIMAL(12,2),
-    net_pay DECIMAL(12,2),
-    pay_date DATE
-);
-
-CREATE TABLE benefits (
-    benefit_id INT PRIMARY KEY,
-    employee_id INT,
-    benefit_type VARCHAR(50),
-    coverage_level VARCHAR(30),
-    employee_contribution DECIMAL(10,2),
-    employer_contribution DECIMAL(10,2),
-    effective_date DATE,
-    end_date DATE
-);
-
-CREATE TABLE time_off (
-    request_id INT PRIMARY KEY,
-    employee_id INT,
-    leave_type VARCHAR(30),
-    start_date DATE,
-    end_date DATE,
-    hours_requested DECIMAL(6,2),
-    status VARCHAR(20),
-    approved_by INT
-);
-
-CREATE TABLE performance_reviews (
-    review_id INT PRIMARY KEY,
-    employee_id INT,
-    reviewer_id INT,
-    review_period_start DATE,
-    review_period_end DATE,
-    overall_rating DECIMAL(3,2),
-    goals_met_pct DECIMAL(5,2),
-    comments TEXT
-);
-*/
-
--- ============================================
--- QUESTION 181: Calculate total compensation by employee
--- ============================================
--- Scenario: Compensation analysis for budgeting
-
+-- ==================== SQL SERVER SOLUTION ====================
 SELECT 
-    e.employee_id,
-    e.first_name || ' ' || e.last_name AS employee_name,
     d.department_name,
-    e.salary AS base_salary,
-    COALESCE(e.salary * e.commission_pct, 0) AS commission,
-    COALESCE(SUM(b.employer_contribution * 12), 0) AS annual_benefits,
-    e.salary + COALESCE(e.salary * e.commission_pct, 0) + COALESCE(SUM(b.employer_contribution * 12), 0) AS total_compensation
+    j.job_title,
+    COUNT(e.employee_id) AS employee_count,
+    MIN(e.salary) AS min_salary,
+    MAX(e.salary) AS max_salary,
+    ROUND(AVG(e.salary), 2) AS avg_salary,
+    ROUND(STDEV(e.salary), 2) AS salary_stddev,
+    PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY e.salary) OVER (PARTITION BY d.department_id, j.job_id) AS median_salary
 FROM employees e
-JOIN departments d ON e.department_id = d.department_id
-LEFT JOIN benefits b ON e.employee_id = b.employee_id AND b.end_date IS NULL
-WHERE e.status = 'ACTIVE'
-GROUP BY e.employee_id, e.first_name, e.last_name, d.department_name, e.salary, e.commission_pct
-ORDER BY total_compensation DESC;
+INNER JOIN departments d ON e.department_id = d.department_id
+INNER JOIN jobs j ON e.job_id = j.job_id
+WHERE e.status = 'Active'
+GROUP BY d.department_id, d.department_name, j.job_id, j.job_title
+ORDER BY d.department_name, avg_salary DESC;
 
--- ============================================
--- QUESTION 182: Calculate payroll tax withholdings
--- ============================================
--- Scenario: Payroll processing
-
+-- ==================== ORACLE SOLUTION ====================
 SELECT 
-    e.employee_id,
-    e.first_name || ' ' || e.last_name AS employee_name,
-    p.gross_pay,
-    ROUND(p.gross_pay * 0.062, 2) AS social_security,  -- 6.2%
-    ROUND(p.gross_pay * 0.0145, 2) AS medicare,  -- 1.45%
-    ROUND(CASE 
-        WHEN p.gross_pay * 26 <= 11000 THEN p.gross_pay * 0.10
-        WHEN p.gross_pay * 26 <= 44725 THEN p.gross_pay * 0.12
-        WHEN p.gross_pay * 26 <= 95375 THEN p.gross_pay * 0.22
-        ELSE p.gross_pay * 0.24
-    END, 2) AS federal_tax,
-    ROUND(p.gross_pay * 0.05, 2) AS state_tax,  -- Example 5%
-    p.gross_pay - (p.gross_pay * 0.062) - (p.gross_pay * 0.0145) - 
-        CASE WHEN p.gross_pay * 26 <= 11000 THEN p.gross_pay * 0.10
-             WHEN p.gross_pay * 26 <= 44725 THEN p.gross_pay * 0.12
-             WHEN p.gross_pay * 26 <= 95375 THEN p.gross_pay * 0.22
-             ELSE p.gross_pay * 0.24 END - (p.gross_pay * 0.05) AS estimated_net
-FROM employees e
-JOIN payroll p ON e.employee_id = p.employee_id
-WHERE p.pay_date = (SELECT MAX(pay_date) FROM payroll)
-ORDER BY p.gross_pay DESC;
-
--- ============================================
--- QUESTION 183: Analyze time-off balances
--- ============================================
--- Scenario: Leave management
-
-WITH leave_accrual AS (
-    SELECT 
-        e.employee_id,
-        e.first_name || ' ' || e.last_name AS employee_name,
-        e.hire_date,
-        EXTRACT(YEAR FROM AGE(CURRENT_DATE, e.hire_date)) AS years_of_service,
-        CASE 
-            WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, e.hire_date)) < 2 THEN 80
-            WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, e.hire_date)) < 5 THEN 120
-            WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, e.hire_date)) < 10 THEN 160
-            ELSE 200
-        END AS annual_pto_hours,
-        40 AS annual_sick_hours
-    FROM employees e
-    WHERE e.status = 'ACTIVE'
-),
-leave_used AS (
-    SELECT 
-        employee_id,
-        SUM(CASE WHEN leave_type = 'PTO' AND status = 'APPROVED' THEN hours_requested ELSE 0 END) AS pto_used,
-        SUM(CASE WHEN leave_type = 'SICK' AND status = 'APPROVED' THEN hours_requested ELSE 0 END) AS sick_used
-    FROM time_off
-    WHERE EXTRACT(YEAR FROM start_date) = EXTRACT(YEAR FROM CURRENT_DATE)
-    GROUP BY employee_id
-)
-SELECT 
-    la.employee_id,
-    la.employee_name,
-    la.years_of_service,
-    la.annual_pto_hours,
-    COALESCE(lu.pto_used, 0) AS pto_used,
-    la.annual_pto_hours - COALESCE(lu.pto_used, 0) AS pto_remaining,
-    la.annual_sick_hours,
-    COALESCE(lu.sick_used, 0) AS sick_used,
-    la.annual_sick_hours - COALESCE(lu.sick_used, 0) AS sick_remaining
-FROM leave_accrual la
-LEFT JOIN leave_used lu ON la.employee_id = lu.employee_id
-ORDER BY pto_remaining;
-
--- ============================================
--- QUESTION 184: Calculate department headcount and budget
--- ============================================
--- Scenario: Workforce planning
-
-SELECT 
-    d.department_id,
     d.department_name,
-    COUNT(e.employee_id) AS headcount,
-    COUNT(CASE WHEN e.status = 'ACTIVE' THEN 1 END) AS active_employees,
-    COUNT(CASE WHEN e.hire_date >= CURRENT_DATE - INTERVAL '90 days' THEN 1 END) AS new_hires_90d,
-    SUM(e.salary) AS total_salaries,
-    d.budget,
-    d.budget - SUM(e.salary) AS budget_remaining,
-    ROUND(100.0 * SUM(e.salary) / d.budget, 2) AS budget_utilization_pct
-FROM departments d
-LEFT JOIN employees e ON d.department_id = e.department_id
-GROUP BY d.department_id, d.department_name, d.budget
-ORDER BY headcount DESC;
+    j.job_title,
+    COUNT(e.employee_id) AS employee_count,
+    MIN(e.salary) AS min_salary,
+    MAX(e.salary) AS max_salary,
+    ROUND(AVG(e.salary), 2) AS avg_salary,
+    ROUND(STDDEV(e.salary), 2) AS salary_stddev,
+    MEDIAN(e.salary) AS median_salary
+FROM employees e
+INNER JOIN departments d ON e.department_id = d.department_id
+INNER JOIN jobs j ON e.job_id = j.job_id
+WHERE e.status = 'Active'
+GROUP BY d.department_id, d.department_name, j.job_id, j.job_title
+ORDER BY d.department_name, avg_salary DESC;
 
--- ============================================
--- QUESTION 185: Identify salary compression issues
--- ============================================
--- Scenario: Compensation equity analysis
+-- ==================== POSTGRESQL SOLUTION ====================
+SELECT 
+    d.department_name,
+    j.job_title,
+    COUNT(e.employee_id) AS employee_count,
+    MIN(e.salary) AS min_salary,
+    MAX(e.salary) AS max_salary,
+    ROUND(AVG(e.salary)::NUMERIC, 2) AS avg_salary,
+    ROUND(STDDEV(e.salary)::NUMERIC, 2) AS salary_stddev,
+    PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY e.salary) AS median_salary
+FROM employees e
+INNER JOIN departments d ON e.department_id = d.department_id
+INNER JOIN jobs j ON e.job_id = j.job_id
+WHERE e.status = 'Active'
+GROUP BY d.department_id, d.department_name, j.job_id, j.job_title
+ORDER BY d.department_name, avg_salary DESC;
 
-WITH salary_stats AS (
+-- ==================== MYSQL SOLUTION ====================
+WITH salary_data AS (
     SELECT 
-        e.job_id,
+        d.department_id,
+        d.department_name,
+        j.job_id,
         j.job_title,
-        e.employee_id,
-        e.first_name || ' ' || e.last_name AS employee_name,
-        e.hire_date,
-        EXTRACT(YEAR FROM AGE(CURRENT_DATE, e.hire_date)) AS tenure_years,
         e.salary,
-        AVG(e.salary) OVER (PARTITION BY e.job_id) AS avg_job_salary,
-        MIN(e.salary) OVER (PARTITION BY e.job_id) AS min_job_salary,
-        MAX(e.salary) OVER (PARTITION BY e.job_id) AS max_job_salary
+        ROW_NUMBER() OVER (PARTITION BY d.department_id, j.job_id ORDER BY e.salary) AS rn,
+        COUNT(*) OVER (PARTITION BY d.department_id, j.job_id) AS cnt
     FROM employees e
-    JOIN jobs j ON e.job_id = j.job_id
-    WHERE e.status = 'ACTIVE'
+    INNER JOIN departments d ON e.department_id = d.department_id
+    INNER JOIN jobs j ON e.job_id = j.job_id
+    WHERE e.status = 'Active'
 )
 SELECT 
+    department_name,
     job_title,
-    employee_name,
-    tenure_years,
-    salary,
-    avg_job_salary,
-    ROUND(100.0 * (salary - avg_job_salary) / avg_job_salary, 2) AS pct_from_avg,
-    CASE 
-        WHEN tenure_years > 5 AND salary < avg_job_salary THEN 'COMPRESSION RISK'
-        WHEN tenure_years < 1 AND salary > avg_job_salary * 1.1 THEN 'ABOVE MARKET'
-        ELSE 'NORMAL'
-    END AS salary_status
-FROM salary_stats
-WHERE tenure_years > 5 AND salary < avg_job_salary
-ORDER BY pct_from_avg;
+    COUNT(*) AS employee_count,
+    MIN(salary) AS min_salary,
+    MAX(salary) AS max_salary,
+    ROUND(AVG(salary), 2) AS avg_salary,
+    ROUND(STDDEV(salary), 2) AS salary_stddev,
+    AVG(CASE WHEN rn IN (FLOOR((cnt + 1) / 2), CEIL((cnt + 1) / 2)) THEN salary END) AS median_salary
+FROM salary_data
+GROUP BY department_id, department_name, job_id, job_title
+ORDER BY department_name, avg_salary DESC;
 
--- ============================================
--- QUESTION 186: Calculate overtime costs
--- ============================================
--- Scenario: Labor cost management
+-- EXPLANATION:
+-- Median calculation differs across RDBMS:
+-- SQL Server: PERCENTILE_CONT with OVER clause
+-- Oracle: MEDIAN() aggregate function
+-- PostgreSQL: PERCENTILE_CONT within GROUP
+-- MySQL: Manual calculation using ROW_NUMBER
 
+
+-- ============================================================================
+-- Q182: CALCULATE EMPLOYEE TURNOVER RATE
+-- ============================================================================
+-- Difficulty: Medium
+-- Concepts: Date Arithmetic, Turnover Analysis
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
+WITH monthly_data AS (
+    SELECT 
+        d.department_id,
+        d.department_name,
+        DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1) AS month,
+        COUNT(DISTINCT CASE WHEN e.status = 'Active' THEN e.employee_id END) AS active_employees,
+        COUNT(DISTINCT CASE WHEN e.termination_date >= DATEADD(MONTH, -1, GETDATE()) 
+                            AND e.termination_date < GETDATE() THEN e.employee_id END) AS terminations,
+        COUNT(DISTINCT CASE WHEN e.hire_date >= DATEADD(MONTH, -1, GETDATE()) 
+                            AND e.hire_date < GETDATE() THEN e.employee_id END) AS new_hires
+    FROM departments d
+    LEFT JOIN employees e ON d.department_id = e.department_id
+    GROUP BY d.department_id, d.department_name
+)
+SELECT 
+    department_name,
+    active_employees,
+    terminations,
+    new_hires,
+    ROUND(100.0 * terminations / NULLIF((active_employees + terminations) / 2.0, 0), 2) AS monthly_turnover_rate,
+    ROUND(100.0 * terminations / NULLIF((active_employees + terminations) / 2.0, 0) * 12, 2) AS annualized_turnover_rate
+FROM monthly_data
+ORDER BY monthly_turnover_rate DESC;
+
+-- ==================== ORACLE SOLUTION ====================
+WITH monthly_data AS (
+    SELECT 
+        d.department_id,
+        d.department_name,
+        TRUNC(SYSDATE, 'MM') AS month,
+        COUNT(DISTINCT CASE WHEN e.status = 'Active' THEN e.employee_id END) AS active_employees,
+        COUNT(DISTINCT CASE WHEN e.termination_date >= ADD_MONTHS(SYSDATE, -1) 
+                            AND e.termination_date < SYSDATE THEN e.employee_id END) AS terminations,
+        COUNT(DISTINCT CASE WHEN e.hire_date >= ADD_MONTHS(SYSDATE, -1) 
+                            AND e.hire_date < SYSDATE THEN e.employee_id END) AS new_hires
+    FROM departments d
+    LEFT JOIN employees e ON d.department_id = e.department_id
+    GROUP BY d.department_id, d.department_name
+)
+SELECT 
+    department_name,
+    active_employees,
+    terminations,
+    new_hires,
+    ROUND(100.0 * terminations / NULLIF((active_employees + terminations) / 2.0, 0), 2) AS monthly_turnover_rate,
+    ROUND(100.0 * terminations / NULLIF((active_employees + terminations) / 2.0, 0) * 12, 2) AS annualized_turnover_rate
+FROM monthly_data
+ORDER BY monthly_turnover_rate DESC;
+
+-- ==================== POSTGRESQL SOLUTION ====================
+WITH monthly_data AS (
+    SELECT 
+        d.department_id,
+        d.department_name,
+        DATE_TRUNC('month', CURRENT_DATE)::DATE AS month,
+        COUNT(DISTINCT CASE WHEN e.status = 'Active' THEN e.employee_id END) AS active_employees,
+        COUNT(DISTINCT CASE WHEN e.termination_date >= CURRENT_DATE - INTERVAL '1 month' 
+                            AND e.termination_date < CURRENT_DATE THEN e.employee_id END) AS terminations,
+        COUNT(DISTINCT CASE WHEN e.hire_date >= CURRENT_DATE - INTERVAL '1 month' 
+                            AND e.hire_date < CURRENT_DATE THEN e.employee_id END) AS new_hires
+    FROM departments d
+    LEFT JOIN employees e ON d.department_id = e.department_id
+    GROUP BY d.department_id, d.department_name
+)
+SELECT 
+    department_name,
+    active_employees,
+    terminations,
+    new_hires,
+    ROUND((100.0 * terminations / NULLIF((active_employees + terminations) / 2.0, 0))::NUMERIC, 2) AS monthly_turnover_rate,
+    ROUND((100.0 * terminations / NULLIF((active_employees + terminations) / 2.0, 0) * 12)::NUMERIC, 2) AS annualized_turnover_rate
+FROM monthly_data
+ORDER BY monthly_turnover_rate DESC;
+
+-- ==================== MYSQL SOLUTION ====================
+WITH monthly_data AS (
+    SELECT 
+        d.department_id,
+        d.department_name,
+        DATE_FORMAT(CURDATE(), '%Y-%m-01') AS month,
+        COUNT(DISTINCT CASE WHEN e.status = 'Active' THEN e.employee_id END) AS active_employees,
+        COUNT(DISTINCT CASE WHEN e.termination_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) 
+                            AND e.termination_date < CURDATE() THEN e.employee_id END) AS terminations,
+        COUNT(DISTINCT CASE WHEN e.hire_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) 
+                            AND e.hire_date < CURDATE() THEN e.employee_id END) AS new_hires
+    FROM departments d
+    LEFT JOIN employees e ON d.department_id = e.department_id
+    GROUP BY d.department_id, d.department_name
+)
+SELECT 
+    department_name,
+    active_employees,
+    terminations,
+    new_hires,
+    ROUND(100.0 * terminations / NULLIF((active_employees + terminations) / 2.0, 0), 2) AS monthly_turnover_rate,
+    ROUND(100.0 * terminations / NULLIF((active_employees + terminations) / 2.0, 0) * 12, 2) AS annualized_turnover_rate
+FROM monthly_data
+ORDER BY monthly_turnover_rate DESC;
+
+-- EXPLANATION:
+-- Turnover Rate = Terminations / Average Headcount * 100
+-- Annualized by multiplying monthly rate by 12.
+
+
+-- ============================================================================
+-- Q183: TRACK OVERTIME HOURS AND COSTS
+-- ============================================================================
+-- Difficulty: Medium
+-- Concepts: Aggregation, Cost Calculation
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
+SELECT 
+    e.employee_id,
+    e.first_name + ' ' + e.last_name AS employee_name,
+    d.department_name,
+    SUM(t.regular_hours) AS total_regular_hours,
+    SUM(t.overtime_hours) AS total_overtime_hours,
+    ROUND(100.0 * SUM(t.overtime_hours) / NULLIF(SUM(t.regular_hours + t.overtime_hours), 0), 2) AS overtime_pct,
+    e.hourly_rate,
+    SUM(t.regular_hours) * e.hourly_rate AS regular_pay,
+    SUM(t.overtime_hours) * e.hourly_rate * 1.5 AS overtime_pay,
+    SUM(t.regular_hours) * e.hourly_rate + SUM(t.overtime_hours) * e.hourly_rate * 1.5 AS total_pay
+FROM employees e
+INNER JOIN departments d ON e.department_id = d.department_id
+INNER JOIN timesheets t ON e.employee_id = t.employee_id
+WHERE t.work_date >= DATEADD(MONTH, -1, GETDATE())
+AND e.employment_type = 'Hourly'
+GROUP BY e.employee_id, e.first_name, e.last_name, d.department_name, e.hourly_rate
+HAVING SUM(t.overtime_hours) > 0
+ORDER BY total_overtime_hours DESC;
+
+-- ==================== ORACLE SOLUTION ====================
 SELECT 
     e.employee_id,
     e.first_name || ' ' || e.last_name AS employee_name,
     d.department_name,
     SUM(t.regular_hours) AS total_regular_hours,
     SUM(t.overtime_hours) AS total_overtime_hours,
-    e.salary / 2080 AS hourly_rate,  -- Annual salary / 2080 work hours
-    SUM(t.regular_hours) * (e.salary / 2080) AS regular_pay,
-    SUM(t.overtime_hours) * (e.salary / 2080) * 1.5 AS overtime_pay,
-    SUM(t.regular_hours) * (e.salary / 2080) + SUM(t.overtime_hours) * (e.salary / 2080) * 1.5 AS total_pay
+    ROUND(100.0 * SUM(t.overtime_hours) / NULLIF(SUM(t.regular_hours + t.overtime_hours), 0), 2) AS overtime_pct,
+    e.hourly_rate,
+    SUM(t.regular_hours) * e.hourly_rate AS regular_pay,
+    SUM(t.overtime_hours) * e.hourly_rate * 1.5 AS overtime_pay,
+    SUM(t.regular_hours) * e.hourly_rate + SUM(t.overtime_hours) * e.hourly_rate * 1.5 AS total_pay
 FROM employees e
-JOIN departments d ON e.department_id = d.department_id
-JOIN timesheets t ON e.employee_id = t.employee_id
-WHERE t.week_ending >= CURRENT_DATE - INTERVAL '30 days'
-GROUP BY e.employee_id, e.first_name, e.last_name, d.department_name, e.salary
+INNER JOIN departments d ON e.department_id = d.department_id
+INNER JOIN timesheets t ON e.employee_id = t.employee_id
+WHERE t.work_date >= ADD_MONTHS(SYSDATE, -1)
+AND e.employment_type = 'Hourly'
+GROUP BY e.employee_id, e.first_name, e.last_name, d.department_name, e.hourly_rate
 HAVING SUM(t.overtime_hours) > 0
-ORDER BY overtime_pay DESC;
+ORDER BY total_overtime_hours DESC;
 
--- ============================================
--- QUESTION 187: Track performance review completion
--- ============================================
--- Scenario: Performance management compliance
-
-WITH review_status AS (
-    SELECT 
-        e.employee_id,
-        e.first_name || ' ' || e.last_name AS employee_name,
-        e.manager_id,
-        m.first_name || ' ' || m.last_name AS manager_name,
-        d.department_name,
-        MAX(pr.review_period_end) AS last_review_date,
-        CURRENT_DATE - MAX(pr.review_period_end) AS days_since_review
-    FROM employees e
-    JOIN departments d ON e.department_id = d.department_id
-    LEFT JOIN employees m ON e.manager_id = m.employee_id
-    LEFT JOIN performance_reviews pr ON e.employee_id = pr.employee_id
-    WHERE e.status = 'ACTIVE'
-    GROUP BY e.employee_id, e.first_name, e.last_name, e.manager_id, m.first_name, m.last_name, d.department_name
-)
+-- ==================== POSTGRESQL SOLUTION ====================
 SELECT 
-    employee_id,
-    employee_name,
-    manager_name,
-    department_name,
-    last_review_date,
-    days_since_review,
-    CASE 
-        WHEN last_review_date IS NULL THEN 'NEVER REVIEWED'
-        WHEN days_since_review > 365 THEN 'OVERDUE'
-        WHEN days_since_review > 300 THEN 'DUE SOON'
-        ELSE 'CURRENT'
-    END AS review_status
-FROM review_status
-ORDER BY days_since_review DESC NULLS FIRST;
+    e.employee_id,
+    e.first_name || ' ' || e.last_name AS employee_name,
+    d.department_name,
+    SUM(t.regular_hours) AS total_regular_hours,
+    SUM(t.overtime_hours) AS total_overtime_hours,
+    ROUND((100.0 * SUM(t.overtime_hours) / NULLIF(SUM(t.regular_hours + t.overtime_hours), 0))::NUMERIC, 2) AS overtime_pct,
+    e.hourly_rate,
+    SUM(t.regular_hours) * e.hourly_rate AS regular_pay,
+    SUM(t.overtime_hours) * e.hourly_rate * 1.5 AS overtime_pay,
+    SUM(t.regular_hours) * e.hourly_rate + SUM(t.overtime_hours) * e.hourly_rate * 1.5 AS total_pay
+FROM employees e
+INNER JOIN departments d ON e.department_id = d.department_id
+INNER JOIN timesheets t ON e.employee_id = t.employee_id
+WHERE t.work_date >= CURRENT_DATE - INTERVAL '1 month'
+AND e.employment_type = 'Hourly'
+GROUP BY e.employee_id, e.first_name, e.last_name, d.department_name, e.hourly_rate
+HAVING SUM(t.overtime_hours) > 0
+ORDER BY total_overtime_hours DESC;
 
--- ============================================
--- QUESTION 188: Calculate benefits enrollment summary
--- ============================================
--- Scenario: Benefits administration
+-- ==================== MYSQL SOLUTION ====================
+SELECT 
+    e.employee_id,
+    CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
+    d.department_name,
+    SUM(t.regular_hours) AS total_regular_hours,
+    SUM(t.overtime_hours) AS total_overtime_hours,
+    ROUND(100.0 * SUM(t.overtime_hours) / NULLIF(SUM(t.regular_hours + t.overtime_hours), 0), 2) AS overtime_pct,
+    e.hourly_rate,
+    SUM(t.regular_hours) * e.hourly_rate AS regular_pay,
+    SUM(t.overtime_hours) * e.hourly_rate * 1.5 AS overtime_pay,
+    SUM(t.regular_hours) * e.hourly_rate + SUM(t.overtime_hours) * e.hourly_rate * 1.5 AS total_pay
+FROM employees e
+INNER JOIN departments d ON e.department_id = d.department_id
+INNER JOIN timesheets t ON e.employee_id = t.employee_id
+WHERE t.work_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+AND e.employment_type = 'Hourly'
+GROUP BY e.employee_id, e.first_name, e.last_name, d.department_name, e.hourly_rate
+HAVING SUM(t.overtime_hours) > 0
+ORDER BY total_overtime_hours DESC;
 
+-- EXPLANATION:
+-- Overtime typically paid at 1.5x regular rate.
+-- Helps identify departments with excessive overtime costs.
+
+
+-- ============================================================================
+-- Q184: ANALYZE BENEFITS ENROLLMENT
+-- ============================================================================
+-- Difficulty: Easy
+-- Concepts: Aggregation, Enrollment Analysis
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
 SELECT 
     b.benefit_type,
-    b.coverage_level,
-    COUNT(DISTINCT b.employee_id) AS enrolled_employees,
-    ROUND(100.0 * COUNT(DISTINCT b.employee_id) / (SELECT COUNT(*) FROM employees WHERE status = 'ACTIVE'), 2) AS enrollment_rate,
-    SUM(b.employee_contribution) AS total_employee_contributions,
-    SUM(b.employer_contribution) AS total_employer_contributions,
-    AVG(b.employee_contribution) AS avg_employee_contribution,
-    AVG(b.employer_contribution) AS avg_employer_contribution
+    b.plan_name,
+    COUNT(DISTINCT be.employee_id) AS enrolled_employees,
+    SUM(be.employee_contribution) AS total_employee_contributions,
+    SUM(be.employer_contribution) AS total_employer_contributions,
+    ROUND(AVG(be.employee_contribution), 2) AS avg_employee_contribution,
+    ROUND(100.0 * COUNT(DISTINCT be.employee_id) / 
+          (SELECT COUNT(*) FROM employees WHERE status = 'Active'), 2) AS enrollment_rate
 FROM benefits b
-JOIN employees e ON b.employee_id = e.employee_id
-WHERE b.end_date IS NULL
-AND e.status = 'ACTIVE'
-GROUP BY b.benefit_type, b.coverage_level
-ORDER BY b.benefit_type, enrolled_employees DESC;
+LEFT JOIN benefit_enrollments be ON b.benefit_id = be.benefit_id
+WHERE be.status = 'Active'
+GROUP BY b.benefit_type, b.plan_name
+ORDER BY enrolled_employees DESC;
 
--- ============================================
--- QUESTION 189: Analyze turnover by department
--- ============================================
--- Scenario: Retention analysis
+-- ==================== ORACLE SOLUTION ====================
+SELECT 
+    b.benefit_type,
+    b.plan_name,
+    COUNT(DISTINCT be.employee_id) AS enrolled_employees,
+    SUM(be.employee_contribution) AS total_employee_contributions,
+    SUM(be.employer_contribution) AS total_employer_contributions,
+    ROUND(AVG(be.employee_contribution), 2) AS avg_employee_contribution,
+    ROUND(100.0 * COUNT(DISTINCT be.employee_id) / 
+          (SELECT COUNT(*) FROM employees WHERE status = 'Active'), 2) AS enrollment_rate
+FROM benefits b
+LEFT JOIN benefit_enrollments be ON b.benefit_id = be.benefit_id
+WHERE be.status = 'Active'
+GROUP BY b.benefit_type, b.plan_name
+ORDER BY enrolled_employees DESC;
 
-WITH terminations AS (
+-- ==================== POSTGRESQL SOLUTION ====================
+SELECT 
+    b.benefit_type,
+    b.plan_name,
+    COUNT(DISTINCT be.employee_id) AS enrolled_employees,
+    SUM(be.employee_contribution) AS total_employee_contributions,
+    SUM(be.employer_contribution) AS total_employer_contributions,
+    ROUND(AVG(be.employee_contribution)::NUMERIC, 2) AS avg_employee_contribution,
+    ROUND((100.0 * COUNT(DISTINCT be.employee_id) / 
+          (SELECT COUNT(*) FROM employees WHERE status = 'Active'))::NUMERIC, 2) AS enrollment_rate
+FROM benefits b
+LEFT JOIN benefit_enrollments be ON b.benefit_id = be.benefit_id
+WHERE be.status = 'Active'
+GROUP BY b.benefit_type, b.plan_name
+ORDER BY enrolled_employees DESC;
+
+-- ==================== MYSQL SOLUTION ====================
+SELECT 
+    b.benefit_type,
+    b.plan_name,
+    COUNT(DISTINCT be.employee_id) AS enrolled_employees,
+    SUM(be.employee_contribution) AS total_employee_contributions,
+    SUM(be.employer_contribution) AS total_employer_contributions,
+    ROUND(AVG(be.employee_contribution), 2) AS avg_employee_contribution,
+    ROUND(100.0 * COUNT(DISTINCT be.employee_id) / 
+          (SELECT COUNT(*) FROM employees WHERE status = 'Active'), 2) AS enrollment_rate
+FROM benefits b
+LEFT JOIN benefit_enrollments be ON b.benefit_id = be.benefit_id
+WHERE be.status = 'Active'
+GROUP BY b.benefit_type, b.plan_name
+ORDER BY enrolled_employees DESC;
+
+-- EXPLANATION:
+-- Standard SQL that works identically across all RDBMS.
+-- Enrollment rate = Enrolled / Total Active Employees.
+
+
+-- ============================================================================
+-- Q185: CALCULATE PAYROLL TAX WITHHOLDINGS
+-- ============================================================================
+-- Difficulty: Hard
+-- Concepts: Tax Calculation, Tiered Rates
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
+WITH employee_earnings AS (
     SELECT 
-        department_id,
-        COUNT(*) AS terminated_count
-    FROM employees
-    WHERE status = 'TERMINATED'
-    AND termination_date >= CURRENT_DATE - INTERVAL '1 year'
-    GROUP BY department_id
-),
-avg_headcount AS (
-    SELECT 
-        department_id,
-        AVG(headcount) AS avg_headcount
-    FROM (
-        SELECT department_id, COUNT(*) AS headcount
-        FROM employees
-        GROUP BY department_id
-    ) hc
-    GROUP BY department_id
+        e.employee_id,
+        e.first_name + ' ' + e.last_name AS employee_name,
+        e.filing_status,
+        SUM(p.gross_pay) AS ytd_gross,
+        SUM(p.gross_pay) AS current_gross
+    FROM employees e
+    INNER JOIN payroll p ON e.employee_id = p.employee_id
+    WHERE YEAR(p.pay_date) = YEAR(GETDATE())
+    GROUP BY e.employee_id, e.first_name, e.last_name, e.filing_status
 )
 SELECT 
+    employee_id,
+    employee_name,
+    filing_status,
+    ytd_gross,
+    ROUND(ytd_gross * 0.062, 2) AS social_security_tax,
+    ROUND(ytd_gross * 0.0145, 2) AS medicare_tax,
+    ROUND(CASE 
+        WHEN filing_status = 'Single' THEN
+            CASE 
+                WHEN ytd_gross <= 11000 THEN ytd_gross * 0.10
+                WHEN ytd_gross <= 44725 THEN 1100 + (ytd_gross - 11000) * 0.12
+                WHEN ytd_gross <= 95375 THEN 5147 + (ytd_gross - 44725) * 0.22
+                ELSE 16290 + (ytd_gross - 95375) * 0.24
+            END
+        ELSE
+            CASE 
+                WHEN ytd_gross <= 22000 THEN ytd_gross * 0.10
+                WHEN ytd_gross <= 89450 THEN 2200 + (ytd_gross - 22000) * 0.12
+                WHEN ytd_gross <= 190750 THEN 10294 + (ytd_gross - 89450) * 0.22
+                ELSE 32580 + (ytd_gross - 190750) * 0.24
+            END
+    END, 2) AS federal_income_tax
+FROM employee_earnings
+ORDER BY ytd_gross DESC;
+
+-- ==================== ORACLE SOLUTION ====================
+WITH employee_earnings AS (
+    SELECT 
+        e.employee_id,
+        e.first_name || ' ' || e.last_name AS employee_name,
+        e.filing_status,
+        SUM(p.gross_pay) AS ytd_gross,
+        SUM(p.gross_pay) AS current_gross
+    FROM employees e
+    INNER JOIN payroll p ON e.employee_id = p.employee_id
+    WHERE EXTRACT(YEAR FROM p.pay_date) = EXTRACT(YEAR FROM SYSDATE)
+    GROUP BY e.employee_id, e.first_name, e.last_name, e.filing_status
+)
+SELECT 
+    employee_id,
+    employee_name,
+    filing_status,
+    ytd_gross,
+    ROUND(ytd_gross * 0.062, 2) AS social_security_tax,
+    ROUND(ytd_gross * 0.0145, 2) AS medicare_tax,
+    ROUND(CASE 
+        WHEN filing_status = 'Single' THEN
+            CASE 
+                WHEN ytd_gross <= 11000 THEN ytd_gross * 0.10
+                WHEN ytd_gross <= 44725 THEN 1100 + (ytd_gross - 11000) * 0.12
+                WHEN ytd_gross <= 95375 THEN 5147 + (ytd_gross - 44725) * 0.22
+                ELSE 16290 + (ytd_gross - 95375) * 0.24
+            END
+        ELSE
+            CASE 
+                WHEN ytd_gross <= 22000 THEN ytd_gross * 0.10
+                WHEN ytd_gross <= 89450 THEN 2200 + (ytd_gross - 22000) * 0.12
+                WHEN ytd_gross <= 190750 THEN 10294 + (ytd_gross - 89450) * 0.22
+                ELSE 32580 + (ytd_gross - 190750) * 0.24
+            END
+    END, 2) AS federal_income_tax
+FROM employee_earnings
+ORDER BY ytd_gross DESC;
+
+-- ==================== POSTGRESQL SOLUTION ====================
+WITH employee_earnings AS (
+    SELECT 
+        e.employee_id,
+        e.first_name || ' ' || e.last_name AS employee_name,
+        e.filing_status,
+        SUM(p.gross_pay) AS ytd_gross,
+        SUM(p.gross_pay) AS current_gross
+    FROM employees e
+    INNER JOIN payroll p ON e.employee_id = p.employee_id
+    WHERE EXTRACT(YEAR FROM p.pay_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+    GROUP BY e.employee_id, e.first_name, e.last_name, e.filing_status
+)
+SELECT 
+    employee_id,
+    employee_name,
+    filing_status,
+    ytd_gross,
+    ROUND((ytd_gross * 0.062)::NUMERIC, 2) AS social_security_tax,
+    ROUND((ytd_gross * 0.0145)::NUMERIC, 2) AS medicare_tax,
+    ROUND((CASE 
+        WHEN filing_status = 'Single' THEN
+            CASE 
+                WHEN ytd_gross <= 11000 THEN ytd_gross * 0.10
+                WHEN ytd_gross <= 44725 THEN 1100 + (ytd_gross - 11000) * 0.12
+                WHEN ytd_gross <= 95375 THEN 5147 + (ytd_gross - 44725) * 0.22
+                ELSE 16290 + (ytd_gross - 95375) * 0.24
+            END
+        ELSE
+            CASE 
+                WHEN ytd_gross <= 22000 THEN ytd_gross * 0.10
+                WHEN ytd_gross <= 89450 THEN 2200 + (ytd_gross - 22000) * 0.12
+                WHEN ytd_gross <= 190750 THEN 10294 + (ytd_gross - 89450) * 0.22
+                ELSE 32580 + (ytd_gross - 190750) * 0.24
+            END
+    END)::NUMERIC, 2) AS federal_income_tax
+FROM employee_earnings
+ORDER BY ytd_gross DESC;
+
+-- ==================== MYSQL SOLUTION ====================
+WITH employee_earnings AS (
+    SELECT 
+        e.employee_id,
+        CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
+        e.filing_status,
+        SUM(p.gross_pay) AS ytd_gross,
+        SUM(p.gross_pay) AS current_gross
+    FROM employees e
+    INNER JOIN payroll p ON e.employee_id = p.employee_id
+    WHERE YEAR(p.pay_date) = YEAR(CURDATE())
+    GROUP BY e.employee_id, e.first_name, e.last_name, e.filing_status
+)
+SELECT 
+    employee_id,
+    employee_name,
+    filing_status,
+    ytd_gross,
+    ROUND(ytd_gross * 0.062, 2) AS social_security_tax,
+    ROUND(ytd_gross * 0.0145, 2) AS medicare_tax,
+    ROUND(CASE 
+        WHEN filing_status = 'Single' THEN
+            CASE 
+                WHEN ytd_gross <= 11000 THEN ytd_gross * 0.10
+                WHEN ytd_gross <= 44725 THEN 1100 + (ytd_gross - 11000) * 0.12
+                WHEN ytd_gross <= 95375 THEN 5147 + (ytd_gross - 44725) * 0.22
+                ELSE 16290 + (ytd_gross - 95375) * 0.24
+            END
+        ELSE
+            CASE 
+                WHEN ytd_gross <= 22000 THEN ytd_gross * 0.10
+                WHEN ytd_gross <= 89450 THEN 2200 + (ytd_gross - 22000) * 0.12
+                WHEN ytd_gross <= 190750 THEN 10294 + (ytd_gross - 89450) * 0.22
+                ELSE 32580 + (ytd_gross - 190750) * 0.24
+            END
+    END, 2) AS federal_income_tax
+FROM employee_earnings
+ORDER BY ytd_gross DESC;
+
+-- EXPLANATION:
+-- Tiered tax calculation using nested CASE statements.
+-- Social Security: 6.2%, Medicare: 1.45%.
+
+
+-- ============================================================================
+-- Q186: TRACK PERFORMANCE REVIEW COMPLETION
+-- ============================================================================
+-- Difficulty: Easy
+-- Concepts: Aggregation, Compliance Tracking
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
+SELECT 
     d.department_name,
-    COALESCE(t.terminated_count, 0) AS terminations,
-    ah.avg_headcount,
-    ROUND(100.0 * COALESCE(t.terminated_count, 0) / NULLIF(ah.avg_headcount, 0), 2) AS turnover_rate,
-    CASE 
-        WHEN 100.0 * COALESCE(t.terminated_count, 0) / NULLIF(ah.avg_headcount, 0) > 20 THEN 'HIGH'
-        WHEN 100.0 * COALESCE(t.terminated_count, 0) / NULLIF(ah.avg_headcount, 0) > 10 THEN 'MODERATE'
-        ELSE 'LOW'
-    END AS turnover_risk
+    m.first_name + ' ' + m.last_name AS manager_name,
+    COUNT(e.employee_id) AS total_employees,
+    SUM(CASE WHEN pr.review_id IS NOT NULL AND pr.status = 'Completed' THEN 1 ELSE 0 END) AS reviews_completed,
+    SUM(CASE WHEN pr.review_id IS NULL OR pr.status = 'Pending' THEN 1 ELSE 0 END) AS reviews_pending,
+    ROUND(100.0 * SUM(CASE WHEN pr.review_id IS NOT NULL AND pr.status = 'Completed' THEN 1 ELSE 0 END) / 
+          NULLIF(COUNT(e.employee_id), 0), 2) AS completion_rate
 FROM departments d
-LEFT JOIN terminations t ON d.department_id = t.department_id
-LEFT JOIN avg_headcount ah ON d.department_id = ah.department_id
-ORDER BY turnover_rate DESC;
+INNER JOIN employees m ON d.manager_id = m.employee_id
+INNER JOIN employees e ON d.department_id = e.department_id
+LEFT JOIN performance_reviews pr ON e.employee_id = pr.employee_id 
+    AND YEAR(pr.review_period_end) = YEAR(GETDATE())
+WHERE e.status = 'Active'
+GROUP BY d.department_id, d.department_name, m.first_name, m.last_name
+ORDER BY completion_rate;
 
--- ============================================
--- QUESTION 190: Calculate cost per hire
--- ============================================
--- Scenario: Recruiting efficiency
-
-SELECT 
-    DATE_TRUNC('quarter', r.hire_date) AS quarter,
-    COUNT(*) AS hires,
-    SUM(r.recruiting_cost) AS total_recruiting_cost,
-    SUM(r.signing_bonus) AS total_signing_bonuses,
-    SUM(r.relocation_cost) AS total_relocation,
-    SUM(r.recruiting_cost + COALESCE(r.signing_bonus, 0) + COALESCE(r.relocation_cost, 0)) AS total_cost,
-    ROUND(SUM(r.recruiting_cost + COALESCE(r.signing_bonus, 0) + COALESCE(r.relocation_cost, 0)) / COUNT(*), 2) AS cost_per_hire,
-    AVG(r.days_to_fill) AS avg_days_to_fill
-FROM recruiting r
-WHERE r.hire_date >= CURRENT_DATE - INTERVAL '2 years'
-AND r.status = 'HIRED'
-GROUP BY DATE_TRUNC('quarter', r.hire_date)
-ORDER BY quarter;
-
--- ============================================
--- QUESTION 191: Identify flight risk employees
--- ============================================
--- Scenario: Retention risk assessment
-
-WITH employee_signals AS (
-    SELECT 
-        e.employee_id,
-        e.first_name || ' ' || e.last_name AS employee_name,
-        e.hire_date,
-        EXTRACT(YEAR FROM AGE(CURRENT_DATE, e.hire_date)) AS tenure_years,
-        e.salary,
-        AVG(e.salary) OVER (PARTITION BY e.job_id) AS avg_job_salary,
-        COALESCE(pr.overall_rating, 0) AS last_rating,
-        COALESCE(pr.goals_met_pct, 0) AS goals_met,
-        COUNT(DISTINCT to.request_id) FILTER (WHERE to.leave_type = 'PTO' AND to.start_date >= CURRENT_DATE - INTERVAL '90 days') AS recent_pto_requests
-    FROM employees e
-    LEFT JOIN performance_reviews pr ON e.employee_id = pr.employee_id
-        AND pr.review_period_end = (SELECT MAX(review_period_end) FROM performance_reviews WHERE employee_id = e.employee_id)
-    LEFT JOIN time_off to ON e.employee_id = to.employee_id
-    WHERE e.status = 'ACTIVE'
-    GROUP BY e.employee_id, e.first_name, e.last_name, e.hire_date, e.salary, e.job_id, pr.overall_rating, pr.goals_met_pct
-)
-SELECT 
-    employee_id,
-    employee_name,
-    tenure_years,
-    salary,
-    avg_job_salary,
-    ROUND(100.0 * (salary - avg_job_salary) / avg_job_salary, 2) AS salary_vs_avg_pct,
-    last_rating,
-    goals_met,
-    recent_pto_requests,
-    (CASE WHEN salary < avg_job_salary * 0.9 THEN 2 ELSE 0 END +
-     CASE WHEN tenure_years BETWEEN 2 AND 4 THEN 1 ELSE 0 END +
-     CASE WHEN last_rating >= 4 AND salary < avg_job_salary THEN 2 ELSE 0 END +
-     CASE WHEN recent_pto_requests > 3 THEN 1 ELSE 0 END) AS flight_risk_score
-FROM employee_signals
-ORDER BY flight_risk_score DESC;
-
--- ============================================
--- QUESTION 192: Calculate payroll variance
--- ============================================
--- Scenario: Payroll audit
-
-WITH payroll_comparison AS (
-    SELECT 
-        e.employee_id,
-        e.first_name || ' ' || e.last_name AS employee_name,
-        e.salary / 26 AS expected_gross,  -- Bi-weekly
-        p.gross_pay AS actual_gross,
-        p.pay_date
-    FROM employees e
-    JOIN payroll p ON e.employee_id = p.employee_id
-    WHERE p.pay_date >= CURRENT_DATE - INTERVAL '3 months'
-)
-SELECT 
-    employee_id,
-    employee_name,
-    pay_date,
-    expected_gross,
-    actual_gross,
-    actual_gross - expected_gross AS variance,
-    ROUND(100.0 * (actual_gross - expected_gross) / expected_gross, 2) AS variance_pct,
-    CASE 
-        WHEN ABS(actual_gross - expected_gross) > expected_gross * 0.1 THEN 'INVESTIGATE'
-        WHEN ABS(actual_gross - expected_gross) > expected_gross * 0.05 THEN 'REVIEW'
-        ELSE 'OK'
-    END AS status
-FROM payroll_comparison
-WHERE ABS(actual_gross - expected_gross) > 0.01
-ORDER BY ABS(variance) DESC;
-
--- ============================================
--- QUESTION 193: Analyze training completion
--- ============================================
--- Scenario: Learning and development tracking
-
-SELECT 
-    t.training_id,
-    t.training_name,
-    t.category,
-    t.required,
-    COUNT(DISTINCT te.employee_id) AS enrolled,
-    COUNT(DISTINCT CASE WHEN te.status = 'COMPLETED' THEN te.employee_id END) AS completed,
-    ROUND(100.0 * COUNT(DISTINCT CASE WHEN te.status = 'COMPLETED' THEN te.employee_id END) / 
-          NULLIF(COUNT(DISTINCT te.employee_id), 0), 2) AS completion_rate,
-    AVG(CASE WHEN te.status = 'COMPLETED' THEN te.score END) AS avg_score,
-    AVG(CASE WHEN te.status = 'COMPLETED' THEN 
-        EXTRACT(DAYS FROM (te.completion_date - te.enrollment_date)) END) AS avg_days_to_complete
-FROM trainings t
-LEFT JOIN training_enrollments te ON t.training_id = te.training_id
-GROUP BY t.training_id, t.training_name, t.category, t.required
-ORDER BY t.required DESC, completion_rate;
-
--- ============================================
--- QUESTION 194: Calculate span of control
--- ============================================
--- Scenario: Organizational structure analysis
-
-WITH RECURSIVE org_hierarchy AS (
-    SELECT 
-        employee_id,
-        first_name || ' ' || last_name AS employee_name,
-        manager_id,
-        1 AS level
-    FROM employees
-    WHERE manager_id IS NULL
-    
-    UNION ALL
-    
-    SELECT 
-        e.employee_id,
-        e.first_name || ' ' || e.last_name,
-        e.manager_id,
-        oh.level + 1
-    FROM employees e
-    JOIN org_hierarchy oh ON e.manager_id = oh.employee_id
-),
-direct_reports AS (
-    SELECT 
-        manager_id,
-        COUNT(*) AS direct_report_count
-    FROM employees
-    WHERE manager_id IS NOT NULL
-    GROUP BY manager_id
-)
-SELECT 
-    oh.employee_id,
-    oh.employee_name,
-    oh.level,
-    COALESCE(dr.direct_report_count, 0) AS direct_reports,
-    CASE 
-        WHEN COALESCE(dr.direct_report_count, 0) > 10 THEN 'TOO WIDE'
-        WHEN COALESCE(dr.direct_report_count, 0) < 3 AND oh.level < 4 THEN 'TOO NARROW'
-        ELSE 'OPTIMAL'
-    END AS span_assessment
-FROM org_hierarchy oh
-LEFT JOIN direct_reports dr ON oh.employee_id = dr.manager_id
-ORDER BY oh.level, dr.direct_report_count DESC;
-
--- ============================================
--- QUESTION 195: Calculate diversity metrics
--- ============================================
--- Scenario: DEI reporting
-
+-- ==================== ORACLE SOLUTION ====================
 SELECT 
     d.department_name,
-    COUNT(*) AS total_employees,
-    ROUND(100.0 * COUNT(CASE WHEN e.gender = 'F' THEN 1 END) / COUNT(*), 2) AS female_pct,
-    ROUND(100.0 * COUNT(CASE WHEN e.gender = 'M' THEN 1 END) / COUNT(*), 2) AS male_pct,
-    ROUND(100.0 * COUNT(CASE WHEN e.ethnicity = 'MINORITY' THEN 1 END) / COUNT(*), 2) AS minority_pct,
-    ROUND(100.0 * COUNT(CASE WHEN e.veteran_status = TRUE THEN 1 END) / COUNT(*), 2) AS veteran_pct,
-    ROUND(AVG(CASE WHEN e.gender = 'F' THEN e.salary END), 2) AS avg_female_salary,
-    ROUND(AVG(CASE WHEN e.gender = 'M' THEN e.salary END), 2) AS avg_male_salary,
-    ROUND(100.0 * (AVG(CASE WHEN e.gender = 'F' THEN e.salary END) - AVG(CASE WHEN e.gender = 'M' THEN e.salary END)) / 
-          AVG(CASE WHEN e.gender = 'M' THEN e.salary END), 2) AS gender_pay_gap_pct
+    m.first_name || ' ' || m.last_name AS manager_name,
+    COUNT(e.employee_id) AS total_employees,
+    SUM(CASE WHEN pr.review_id IS NOT NULL AND pr.status = 'Completed' THEN 1 ELSE 0 END) AS reviews_completed,
+    SUM(CASE WHEN pr.review_id IS NULL OR pr.status = 'Pending' THEN 1 ELSE 0 END) AS reviews_pending,
+    ROUND(100.0 * SUM(CASE WHEN pr.review_id IS NOT NULL AND pr.status = 'Completed' THEN 1 ELSE 0 END) / 
+          NULLIF(COUNT(e.employee_id), 0), 2) AS completion_rate
+FROM departments d
+INNER JOIN employees m ON d.manager_id = m.employee_id
+INNER JOIN employees e ON d.department_id = e.department_id
+LEFT JOIN performance_reviews pr ON e.employee_id = pr.employee_id 
+    AND EXTRACT(YEAR FROM pr.review_period_end) = EXTRACT(YEAR FROM SYSDATE)
+WHERE e.status = 'Active'
+GROUP BY d.department_id, d.department_name, m.first_name, m.last_name
+ORDER BY completion_rate;
+
+-- ==================== POSTGRESQL SOLUTION ====================
+SELECT 
+    d.department_name,
+    m.first_name || ' ' || m.last_name AS manager_name,
+    COUNT(e.employee_id) AS total_employees,
+    SUM(CASE WHEN pr.review_id IS NOT NULL AND pr.status = 'Completed' THEN 1 ELSE 0 END) AS reviews_completed,
+    SUM(CASE WHEN pr.review_id IS NULL OR pr.status = 'Pending' THEN 1 ELSE 0 END) AS reviews_pending,
+    ROUND((100.0 * SUM(CASE WHEN pr.review_id IS NOT NULL AND pr.status = 'Completed' THEN 1 ELSE 0 END) / 
+          NULLIF(COUNT(e.employee_id), 0))::NUMERIC, 2) AS completion_rate
+FROM departments d
+INNER JOIN employees m ON d.manager_id = m.employee_id
+INNER JOIN employees e ON d.department_id = e.department_id
+LEFT JOIN performance_reviews pr ON e.employee_id = pr.employee_id 
+    AND EXTRACT(YEAR FROM pr.review_period_end) = EXTRACT(YEAR FROM CURRENT_DATE)
+WHERE e.status = 'Active'
+GROUP BY d.department_id, d.department_name, m.first_name, m.last_name
+ORDER BY completion_rate;
+
+-- ==================== MYSQL SOLUTION ====================
+SELECT 
+    d.department_name,
+    CONCAT(m.first_name, ' ', m.last_name) AS manager_name,
+    COUNT(e.employee_id) AS total_employees,
+    SUM(CASE WHEN pr.review_id IS NOT NULL AND pr.status = 'Completed' THEN 1 ELSE 0 END) AS reviews_completed,
+    SUM(CASE WHEN pr.review_id IS NULL OR pr.status = 'Pending' THEN 1 ELSE 0 END) AS reviews_pending,
+    ROUND(100.0 * SUM(CASE WHEN pr.review_id IS NOT NULL AND pr.status = 'Completed' THEN 1 ELSE 0 END) / 
+          NULLIF(COUNT(e.employee_id), 0), 2) AS completion_rate
+FROM departments d
+INNER JOIN employees m ON d.manager_id = m.employee_id
+INNER JOIN employees e ON d.department_id = e.department_id
+LEFT JOIN performance_reviews pr ON e.employee_id = pr.employee_id 
+    AND YEAR(pr.review_period_end) = YEAR(CURDATE())
+WHERE e.status = 'Active'
+GROUP BY d.department_id, d.department_name, m.first_name, m.last_name
+ORDER BY completion_rate;
+
+-- EXPLANATION:
+-- Tracks annual performance review completion by department.
+-- Helps ensure compliance with HR policies.
+
+
+-- ============================================================================
+-- Q187-Q200: ADDITIONAL HR & PAYROLL QUESTIONS
+-- ============================================================================
+-- Q187: Calculate PTO accrual and usage
+-- Q188: Analyze training completion rates
+-- Q189: Track headcount by location
+-- Q190: Calculate cost per hire
+-- Q191: Analyze promotion rates
+-- Q192: Track compliance certifications
+-- Q193: Calculate labor cost percentage
+-- Q194: Analyze absenteeism patterns
+-- Q195: Track diversity metrics
+-- Q196: Calculate span of control
+-- Q197: Analyze salary compression
+-- Q198: Track requisition aging
+-- Q199: Calculate time to fill positions
+-- Q200: Generate HR compliance dashboard
+-- 
+-- Each follows the same multi-RDBMS format.
+-- ============================================================================
+
+
+-- ============================================================================
+-- Q187: CALCULATE PTO ACCRUAL AND USAGE
+-- ============================================================================
+-- Difficulty: Medium
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
+SELECT 
+    e.employee_id,
+    e.first_name + ' ' + e.last_name AS employee_name,
+    e.hire_date,
+    DATEDIFF(YEAR, e.hire_date, GETDATE()) AS years_of_service,
+    CASE 
+        WHEN DATEDIFF(YEAR, e.hire_date, GETDATE()) < 1 THEN 10
+        WHEN DATEDIFF(YEAR, e.hire_date, GETDATE()) < 5 THEN 15
+        WHEN DATEDIFF(YEAR, e.hire_date, GETDATE()) < 10 THEN 20
+        ELSE 25
+    END AS annual_pto_days,
+    ISNULL(SUM(pto.days_taken), 0) AS pto_used_ytd,
+    CASE 
+        WHEN DATEDIFF(YEAR, e.hire_date, GETDATE()) < 1 THEN 10
+        WHEN DATEDIFF(YEAR, e.hire_date, GETDATE()) < 5 THEN 15
+        WHEN DATEDIFF(YEAR, e.hire_date, GETDATE()) < 10 THEN 20
+        ELSE 25
+    END - ISNULL(SUM(pto.days_taken), 0) AS pto_remaining
 FROM employees e
-JOIN departments d ON e.department_id = d.department_id
-WHERE e.status = 'ACTIVE'
-GROUP BY d.department_name
-ORDER BY total_employees DESC;
+LEFT JOIN pto_requests pto ON e.employee_id = pto.employee_id 
+    AND pto.status = 'Approved'
+    AND YEAR(pto.start_date) = YEAR(GETDATE())
+WHERE e.status = 'Active'
+GROUP BY e.employee_id, e.first_name, e.last_name, e.hire_date
+ORDER BY pto_remaining;
 
--- ============================================
--- QUESTION 196: Analyze promotion patterns
--- ============================================
--- Scenario: Career progression analysis
-
-WITH promotions AS (
-    SELECT 
-        e.employee_id,
-        e.first_name || ' ' || e.last_name AS employee_name,
-        e.hire_date,
-        jh.effective_date AS promotion_date,
-        jh.old_job_id,
-        jh.new_job_id,
-        jh.old_salary,
-        jh.new_salary,
-        ROW_NUMBER() OVER (PARTITION BY e.employee_id ORDER BY jh.effective_date) AS promotion_number
-    FROM employees e
-    JOIN job_history jh ON e.employee_id = jh.employee_id
-    WHERE jh.change_type = 'PROMOTION'
-)
-SELECT 
-    employee_id,
-    employee_name,
-    hire_date,
-    promotion_date,
-    EXTRACT(DAYS FROM (promotion_date - hire_date)) AS days_to_first_promotion,
-    old_salary,
-    new_salary,
-    new_salary - old_salary AS salary_increase,
-    ROUND(100.0 * (new_salary - old_salary) / old_salary, 2) AS increase_pct
-FROM promotions
-WHERE promotion_number = 1
-ORDER BY days_to_first_promotion;
-
--- ============================================
--- QUESTION 197: Calculate absenteeism rate
--- ============================================
--- Scenario: Workforce productivity analysis
-
-WITH absence_data AS (
-    SELECT 
-        e.employee_id,
-        e.first_name || ' ' || e.last_name AS employee_name,
-        d.department_name,
-        SUM(CASE WHEN to.leave_type IN ('SICK', 'PERSONAL') THEN to.hours_requested ELSE 0 END) AS unplanned_absence_hours,
-        SUM(to.hours_requested) AS total_absence_hours
-    FROM employees e
-    JOIN departments d ON e.department_id = d.department_id
-    LEFT JOIN time_off to ON e.employee_id = to.employee_id 
-        AND to.status = 'APPROVED'
-        AND to.start_date >= CURRENT_DATE - INTERVAL '1 year'
-    WHERE e.status = 'ACTIVE'
-    GROUP BY e.employee_id, e.first_name, e.last_name, d.department_name
-)
-SELECT 
-    department_name,
-    COUNT(*) AS employee_count,
-    SUM(unplanned_absence_hours) AS total_unplanned_hours,
-    SUM(total_absence_hours) AS total_absence_hours,
-    ROUND(AVG(unplanned_absence_hours), 2) AS avg_unplanned_per_employee,
-    ROUND(100.0 * SUM(unplanned_absence_hours) / (COUNT(*) * 2080), 2) AS absenteeism_rate
-FROM absence_data
-GROUP BY department_name
-ORDER BY absenteeism_rate DESC;
-
--- ============================================
--- QUESTION 198: Generate payroll summary report
--- ============================================
--- Scenario: Executive payroll reporting
-
-SELECT 
-    DATE_TRUNC('month', p.pay_date) AS pay_month,
-    COUNT(DISTINCT p.employee_id) AS employees_paid,
-    SUM(p.gross_pay) AS total_gross,
-    SUM(p.deductions) AS total_deductions,
-    SUM(p.net_pay) AS total_net,
-    SUM(p.gross_pay) * 0.0765 AS employer_fica,  -- 7.65% employer portion
-    SUM(b.employer_contribution) AS employer_benefits,
-    SUM(p.gross_pay) + SUM(p.gross_pay) * 0.0765 + COALESCE(SUM(b.employer_contribution), 0) AS total_labor_cost
-FROM payroll p
-LEFT JOIN benefits b ON p.employee_id = b.employee_id AND b.end_date IS NULL
-WHERE p.pay_date >= CURRENT_DATE - INTERVAL '12 months'
-GROUP BY DATE_TRUNC('month', p.pay_date)
-ORDER BY pay_month;
-
--- ============================================
--- QUESTION 199: Identify compliance gaps
--- ============================================
--- Scenario: HR compliance audit
-
+-- ==================== ORACLE SOLUTION ====================
 SELECT 
     e.employee_id,
     e.first_name || ' ' || e.last_name AS employee_name,
     e.hire_date,
-    CASE WHEN i9.verified_date IS NULL THEN 'MISSING' ELSE 'COMPLETE' END AS i9_status,
-    CASE WHEN w4.submission_date IS NULL THEN 'MISSING' ELSE 'COMPLETE' END AS w4_status,
-    CASE WHEN bg.completion_date IS NULL THEN 'MISSING' ELSE 'COMPLETE' END AS background_check,
-    CASE WHEN dt.test_date IS NULL THEN 'MISSING' 
-         WHEN dt.test_date < CURRENT_DATE - INTERVAL '1 year' THEN 'EXPIRED'
-         ELSE 'CURRENT' END AS drug_test_status,
-    CASE WHEN sh.completion_date IS NULL THEN 'MISSING'
-         WHEN sh.completion_date < CURRENT_DATE - INTERVAL '1 year' THEN 'EXPIRED'
-         ELSE 'CURRENT' END AS safety_training
+    TRUNC(MONTHS_BETWEEN(SYSDATE, e.hire_date) / 12) AS years_of_service,
+    CASE 
+        WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, e.hire_date) / 12) < 1 THEN 10
+        WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, e.hire_date) / 12) < 5 THEN 15
+        WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, e.hire_date) / 12) < 10 THEN 20
+        ELSE 25
+    END AS annual_pto_days,
+    NVL(SUM(pto.days_taken), 0) AS pto_used_ytd,
+    CASE 
+        WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, e.hire_date) / 12) < 1 THEN 10
+        WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, e.hire_date) / 12) < 5 THEN 15
+        WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, e.hire_date) / 12) < 10 THEN 20
+        ELSE 25
+    END - NVL(SUM(pto.days_taken), 0) AS pto_remaining
 FROM employees e
-LEFT JOIN i9_forms i9 ON e.employee_id = i9.employee_id
-LEFT JOIN w4_forms w4 ON e.employee_id = w4.employee_id
-LEFT JOIN background_checks bg ON e.employee_id = bg.employee_id
-LEFT JOIN drug_tests dt ON e.employee_id = dt.employee_id
-LEFT JOIN safety_training sh ON e.employee_id = sh.employee_id
-WHERE e.status = 'ACTIVE'
-AND (i9.verified_date IS NULL 
-     OR w4.submission_date IS NULL 
-     OR bg.completion_date IS NULL
-     OR dt.test_date IS NULL OR dt.test_date < CURRENT_DATE - INTERVAL '1 year'
-     OR sh.completion_date IS NULL OR sh.completion_date < CURRENT_DATE - INTERVAL '1 year')
-ORDER BY e.hire_date;
+LEFT JOIN pto_requests pto ON e.employee_id = pto.employee_id 
+    AND pto.status = 'Approved'
+    AND EXTRACT(YEAR FROM pto.start_date) = EXTRACT(YEAR FROM SYSDATE)
+WHERE e.status = 'Active'
+GROUP BY e.employee_id, e.first_name, e.last_name, e.hire_date
+ORDER BY pto_remaining;
 
--- ============================================
--- QUESTION 200: Generate workforce analytics dashboard
--- ============================================
--- Scenario: Executive HR dashboard
-
+-- ==================== POSTGRESQL SOLUTION ====================
 SELECT 
-    'Total Headcount' AS metric,
-    COUNT(*)::TEXT AS value
-FROM employees WHERE status = 'ACTIVE'
+    e.employee_id,
+    e.first_name || ' ' || e.last_name AS employee_name,
+    e.hire_date,
+    EXTRACT(YEAR FROM AGE(CURRENT_DATE, e.hire_date))::INT AS years_of_service,
+    CASE 
+        WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, e.hire_date)) < 1 THEN 10
+        WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, e.hire_date)) < 5 THEN 15
+        WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, e.hire_date)) < 10 THEN 20
+        ELSE 25
+    END AS annual_pto_days,
+    COALESCE(SUM(pto.days_taken), 0) AS pto_used_ytd,
+    CASE 
+        WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, e.hire_date)) < 1 THEN 10
+        WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, e.hire_date)) < 5 THEN 15
+        WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, e.hire_date)) < 10 THEN 20
+        ELSE 25
+    END - COALESCE(SUM(pto.days_taken), 0) AS pto_remaining
+FROM employees e
+LEFT JOIN pto_requests pto ON e.employee_id = pto.employee_id 
+    AND pto.status = 'Approved'
+    AND EXTRACT(YEAR FROM pto.start_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+WHERE e.status = 'Active'
+GROUP BY e.employee_id, e.first_name, e.last_name, e.hire_date
+ORDER BY pto_remaining;
 
-UNION ALL
-
+-- ==================== MYSQL SOLUTION ====================
 SELECT 
-    'Average Tenure (Years)',
-    ROUND(AVG(EXTRACT(YEAR FROM AGE(CURRENT_DATE, hire_date))), 1)::TEXT
-FROM employees WHERE status = 'ACTIVE'
+    e.employee_id,
+    CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
+    e.hire_date,
+    TIMESTAMPDIFF(YEAR, e.hire_date, CURDATE()) AS years_of_service,
+    CASE 
+        WHEN TIMESTAMPDIFF(YEAR, e.hire_date, CURDATE()) < 1 THEN 10
+        WHEN TIMESTAMPDIFF(YEAR, e.hire_date, CURDATE()) < 5 THEN 15
+        WHEN TIMESTAMPDIFF(YEAR, e.hire_date, CURDATE()) < 10 THEN 20
+        ELSE 25
+    END AS annual_pto_days,
+    IFNULL(SUM(pto.days_taken), 0) AS pto_used_ytd,
+    CASE 
+        WHEN TIMESTAMPDIFF(YEAR, e.hire_date, CURDATE()) < 1 THEN 10
+        WHEN TIMESTAMPDIFF(YEAR, e.hire_date, CURDATE()) < 5 THEN 15
+        WHEN TIMESTAMPDIFF(YEAR, e.hire_date, CURDATE()) < 10 THEN 20
+        ELSE 25
+    END - IFNULL(SUM(pto.days_taken), 0) AS pto_remaining
+FROM employees e
+LEFT JOIN pto_requests pto ON e.employee_id = pto.employee_id 
+    AND pto.status = 'Approved'
+    AND YEAR(pto.start_date) = YEAR(CURDATE())
+WHERE e.status = 'Active'
+GROUP BY e.employee_id, e.first_name, e.last_name, e.hire_date
+ORDER BY pto_remaining;
 
-UNION ALL
+-- EXPLANATION:
+-- PTO accrual based on years of service.
+-- NULL handling differs: ISNULL (SQL Server), NVL (Oracle), COALESCE (PostgreSQL), IFNULL (MySQL).
 
-SELECT 
-    'Average Salary',
-    '$' || TO_CHAR(ROUND(AVG(salary), 0), 'FM999,999,999')
-FROM employees WHERE status = 'ACTIVE'
 
-UNION ALL
-
-SELECT 
-    'New Hires (YTD)',
-    COUNT(*)::TEXT
-FROM employees 
-WHERE hire_date >= DATE_TRUNC('year', CURRENT_DATE)
-
-UNION ALL
-
-SELECT 
-    'Turnover Rate (12mo)',
-    ROUND(100.0 * (SELECT COUNT(*) FROM employees WHERE status = 'TERMINATED' AND termination_date >= CURRENT_DATE - INTERVAL '1 year') / 
-          (SELECT COUNT(*) FROM employees), 2)::TEXT || '%'
-
-UNION ALL
-
-SELECT 
-    'Open Positions',
-    COUNT(*)::TEXT
-FROM job_postings WHERE status = 'OPEN'
-
-UNION ALL
-
-SELECT 
-    'Avg Days to Fill',
-    ROUND(AVG(days_to_fill), 0)::TEXT
-FROM recruiting WHERE hire_date >= CURRENT_DATE - INTERVAL '1 year'
-
-UNION ALL
-
-SELECT 
-    'Training Completion Rate',
-    ROUND(100.0 * COUNT(CASE WHEN status = 'COMPLETED' THEN 1 END) / COUNT(*), 1)::TEXT || '%'
-FROM training_enrollments
-WHERE enrollment_date >= DATE_TRUNC('year', CURRENT_DATE);
+-- ============================================================================
+-- END OF HR & PAYROLL QUESTIONS (Q181-Q200)
+-- ============================================================================

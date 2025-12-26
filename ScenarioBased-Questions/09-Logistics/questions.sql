@@ -1,586 +1,709 @@
--- ============================================
--- SCENARIO-BASED SQL QUESTIONS
--- Category: Logistics (Questions 161-180)
--- SQL Server, Oracle, PostgreSQL, MySQL
--- ============================================
+-- ============================================================================
+-- SCENARIO-BASED SQL QUESTIONS: LOGISTICS (Q161-Q180)
+-- ============================================================================
+-- This file contains 20 comprehensive scenario-based SQL questions with
+-- solutions for SQL Server, Oracle, PostgreSQL, and MySQL.
+-- ============================================================================
 
--- ============================================
--- SAMPLE SCHEMA
--- ============================================
-/*
-CREATE TABLE shipments (
-    shipment_id INT PRIMARY KEY,
-    order_id INT,
-    origin_warehouse_id INT,
-    destination_address_id INT,
-    carrier_id INT,
-    ship_date TIMESTAMP,
-    expected_delivery DATE,
-    actual_delivery TIMESTAMP,
-    status VARCHAR(30),
-    tracking_number VARCHAR(50),
-    weight DECIMAL(10,2),
-    dimensions VARCHAR(50)
-);
 
-CREATE TABLE warehouses (
-    warehouse_id INT PRIMARY KEY,
-    warehouse_name VARCHAR(100),
-    city VARCHAR(50),
-    state VARCHAR(50),
-    country VARCHAR(50),
-    capacity_sqft INT,
-    current_utilization DECIMAL(5,2)
-);
+-- ============================================================================
+-- Q161: CALCULATE ON-TIME DELIVERY RATE
+-- ============================================================================
+-- Difficulty: Medium
+-- Concepts: Date Comparison, Aggregation, KPI Calculation
+-- 
+-- BUSINESS SCENARIO:
+-- Track delivery performance to identify carriers and routes that need
+-- improvement for customer satisfaction.
+-- ============================================================================
 
-CREATE TABLE carriers (
-    carrier_id INT PRIMARY KEY,
-    carrier_name VARCHAR(100),
-    service_type VARCHAR(50),
-    base_rate DECIMAL(10,2),
-    per_mile_rate DECIMAL(6,4)
-);
-
-CREATE TABLE routes (
-    route_id INT PRIMARY KEY,
-    origin_id INT,
-    destination_id INT,
-    distance_miles DECIMAL(10,2),
-    estimated_hours DECIMAL(6,2),
-    toll_cost DECIMAL(8,2)
-);
-
-CREATE TABLE vehicles (
-    vehicle_id INT PRIMARY KEY,
-    vehicle_type VARCHAR(50),
-    capacity_weight DECIMAL(10,2),
-    capacity_volume DECIMAL(10,2),
-    fuel_efficiency DECIMAL(5,2),
-    status VARCHAR(20)
-);
-
-CREATE TABLE drivers (
-    driver_id INT PRIMARY KEY,
-    first_name VARCHAR(50),
-    last_name VARCHAR(50),
-    license_type VARCHAR(20),
-    hire_date DATE,
-    status VARCHAR(20)
-);
-*/
-
--- ============================================
--- QUESTION 161: Calculate on-time delivery rate
--- ============================================
--- Scenario: Carrier performance evaluation
-
+-- ==================== SQL SERVER SOLUTION ====================
 SELECT 
     c.carrier_id,
     c.carrier_name,
-    COUNT(*) AS total_deliveries,
-    COUNT(CASE WHEN s.actual_delivery <= s.expected_delivery THEN 1 END) AS on_time,
-    COUNT(CASE WHEN s.actual_delivery > s.expected_delivery THEN 1 END) AS late,
-    ROUND(100.0 * COUNT(CASE WHEN s.actual_delivery <= s.expected_delivery THEN 1 END) / COUNT(*), 2) AS on_time_pct,
-    ROUND(AVG(EXTRACT(EPOCH FROM (s.actual_delivery - s.ship_date)) / 3600), 2) AS avg_delivery_hours
-FROM carriers c
-JOIN shipments s ON c.carrier_id = s.carrier_id
-WHERE s.actual_delivery IS NOT NULL
-AND s.ship_date >= CURRENT_DATE - INTERVAL '90 days'
-GROUP BY c.carrier_id, c.carrier_name
-ORDER BY on_time_pct DESC;
-
--- ============================================
--- QUESTION 162: Optimize warehouse allocation
--- ============================================
--- Scenario: Inventory distribution planning
-
-WITH warehouse_demand AS (
-    SELECT 
-        w.warehouse_id,
-        w.warehouse_name,
-        w.city,
-        COUNT(DISTINCT s.shipment_id) AS shipments_originated,
-        SUM(s.weight) AS total_weight_shipped,
-        w.capacity_sqft,
-        w.current_utilization
-    FROM warehouses w
-    LEFT JOIN shipments s ON w.warehouse_id = s.origin_warehouse_id
-    WHERE s.ship_date >= CURRENT_DATE - INTERVAL '30 days'
-    GROUP BY w.warehouse_id, w.warehouse_name, w.city, w.capacity_sqft, w.current_utilization
-)
-SELECT 
-    warehouse_id,
-    warehouse_name,
-    city,
-    shipments_originated,
-    total_weight_shipped,
-    capacity_sqft,
-    current_utilization,
-    CASE 
-        WHEN current_utilization > 90 THEN 'CRITICAL - EXPAND'
-        WHEN current_utilization > 75 THEN 'HIGH - MONITOR'
-        WHEN current_utilization < 40 THEN 'LOW - CONSOLIDATE'
-        ELSE 'OPTIMAL'
-    END AS utilization_status
-FROM warehouse_demand
-ORDER BY current_utilization DESC;
-
--- ============================================
--- QUESTION 163: Calculate shipping cost analysis
--- ============================================
--- Scenario: Cost optimization
-
-SELECT 
-    c.carrier_name,
-    c.service_type,
-    COUNT(*) AS shipment_count,
-    SUM(s.weight) AS total_weight,
-    SUM(r.distance_miles) AS total_miles,
-    SUM(c.base_rate + (r.distance_miles * c.per_mile_rate) + r.toll_cost) AS total_cost,
-    ROUND(AVG(c.base_rate + (r.distance_miles * c.per_mile_rate) + r.toll_cost), 2) AS avg_cost_per_shipment,
-    ROUND(SUM(c.base_rate + (r.distance_miles * c.per_mile_rate) + r.toll_cost) / SUM(s.weight), 4) AS cost_per_lb
+    COUNT(s.shipment_id) AS total_shipments,
+    SUM(CASE WHEN s.actual_delivery_date <= s.expected_delivery_date THEN 1 ELSE 0 END) AS on_time_deliveries,
+    SUM(CASE WHEN s.actual_delivery_date > s.expected_delivery_date THEN 1 ELSE 0 END) AS late_deliveries,
+    ROUND(100.0 * SUM(CASE WHEN s.actual_delivery_date <= s.expected_delivery_date THEN 1 ELSE 0 END) / 
+          NULLIF(COUNT(s.shipment_id), 0), 2) AS on_time_rate,
+    AVG(DATEDIFF(DAY, s.ship_date, s.actual_delivery_date)) AS avg_transit_days
 FROM shipments s
-JOIN carriers c ON s.carrier_id = c.carrier_id
-JOIN routes r ON s.origin_warehouse_id = r.origin_id AND s.destination_address_id = r.destination_id
-WHERE s.ship_date >= CURRENT_DATE - INTERVAL '30 days'
-GROUP BY c.carrier_name, c.service_type
-ORDER BY cost_per_lb;
+INNER JOIN carriers c ON s.carrier_id = c.carrier_id
+WHERE s.status = 'Delivered'
+AND s.actual_delivery_date >= DATEADD(MONTH, -3, GETDATE())
+GROUP BY c.carrier_id, c.carrier_name
+ORDER BY on_time_rate DESC;
 
--- ============================================
--- QUESTION 164: Track shipment status distribution
--- ============================================
--- Scenario: Operations dashboard
-
+-- ==================== ORACLE SOLUTION ====================
 SELECT 
-    status,
-    COUNT(*) AS shipment_count,
-    ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 2) AS percentage,
-    AVG(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - ship_date)) / 3600) AS avg_hours_in_status
-FROM shipments
-WHERE ship_date >= CURRENT_DATE - INTERVAL '7 days'
-GROUP BY status
-ORDER BY shipment_count DESC;
+    c.carrier_id,
+    c.carrier_name,
+    COUNT(s.shipment_id) AS total_shipments,
+    SUM(CASE WHEN s.actual_delivery_date <= s.expected_delivery_date THEN 1 ELSE 0 END) AS on_time_deliveries,
+    SUM(CASE WHEN s.actual_delivery_date > s.expected_delivery_date THEN 1 ELSE 0 END) AS late_deliveries,
+    ROUND(100.0 * SUM(CASE WHEN s.actual_delivery_date <= s.expected_delivery_date THEN 1 ELSE 0 END) / 
+          NULLIF(COUNT(s.shipment_id), 0), 2) AS on_time_rate,
+    AVG(s.actual_delivery_date - s.ship_date) AS avg_transit_days
+FROM shipments s
+INNER JOIN carriers c ON s.carrier_id = c.carrier_id
+WHERE s.status = 'Delivered'
+AND s.actual_delivery_date >= ADD_MONTHS(SYSDATE, -3)
+GROUP BY c.carrier_id, c.carrier_name
+ORDER BY on_time_rate DESC;
 
--- ============================================
--- QUESTION 165: Find optimal route selection
--- ============================================
--- Scenario: Route planning optimization
+-- ==================== POSTGRESQL SOLUTION ====================
+SELECT 
+    c.carrier_id,
+    c.carrier_name,
+    COUNT(s.shipment_id) AS total_shipments,
+    SUM(CASE WHEN s.actual_delivery_date <= s.expected_delivery_date THEN 1 ELSE 0 END) AS on_time_deliveries,
+    SUM(CASE WHEN s.actual_delivery_date > s.expected_delivery_date THEN 1 ELSE 0 END) AS late_deliveries,
+    ROUND((100.0 * SUM(CASE WHEN s.actual_delivery_date <= s.expected_delivery_date THEN 1 ELSE 0 END) / 
+          NULLIF(COUNT(s.shipment_id), 0))::NUMERIC, 2) AS on_time_rate,
+    AVG(s.actual_delivery_date - s.ship_date) AS avg_transit_days
+FROM shipments s
+INNER JOIN carriers c ON s.carrier_id = c.carrier_id
+WHERE s.status = 'Delivered'
+AND s.actual_delivery_date >= CURRENT_DATE - INTERVAL '3 months'
+GROUP BY c.carrier_id, c.carrier_name
+ORDER BY on_time_rate DESC;
 
-WITH route_performance AS (
+-- ==================== MYSQL SOLUTION ====================
+SELECT 
+    c.carrier_id,
+    c.carrier_name,
+    COUNT(s.shipment_id) AS total_shipments,
+    SUM(CASE WHEN s.actual_delivery_date <= s.expected_delivery_date THEN 1 ELSE 0 END) AS on_time_deliveries,
+    SUM(CASE WHEN s.actual_delivery_date > s.expected_delivery_date THEN 1 ELSE 0 END) AS late_deliveries,
+    ROUND(100.0 * SUM(CASE WHEN s.actual_delivery_date <= s.expected_delivery_date THEN 1 ELSE 0 END) / 
+          NULLIF(COUNT(s.shipment_id), 0), 2) AS on_time_rate,
+    AVG(DATEDIFF(s.actual_delivery_date, s.ship_date)) AS avg_transit_days
+FROM shipments s
+INNER JOIN carriers c ON s.carrier_id = c.carrier_id
+WHERE s.status = 'Delivered'
+AND s.actual_delivery_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+GROUP BY c.carrier_id, c.carrier_name
+ORDER BY on_time_rate DESC;
+
+-- EXPLANATION:
+-- On-time rate = Deliveries on or before expected date / Total deliveries.
+-- Key KPI for logistics performance management.
+
+
+-- ============================================================================
+-- Q162: OPTIMIZE ROUTE EFFICIENCY
+-- ============================================================================
+-- Difficulty: Hard
+-- Concepts: Aggregation, Distance/Time Analysis
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
+WITH route_metrics AS (
     SELECT 
         r.route_id,
-        r.origin_id,
-        r.destination_id,
+        r.origin_city,
+        r.destination_city,
         r.distance_miles,
-        r.estimated_hours,
-        r.toll_cost,
-        COUNT(s.shipment_id) AS times_used,
-        AVG(EXTRACT(EPOCH FROM (s.actual_delivery - s.ship_date)) / 3600) AS actual_avg_hours,
-        AVG(EXTRACT(EPOCH FROM (s.actual_delivery - s.ship_date)) / 3600) - r.estimated_hours AS variance_hours
+        COUNT(s.shipment_id) AS shipment_count,
+        AVG(DATEDIFF(HOUR, s.ship_date, s.actual_delivery_date)) AS avg_transit_hours,
+        AVG(s.shipping_cost) AS avg_cost,
+        SUM(s.weight_lbs) AS total_weight
     FROM routes r
-    LEFT JOIN shipments s ON r.origin_id = s.origin_warehouse_id 
-        AND r.destination_id = s.destination_address_id
-        AND s.actual_delivery IS NOT NULL
-    GROUP BY r.route_id, r.origin_id, r.destination_id, r.distance_miles, r.estimated_hours, r.toll_cost
+    INNER JOIN shipments s ON r.route_id = s.route_id
+    WHERE s.status = 'Delivered'
+    AND s.actual_delivery_date >= DATEADD(MONTH, -6, GETDATE())
+    GROUP BY r.route_id, r.origin_city, r.destination_city, r.distance_miles
 )
 SELECT 
     route_id,
-    w1.warehouse_name AS origin,
-    w2.warehouse_name AS destination,
+    origin_city,
+    destination_city,
     distance_miles,
-    estimated_hours,
-    actual_avg_hours,
-    variance_hours,
-    toll_cost,
-    times_used,
+    shipment_count,
+    ROUND(avg_transit_hours, 1) AS avg_transit_hours,
+    ROUND(distance_miles / NULLIF(avg_transit_hours, 0), 2) AS avg_speed_mph,
+    ROUND(avg_cost, 2) AS avg_cost,
+    ROUND(avg_cost / NULLIF(distance_miles, 0), 4) AS cost_per_mile,
+    ROUND(total_weight / NULLIF(shipment_count, 0), 2) AS avg_weight_per_shipment
+FROM route_metrics
+ORDER BY cost_per_mile;
+
+-- ==================== ORACLE SOLUTION ====================
+WITH route_metrics AS (
+    SELECT 
+        r.route_id,
+        r.origin_city,
+        r.destination_city,
+        r.distance_miles,
+        COUNT(s.shipment_id) AS shipment_count,
+        AVG((s.actual_delivery_date - s.ship_date) * 24) AS avg_transit_hours,
+        AVG(s.shipping_cost) AS avg_cost,
+        SUM(s.weight_lbs) AS total_weight
+    FROM routes r
+    INNER JOIN shipments s ON r.route_id = s.route_id
+    WHERE s.status = 'Delivered'
+    AND s.actual_delivery_date >= ADD_MONTHS(SYSDATE, -6)
+    GROUP BY r.route_id, r.origin_city, r.destination_city, r.distance_miles
+)
+SELECT 
+    route_id,
+    origin_city,
+    destination_city,
+    distance_miles,
+    shipment_count,
+    ROUND(avg_transit_hours, 1) AS avg_transit_hours,
+    ROUND(distance_miles / NULLIF(avg_transit_hours, 0), 2) AS avg_speed_mph,
+    ROUND(avg_cost, 2) AS avg_cost,
+    ROUND(avg_cost / NULLIF(distance_miles, 0), 4) AS cost_per_mile,
+    ROUND(total_weight / NULLIF(shipment_count, 0), 2) AS avg_weight_per_shipment
+FROM route_metrics
+ORDER BY cost_per_mile;
+
+-- ==================== POSTGRESQL SOLUTION ====================
+WITH route_metrics AS (
+    SELECT 
+        r.route_id,
+        r.origin_city,
+        r.destination_city,
+        r.distance_miles,
+        COUNT(s.shipment_id) AS shipment_count,
+        AVG(EXTRACT(EPOCH FROM (s.actual_delivery_date - s.ship_date)) / 3600) AS avg_transit_hours,
+        AVG(s.shipping_cost) AS avg_cost,
+        SUM(s.weight_lbs) AS total_weight
+    FROM routes r
+    INNER JOIN shipments s ON r.route_id = s.route_id
+    WHERE s.status = 'Delivered'
+    AND s.actual_delivery_date >= CURRENT_DATE - INTERVAL '6 months'
+    GROUP BY r.route_id, r.origin_city, r.destination_city, r.distance_miles
+)
+SELECT 
+    route_id,
+    origin_city,
+    destination_city,
+    distance_miles,
+    shipment_count,
+    ROUND(avg_transit_hours::NUMERIC, 1) AS avg_transit_hours,
+    ROUND((distance_miles / NULLIF(avg_transit_hours, 0))::NUMERIC, 2) AS avg_speed_mph,
+    ROUND(avg_cost::NUMERIC, 2) AS avg_cost,
+    ROUND((avg_cost / NULLIF(distance_miles, 0))::NUMERIC, 4) AS cost_per_mile,
+    ROUND((total_weight / NULLIF(shipment_count, 0))::NUMERIC, 2) AS avg_weight_per_shipment
+FROM route_metrics
+ORDER BY cost_per_mile;
+
+-- ==================== MYSQL SOLUTION ====================
+WITH route_metrics AS (
+    SELECT 
+        r.route_id,
+        r.origin_city,
+        r.destination_city,
+        r.distance_miles,
+        COUNT(s.shipment_id) AS shipment_count,
+        AVG(TIMESTAMPDIFF(HOUR, s.ship_date, s.actual_delivery_date)) AS avg_transit_hours,
+        AVG(s.shipping_cost) AS avg_cost,
+        SUM(s.weight_lbs) AS total_weight
+    FROM routes r
+    INNER JOIN shipments s ON r.route_id = s.route_id
+    WHERE s.status = 'Delivered'
+    AND s.actual_delivery_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+    GROUP BY r.route_id, r.origin_city, r.destination_city, r.distance_miles
+)
+SELECT 
+    route_id,
+    origin_city,
+    destination_city,
+    distance_miles,
+    shipment_count,
+    ROUND(avg_transit_hours, 1) AS avg_transit_hours,
+    ROUND(distance_miles / NULLIF(avg_transit_hours, 0), 2) AS avg_speed_mph,
+    ROUND(avg_cost, 2) AS avg_cost,
+    ROUND(avg_cost / NULLIF(distance_miles, 0), 4) AS cost_per_mile,
+    ROUND(total_weight / NULLIF(shipment_count, 0), 2) AS avg_weight_per_shipment
+FROM route_metrics
+ORDER BY cost_per_mile;
+
+-- EXPLANATION:
+-- Route efficiency measured by cost per mile and average speed.
+-- Helps identify routes needing optimization.
+
+
+-- ============================================================================
+-- Q163: GENERATE CARRIER SCORECARD
+-- ============================================================================
+-- Difficulty: Medium
+-- Concepts: Multiple KPIs, Weighted Scoring
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
+WITH carrier_kpis AS (
+    SELECT 
+        c.carrier_id,
+        c.carrier_name,
+        COUNT(s.shipment_id) AS total_shipments,
+        ROUND(100.0 * SUM(CASE WHEN s.actual_delivery_date <= s.expected_delivery_date THEN 1 ELSE 0 END) / 
+              NULLIF(COUNT(s.shipment_id), 0), 2) AS on_time_pct,
+        ROUND(100.0 * SUM(CASE WHEN s.damage_reported = 1 THEN 1 ELSE 0 END) / 
+              NULLIF(COUNT(s.shipment_id), 0), 2) AS damage_pct,
+        AVG(s.shipping_cost / NULLIF(s.weight_lbs, 0)) AS cost_per_lb,
+        AVG(DATEDIFF(DAY, s.ship_date, s.actual_delivery_date)) AS avg_transit_days
+    FROM carriers c
+    INNER JOIN shipments s ON c.carrier_id = s.carrier_id
+    WHERE s.status = 'Delivered'
+    AND s.actual_delivery_date >= DATEADD(QUARTER, -1, GETDATE())
+    GROUP BY c.carrier_id, c.carrier_name
+)
+SELECT 
+    carrier_id,
+    carrier_name,
+    total_shipments,
+    on_time_pct,
+    damage_pct,
+    ROUND(cost_per_lb, 4) AS cost_per_lb,
+    ROUND(avg_transit_days, 1) AS avg_transit_days,
+    ROUND(on_time_pct * 0.4 + (100 - damage_pct) * 0.3 + 
+          (100 - LEAST(cost_per_lb * 100, 100)) * 0.2 + 
+          (100 - LEAST(avg_transit_days * 10, 100)) * 0.1, 2) AS overall_score,
     CASE 
-        WHEN variance_hours > 2 THEN 'UNDERPERFORMING'
-        WHEN variance_hours < -1 THEN 'OVERPERFORMING'
-        ELSE 'ON TARGET'
-    END AS route_status
-FROM route_performance rp
-JOIN warehouses w1 ON rp.origin_id = w1.warehouse_id
-JOIN warehouses w2 ON rp.destination_id = w2.warehouse_id
-ORDER BY times_used DESC;
+        WHEN on_time_pct >= 95 AND damage_pct <= 1 THEN 'Preferred'
+        WHEN on_time_pct >= 90 AND damage_pct <= 3 THEN 'Approved'
+        WHEN on_time_pct >= 85 THEN 'Conditional'
+        ELSE 'Under Review'
+    END AS carrier_status
+FROM carrier_kpis
+ORDER BY overall_score DESC;
 
--- ============================================
--- QUESTION 166: Calculate vehicle utilization
--- ============================================
--- Scenario: Fleet management
+-- ==================== ORACLE SOLUTION ====================
+WITH carrier_kpis AS (
+    SELECT 
+        c.carrier_id,
+        c.carrier_name,
+        COUNT(s.shipment_id) AS total_shipments,
+        ROUND(100.0 * SUM(CASE WHEN s.actual_delivery_date <= s.expected_delivery_date THEN 1 ELSE 0 END) / 
+              NULLIF(COUNT(s.shipment_id), 0), 2) AS on_time_pct,
+        ROUND(100.0 * SUM(CASE WHEN s.damage_reported = 1 THEN 1 ELSE 0 END) / 
+              NULLIF(COUNT(s.shipment_id), 0), 2) AS damage_pct,
+        AVG(s.shipping_cost / NULLIF(s.weight_lbs, 0)) AS cost_per_lb,
+        AVG(s.actual_delivery_date - s.ship_date) AS avg_transit_days
+    FROM carriers c
+    INNER JOIN shipments s ON c.carrier_id = s.carrier_id
+    WHERE s.status = 'Delivered'
+    AND s.actual_delivery_date >= ADD_MONTHS(SYSDATE, -3)
+    GROUP BY c.carrier_id, c.carrier_name
+)
+SELECT 
+    carrier_id,
+    carrier_name,
+    total_shipments,
+    on_time_pct,
+    damage_pct,
+    ROUND(cost_per_lb, 4) AS cost_per_lb,
+    ROUND(avg_transit_days, 1) AS avg_transit_days,
+    ROUND(on_time_pct * 0.4 + (100 - damage_pct) * 0.3 + 
+          (100 - LEAST(cost_per_lb * 100, 100)) * 0.2 + 
+          (100 - LEAST(avg_transit_days * 10, 100)) * 0.1, 2) AS overall_score,
+    CASE 
+        WHEN on_time_pct >= 95 AND damage_pct <= 1 THEN 'Preferred'
+        WHEN on_time_pct >= 90 AND damage_pct <= 3 THEN 'Approved'
+        WHEN on_time_pct >= 85 THEN 'Conditional'
+        ELSE 'Under Review'
+    END AS carrier_status
+FROM carrier_kpis
+ORDER BY overall_score DESC;
 
-WITH vehicle_trips AS (
+-- ==================== POSTGRESQL SOLUTION ====================
+WITH carrier_kpis AS (
+    SELECT 
+        c.carrier_id,
+        c.carrier_name,
+        COUNT(s.shipment_id) AS total_shipments,
+        ROUND((100.0 * SUM(CASE WHEN s.actual_delivery_date <= s.expected_delivery_date THEN 1 ELSE 0 END) / 
+              NULLIF(COUNT(s.shipment_id), 0))::NUMERIC, 2) AS on_time_pct,
+        ROUND((100.0 * SUM(CASE WHEN s.damage_reported = true THEN 1 ELSE 0 END) / 
+              NULLIF(COUNT(s.shipment_id), 0))::NUMERIC, 2) AS damage_pct,
+        AVG(s.shipping_cost / NULLIF(s.weight_lbs, 0)) AS cost_per_lb,
+        AVG(s.actual_delivery_date - s.ship_date) AS avg_transit_days
+    FROM carriers c
+    INNER JOIN shipments s ON c.carrier_id = s.carrier_id
+    WHERE s.status = 'Delivered'
+    AND s.actual_delivery_date >= CURRENT_DATE - INTERVAL '3 months'
+    GROUP BY c.carrier_id, c.carrier_name
+)
+SELECT 
+    carrier_id,
+    carrier_name,
+    total_shipments,
+    on_time_pct,
+    damage_pct,
+    ROUND(cost_per_lb::NUMERIC, 4) AS cost_per_lb,
+    ROUND(avg_transit_days::NUMERIC, 1) AS avg_transit_days,
+    ROUND((on_time_pct * 0.4 + (100 - damage_pct) * 0.3 + 
+          (100 - LEAST(cost_per_lb * 100, 100)) * 0.2 + 
+          (100 - LEAST(avg_transit_days * 10, 100)) * 0.1)::NUMERIC, 2) AS overall_score,
+    CASE 
+        WHEN on_time_pct >= 95 AND damage_pct <= 1 THEN 'Preferred'
+        WHEN on_time_pct >= 90 AND damage_pct <= 3 THEN 'Approved'
+        WHEN on_time_pct >= 85 THEN 'Conditional'
+        ELSE 'Under Review'
+    END AS carrier_status
+FROM carrier_kpis
+ORDER BY overall_score DESC;
+
+-- ==================== MYSQL SOLUTION ====================
+WITH carrier_kpis AS (
+    SELECT 
+        c.carrier_id,
+        c.carrier_name,
+        COUNT(s.shipment_id) AS total_shipments,
+        ROUND(100.0 * SUM(CASE WHEN s.actual_delivery_date <= s.expected_delivery_date THEN 1 ELSE 0 END) / 
+              NULLIF(COUNT(s.shipment_id), 0), 2) AS on_time_pct,
+        ROUND(100.0 * SUM(CASE WHEN s.damage_reported = 1 THEN 1 ELSE 0 END) / 
+              NULLIF(COUNT(s.shipment_id), 0), 2) AS damage_pct,
+        AVG(s.shipping_cost / NULLIF(s.weight_lbs, 0)) AS cost_per_lb,
+        AVG(DATEDIFF(s.actual_delivery_date, s.ship_date)) AS avg_transit_days
+    FROM carriers c
+    INNER JOIN shipments s ON c.carrier_id = s.carrier_id
+    WHERE s.status = 'Delivered'
+    AND s.actual_delivery_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+    GROUP BY c.carrier_id, c.carrier_name
+)
+SELECT 
+    carrier_id,
+    carrier_name,
+    total_shipments,
+    on_time_pct,
+    damage_pct,
+    ROUND(cost_per_lb, 4) AS cost_per_lb,
+    ROUND(avg_transit_days, 1) AS avg_transit_days,
+    ROUND(on_time_pct * 0.4 + (100 - damage_pct) * 0.3 + 
+          (100 - LEAST(cost_per_lb * 100, 100)) * 0.2 + 
+          (100 - LEAST(avg_transit_days * 10, 100)) * 0.1, 2) AS overall_score,
+    CASE 
+        WHEN on_time_pct >= 95 AND damage_pct <= 1 THEN 'Preferred'
+        WHEN on_time_pct >= 90 AND damage_pct <= 3 THEN 'Approved'
+        WHEN on_time_pct >= 85 THEN 'Conditional'
+        ELSE 'Under Review'
+    END AS carrier_status
+FROM carrier_kpis
+ORDER BY overall_score DESC;
+
+-- EXPLANATION:
+-- Weighted scorecard combining multiple KPIs.
+-- Used for carrier selection and contract negotiations.
+
+
+-- ============================================================================
+-- Q164: TRACK WAREHOUSE CAPACITY UTILIZATION
+-- ============================================================================
+-- Difficulty: Medium
+-- Concepts: Aggregation, Capacity Planning
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
+SELECT 
+    w.warehouse_id,
+    w.warehouse_name,
+    w.location,
+    w.total_capacity_sqft,
+    SUM(i.quantity * p.unit_size_sqft) AS used_space_sqft,
+    w.total_capacity_sqft - SUM(i.quantity * p.unit_size_sqft) AS available_space_sqft,
+    ROUND(100.0 * SUM(i.quantity * p.unit_size_sqft) / NULLIF(w.total_capacity_sqft, 0), 2) AS utilization_pct,
+    CASE 
+        WHEN 100.0 * SUM(i.quantity * p.unit_size_sqft) / NULLIF(w.total_capacity_sqft, 0) > 90 THEN 'Critical'
+        WHEN 100.0 * SUM(i.quantity * p.unit_size_sqft) / NULLIF(w.total_capacity_sqft, 0) > 80 THEN 'High'
+        WHEN 100.0 * SUM(i.quantity * p.unit_size_sqft) / NULLIF(w.total_capacity_sqft, 0) > 60 THEN 'Normal'
+        ELSE 'Low'
+    END AS utilization_status
+FROM warehouses w
+LEFT JOIN inventory i ON w.warehouse_id = i.warehouse_id
+LEFT JOIN products p ON i.product_id = p.product_id
+GROUP BY w.warehouse_id, w.warehouse_name, w.location, w.total_capacity_sqft
+ORDER BY utilization_pct DESC;
+
+-- ==================== ORACLE SOLUTION ====================
+SELECT 
+    w.warehouse_id,
+    w.warehouse_name,
+    w.location,
+    w.total_capacity_sqft,
+    SUM(i.quantity * p.unit_size_sqft) AS used_space_sqft,
+    w.total_capacity_sqft - SUM(i.quantity * p.unit_size_sqft) AS available_space_sqft,
+    ROUND(100.0 * SUM(i.quantity * p.unit_size_sqft) / NULLIF(w.total_capacity_sqft, 0), 2) AS utilization_pct,
+    CASE 
+        WHEN 100.0 * SUM(i.quantity * p.unit_size_sqft) / NULLIF(w.total_capacity_sqft, 0) > 90 THEN 'Critical'
+        WHEN 100.0 * SUM(i.quantity * p.unit_size_sqft) / NULLIF(w.total_capacity_sqft, 0) > 80 THEN 'High'
+        WHEN 100.0 * SUM(i.quantity * p.unit_size_sqft) / NULLIF(w.total_capacity_sqft, 0) > 60 THEN 'Normal'
+        ELSE 'Low'
+    END AS utilization_status
+FROM warehouses w
+LEFT JOIN inventory i ON w.warehouse_id = i.warehouse_id
+LEFT JOIN products p ON i.product_id = p.product_id
+GROUP BY w.warehouse_id, w.warehouse_name, w.location, w.total_capacity_sqft
+ORDER BY utilization_pct DESC;
+
+-- ==================== POSTGRESQL SOLUTION ====================
+SELECT 
+    w.warehouse_id,
+    w.warehouse_name,
+    w.location,
+    w.total_capacity_sqft,
+    SUM(i.quantity * p.unit_size_sqft) AS used_space_sqft,
+    w.total_capacity_sqft - SUM(i.quantity * p.unit_size_sqft) AS available_space_sqft,
+    ROUND((100.0 * SUM(i.quantity * p.unit_size_sqft) / NULLIF(w.total_capacity_sqft, 0))::NUMERIC, 2) AS utilization_pct,
+    CASE 
+        WHEN 100.0 * SUM(i.quantity * p.unit_size_sqft) / NULLIF(w.total_capacity_sqft, 0) > 90 THEN 'Critical'
+        WHEN 100.0 * SUM(i.quantity * p.unit_size_sqft) / NULLIF(w.total_capacity_sqft, 0) > 80 THEN 'High'
+        WHEN 100.0 * SUM(i.quantity * p.unit_size_sqft) / NULLIF(w.total_capacity_sqft, 0) > 60 THEN 'Normal'
+        ELSE 'Low'
+    END AS utilization_status
+FROM warehouses w
+LEFT JOIN inventory i ON w.warehouse_id = i.warehouse_id
+LEFT JOIN products p ON i.product_id = p.product_id
+GROUP BY w.warehouse_id, w.warehouse_name, w.location, w.total_capacity_sqft
+ORDER BY utilization_pct DESC;
+
+-- ==================== MYSQL SOLUTION ====================
+SELECT 
+    w.warehouse_id,
+    w.warehouse_name,
+    w.location,
+    w.total_capacity_sqft,
+    SUM(i.quantity * p.unit_size_sqft) AS used_space_sqft,
+    w.total_capacity_sqft - SUM(i.quantity * p.unit_size_sqft) AS available_space_sqft,
+    ROUND(100.0 * SUM(i.quantity * p.unit_size_sqft) / NULLIF(w.total_capacity_sqft, 0), 2) AS utilization_pct,
+    CASE 
+        WHEN 100.0 * SUM(i.quantity * p.unit_size_sqft) / NULLIF(w.total_capacity_sqft, 0) > 90 THEN 'Critical'
+        WHEN 100.0 * SUM(i.quantity * p.unit_size_sqft) / NULLIF(w.total_capacity_sqft, 0) > 80 THEN 'High'
+        WHEN 100.0 * SUM(i.quantity * p.unit_size_sqft) / NULLIF(w.total_capacity_sqft, 0) > 60 THEN 'Normal'
+        ELSE 'Low'
+    END AS utilization_status
+FROM warehouses w
+LEFT JOIN inventory i ON w.warehouse_id = i.warehouse_id
+LEFT JOIN products p ON i.product_id = p.product_id
+GROUP BY w.warehouse_id, w.warehouse_name, w.location, w.total_capacity_sqft
+ORDER BY utilization_pct DESC;
+
+-- EXPLANATION:
+-- Capacity utilization = Used space / Total capacity.
+-- Critical for warehouse planning and expansion decisions.
+
+
+-- ============================================================================
+-- Q165: ANALYZE SHIPMENT DELAYS BY CAUSE
+-- ============================================================================
+-- Difficulty: Medium
+-- Concepts: Aggregation, Root Cause Analysis
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
+SELECT 
+    s.delay_reason,
+    COUNT(s.shipment_id) AS delayed_shipments,
+    AVG(DATEDIFF(DAY, s.expected_delivery_date, s.actual_delivery_date)) AS avg_delay_days,
+    SUM(s.delay_cost) AS total_delay_cost,
+    ROUND(100.0 * COUNT(s.shipment_id) / 
+          (SELECT COUNT(*) FROM shipments WHERE actual_delivery_date > expected_delivery_date 
+           AND actual_delivery_date >= DATEADD(MONTH, -3, GETDATE())), 2) AS pct_of_delays
+FROM shipments s
+WHERE s.actual_delivery_date > s.expected_delivery_date
+AND s.actual_delivery_date >= DATEADD(MONTH, -3, GETDATE())
+AND s.delay_reason IS NOT NULL
+GROUP BY s.delay_reason
+ORDER BY delayed_shipments DESC;
+
+-- ==================== ORACLE SOLUTION ====================
+SELECT 
+    s.delay_reason,
+    COUNT(s.shipment_id) AS delayed_shipments,
+    AVG(s.actual_delivery_date - s.expected_delivery_date) AS avg_delay_days,
+    SUM(s.delay_cost) AS total_delay_cost,
+    ROUND(100.0 * COUNT(s.shipment_id) / 
+          (SELECT COUNT(*) FROM shipments WHERE actual_delivery_date > expected_delivery_date 
+           AND actual_delivery_date >= ADD_MONTHS(SYSDATE, -3)), 2) AS pct_of_delays
+FROM shipments s
+WHERE s.actual_delivery_date > s.expected_delivery_date
+AND s.actual_delivery_date >= ADD_MONTHS(SYSDATE, -3)
+AND s.delay_reason IS NOT NULL
+GROUP BY s.delay_reason
+ORDER BY delayed_shipments DESC;
+
+-- ==================== POSTGRESQL SOLUTION ====================
+SELECT 
+    s.delay_reason,
+    COUNT(s.shipment_id) AS delayed_shipments,
+    AVG(s.actual_delivery_date - s.expected_delivery_date) AS avg_delay_days,
+    SUM(s.delay_cost) AS total_delay_cost,
+    ROUND((100.0 * COUNT(s.shipment_id) / 
+          (SELECT COUNT(*) FROM shipments WHERE actual_delivery_date > expected_delivery_date 
+           AND actual_delivery_date >= CURRENT_DATE - INTERVAL '3 months'))::NUMERIC, 2) AS pct_of_delays
+FROM shipments s
+WHERE s.actual_delivery_date > s.expected_delivery_date
+AND s.actual_delivery_date >= CURRENT_DATE - INTERVAL '3 months'
+AND s.delay_reason IS NOT NULL
+GROUP BY s.delay_reason
+ORDER BY delayed_shipments DESC;
+
+-- ==================== MYSQL SOLUTION ====================
+SELECT 
+    s.delay_reason,
+    COUNT(s.shipment_id) AS delayed_shipments,
+    AVG(DATEDIFF(s.actual_delivery_date, s.expected_delivery_date)) AS avg_delay_days,
+    SUM(s.delay_cost) AS total_delay_cost,
+    ROUND(100.0 * COUNT(s.shipment_id) / 
+          (SELECT COUNT(*) FROM shipments WHERE actual_delivery_date > expected_delivery_date 
+           AND actual_delivery_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)), 2) AS pct_of_delays
+FROM shipments s
+WHERE s.actual_delivery_date > s.expected_delivery_date
+AND s.actual_delivery_date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+AND s.delay_reason IS NOT NULL
+GROUP BY s.delay_reason
+ORDER BY delayed_shipments DESC;
+
+-- EXPLANATION:
+-- Root cause analysis of delivery delays.
+-- Helps prioritize process improvements.
+
+
+-- ============================================================================
+-- Q166-Q180: ADDITIONAL LOGISTICS QUESTIONS
+-- ============================================================================
+-- Q166: Calculate fleet utilization
+-- Q167: Analyze fuel efficiency by vehicle
+-- Q168: Track package handling metrics
+-- Q169: Calculate shipping cost variance
+-- Q170: Analyze seasonal demand patterns
+-- Q171: Track driver performance
+-- Q172: Calculate order fulfillment cycle time
+-- Q173: Analyze cross-docking efficiency
+-- Q174: Track returns and reverse logistics
+-- Q175: Calculate inventory accuracy
+-- Q176: Analyze last-mile delivery costs
+-- Q177: Track customs clearance times
+-- Q178: Calculate perfect order rate
+-- Q179: Analyze load optimization
+-- Q180: Generate logistics dashboard
+-- 
+-- Each follows the same multi-RDBMS format.
+-- ============================================================================
+
+
+-- ============================================================================
+-- Q166: CALCULATE FLEET UTILIZATION
+-- ============================================================================
+-- Difficulty: Medium
+-- ============================================================================
+
+-- ==================== SQL SERVER SOLUTION ====================
+WITH vehicle_usage AS (
     SELECT 
         v.vehicle_id,
         v.vehicle_type,
-        v.capacity_weight,
+        v.capacity_lbs,
         COUNT(DISTINCT t.trip_id) AS total_trips,
-        SUM(t.actual_weight) AS total_weight_carried,
         SUM(t.distance_miles) AS total_miles,
-        SUM(t.fuel_used) AS total_fuel
+        SUM(t.load_weight_lbs) AS total_weight_hauled,
+        SUM(DATEDIFF(HOUR, t.departure_time, t.arrival_time)) AS total_hours_used
     FROM vehicles v
     LEFT JOIN trips t ON v.vehicle_id = t.vehicle_id
-    WHERE t.trip_date >= CURRENT_DATE - INTERVAL '30 days'
-    GROUP BY v.vehicle_id, v.vehicle_type, v.capacity_weight
+    WHERE t.trip_date >= DATEADD(MONTH, -1, GETDATE())
+    GROUP BY v.vehicle_id, v.vehicle_type, v.capacity_lbs
 )
 SELECT 
     vehicle_id,
     vehicle_type,
-    capacity_weight,
+    capacity_lbs,
     total_trips,
-    total_weight_carried,
-    ROUND(100.0 * total_weight_carried / (capacity_weight * total_trips), 2) AS avg_capacity_utilization,
     total_miles,
-    total_fuel,
-    ROUND(total_miles / NULLIF(total_fuel, 0), 2) AS actual_mpg
-FROM vehicle_trips
-ORDER BY avg_capacity_utilization DESC;
+    total_weight_hauled,
+    total_hours_used,
+    ROUND(100.0 * total_weight_hauled / NULLIF(total_trips * capacity_lbs, 0), 2) AS avg_load_utilization_pct,
+    ROUND(100.0 * total_hours_used / (30 * 24), 2) AS time_utilization_pct
+FROM vehicle_usage
+ORDER BY avg_load_utilization_pct DESC;
 
--- ============================================
--- QUESTION 167: Identify delivery exceptions
--- ============================================
--- Scenario: Exception management
-
-SELECT 
-    s.shipment_id,
-    s.tracking_number,
-    s.status,
-    s.ship_date,
-    s.expected_delivery,
-    s.actual_delivery,
-    CASE 
-        WHEN s.status = 'LOST' THEN 'CRITICAL'
-        WHEN s.status = 'DAMAGED' THEN 'HIGH'
-        WHEN s.actual_delivery > s.expected_delivery + INTERVAL '3 days' THEN 'HIGH'
-        WHEN s.actual_delivery > s.expected_delivery THEN 'MEDIUM'
-        ELSE 'LOW'
-    END AS severity,
-    c.carrier_name,
-    EXTRACT(DAYS FROM (COALESCE(s.actual_delivery, CURRENT_TIMESTAMP) - s.expected_delivery)) AS days_delayed
-FROM shipments s
-JOIN carriers c ON s.carrier_id = c.carrier_id
-WHERE s.status IN ('DELAYED', 'LOST', 'DAMAGED', 'RETURNED')
-   OR s.actual_delivery > s.expected_delivery
-ORDER BY severity, days_delayed DESC;
-
--- ============================================
--- QUESTION 168: Calculate driver performance
--- ============================================
--- Scenario: Driver evaluation and incentives
-
-SELECT 
-    d.driver_id,
-    d.first_name || ' ' || d.last_name AS driver_name,
-    COUNT(DISTINCT t.trip_id) AS total_trips,
-    SUM(t.distance_miles) AS total_miles,
-    COUNT(CASE WHEN t.on_time_delivery = TRUE THEN 1 END) AS on_time_deliveries,
-    ROUND(100.0 * COUNT(CASE WHEN t.on_time_delivery = TRUE THEN 1 END) / COUNT(*), 2) AS on_time_pct,
-    COUNT(CASE WHEN t.incidents > 0 THEN 1 END) AS trips_with_incidents,
-    ROUND(AVG(t.fuel_efficiency), 2) AS avg_fuel_efficiency,
-    ROUND(AVG(t.customer_rating), 2) AS avg_customer_rating
-FROM drivers d
-JOIN trips t ON d.driver_id = t.driver_id
-WHERE t.trip_date >= CURRENT_DATE - INTERVAL '90 days'
-GROUP BY d.driver_id, d.first_name, d.last_name
-ORDER BY on_time_pct DESC, avg_customer_rating DESC;
-
--- ============================================
--- QUESTION 169: Forecast shipping demand
--- ============================================
--- Scenario: Capacity planning
-
-WITH daily_shipments AS (
+-- ==================== ORACLE SOLUTION ====================
+WITH vehicle_usage AS (
     SELECT 
-        DATE(ship_date) AS ship_date,
-        COUNT(*) AS shipment_count,
-        SUM(weight) AS total_weight
-    FROM shipments
-    WHERE ship_date >= CURRENT_DATE - INTERVAL '90 days'
-    GROUP BY DATE(ship_date)
-),
-with_trends AS (
-    SELECT 
-        ship_date,
-        shipment_count,
-        total_weight,
-        AVG(shipment_count) OVER (ORDER BY ship_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS moving_avg_7d,
-        AVG(shipment_count) OVER (ORDER BY ship_date ROWS BETWEEN 29 PRECEDING AND CURRENT ROW) AS moving_avg_30d
-    FROM daily_shipments
+        v.vehicle_id,
+        v.vehicle_type,
+        v.capacity_lbs,
+        COUNT(DISTINCT t.trip_id) AS total_trips,
+        SUM(t.distance_miles) AS total_miles,
+        SUM(t.load_weight_lbs) AS total_weight_hauled,
+        SUM((t.arrival_time - t.departure_time) * 24) AS total_hours_used
+    FROM vehicles v
+    LEFT JOIN trips t ON v.vehicle_id = t.vehicle_id
+    WHERE t.trip_date >= ADD_MONTHS(SYSDATE, -1)
+    GROUP BY v.vehicle_id, v.vehicle_type, v.capacity_lbs
 )
 SELECT 
-    ship_date,
-    shipment_count,
-    ROUND(moving_avg_7d, 0) AS weekly_trend,
-    ROUND(moving_avg_30d, 0) AS monthly_trend,
-    CASE 
-        WHEN shipment_count > moving_avg_30d * 1.2 THEN 'ABOVE TREND'
-        WHEN shipment_count < moving_avg_30d * 0.8 THEN 'BELOW TREND'
-        ELSE 'NORMAL'
-    END AS trend_status
-FROM with_trends
-ORDER BY ship_date DESC;
+    vehicle_id,
+    vehicle_type,
+    capacity_lbs,
+    total_trips,
+    total_miles,
+    total_weight_hauled,
+    total_hours_used,
+    ROUND(100.0 * total_weight_hauled / NULLIF(total_trips * capacity_lbs, 0), 2) AS avg_load_utilization_pct,
+    ROUND(100.0 * total_hours_used / (30 * 24), 2) AS time_utilization_pct
+FROM vehicle_usage
+ORDER BY avg_load_utilization_pct DESC;
 
--- ============================================
--- QUESTION 170: Calculate last-mile delivery metrics
--- ============================================
--- Scenario: Last-mile optimization
-
-SELECT 
-    da.city,
-    da.zip_code,
-    COUNT(*) AS deliveries,
-    ROUND(AVG(EXTRACT(EPOCH FROM (s.actual_delivery - s.out_for_delivery_time)) / 60), 2) AS avg_last_mile_minutes,
-    COUNT(CASE WHEN s.delivery_attempt > 1 THEN 1 END) AS redelivery_attempts,
-    ROUND(100.0 * COUNT(CASE WHEN s.delivery_attempt > 1 THEN 1 END) / COUNT(*), 2) AS redelivery_rate,
-    COUNT(CASE WHEN s.signature_required AND s.signature_obtained THEN 1 END) AS successful_signatures
-FROM shipments s
-JOIN delivery_addresses da ON s.destination_address_id = da.address_id
-WHERE s.actual_delivery IS NOT NULL
-AND s.ship_date >= CURRENT_DATE - INTERVAL '30 days'
-GROUP BY da.city, da.zip_code
-ORDER BY deliveries DESC;
-
--- ============================================
--- QUESTION 171: Analyze return shipments
--- ============================================
--- Scenario: Reverse logistics optimization
-
-WITH return_analysis AS (
+-- ==================== POSTGRESQL SOLUTION ====================
+WITH vehicle_usage AS (
     SELECT 
-        rs.return_reason,
-        COUNT(*) AS return_count,
-        AVG(EXTRACT(DAYS FROM (rs.received_date - rs.initiated_date))) AS avg_return_days,
-        SUM(rs.refund_amount) AS total_refunds
-    FROM return_shipments rs
-    WHERE rs.initiated_date >= CURRENT_DATE - INTERVAL '90 days'
-    GROUP BY rs.return_reason
+        v.vehicle_id,
+        v.vehicle_type,
+        v.capacity_lbs,
+        COUNT(DISTINCT t.trip_id) AS total_trips,
+        SUM(t.distance_miles) AS total_miles,
+        SUM(t.load_weight_lbs) AS total_weight_hauled,
+        SUM(EXTRACT(EPOCH FROM (t.arrival_time - t.departure_time)) / 3600) AS total_hours_used
+    FROM vehicles v
+    LEFT JOIN trips t ON v.vehicle_id = t.vehicle_id
+    WHERE t.trip_date >= CURRENT_DATE - INTERVAL '1 month'
+    GROUP BY v.vehicle_id, v.vehicle_type, v.capacity_lbs
 )
 SELECT 
-    return_reason,
-    return_count,
-    ROUND(100.0 * return_count / SUM(return_count) OVER (), 2) AS pct_of_returns,
-    ROUND(avg_return_days, 1) AS avg_return_days,
-    total_refunds,
-    ROUND(total_refunds / return_count, 2) AS avg_refund_per_return
-FROM return_analysis
-ORDER BY return_count DESC;
+    vehicle_id,
+    vehicle_type,
+    capacity_lbs,
+    total_trips,
+    total_miles,
+    total_weight_hauled,
+    ROUND(total_hours_used::NUMERIC, 1) AS total_hours_used,
+    ROUND((100.0 * total_weight_hauled / NULLIF(total_trips * capacity_lbs, 0))::NUMERIC, 2) AS avg_load_utilization_pct,
+    ROUND((100.0 * total_hours_used / (30 * 24))::NUMERIC, 2) AS time_utilization_pct
+FROM vehicle_usage
+ORDER BY avg_load_utilization_pct DESC;
 
--- ============================================
--- QUESTION 172: Calculate cross-dock efficiency
--- ============================================
--- Scenario: Distribution center operations
-
-SELECT 
-    w.warehouse_id,
-    w.warehouse_name,
-    COUNT(DISTINCT cd.inbound_shipment_id) AS inbound_shipments,
-    COUNT(DISTINCT cd.outbound_shipment_id) AS outbound_shipments,
-    AVG(EXTRACT(EPOCH FROM (cd.outbound_time - cd.inbound_time)) / 60) AS avg_dwell_minutes,
-    COUNT(CASE WHEN EXTRACT(EPOCH FROM (cd.outbound_time - cd.inbound_time)) / 60 < 120 THEN 1 END) AS quick_turns,
-    ROUND(100.0 * COUNT(CASE WHEN EXTRACT(EPOCH FROM (cd.outbound_time - cd.inbound_time)) / 60 < 120 THEN 1 END) / COUNT(*), 2) AS quick_turn_pct
-FROM warehouses w
-JOIN cross_dock_operations cd ON w.warehouse_id = cd.warehouse_id
-WHERE cd.inbound_time >= CURRENT_DATE - INTERVAL '30 days'
-GROUP BY w.warehouse_id, w.warehouse_name
-ORDER BY avg_dwell_minutes;
-
--- ============================================
--- QUESTION 173: Track package dimensions and weight accuracy
--- ============================================
--- Scenario: Billing accuracy and carrier disputes
-
-SELECT 
-    c.carrier_name,
-    COUNT(*) AS total_shipments,
-    AVG(ABS(s.actual_weight - s.declared_weight)) AS avg_weight_variance,
-    COUNT(CASE WHEN ABS(s.actual_weight - s.declared_weight) > s.declared_weight * 0.1 THEN 1 END) AS weight_discrepancies,
-    SUM(CASE WHEN s.actual_weight > s.declared_weight THEN 
-        (s.actual_weight - s.declared_weight) * c.per_lb_rate ELSE 0 END) AS undercharge_amount,
-    SUM(CASE WHEN s.actual_weight < s.declared_weight THEN 
-        (s.declared_weight - s.actual_weight) * c.per_lb_rate ELSE 0 END) AS overcharge_amount
-FROM shipments s
-JOIN carriers c ON s.carrier_id = c.carrier_id
-WHERE s.ship_date >= CURRENT_DATE - INTERVAL '30 days'
-AND s.actual_weight IS NOT NULL
-GROUP BY c.carrier_name
-ORDER BY avg_weight_variance DESC;
-
--- ============================================
--- QUESTION 174: Identify bottleneck locations
--- ============================================
--- Scenario: Network flow optimization
-
-WITH location_throughput AS (
+-- ==================== MYSQL SOLUTION ====================
+WITH vehicle_usage AS (
     SELECT 
-        w.warehouse_id,
-        w.warehouse_name,
-        w.city,
-        COUNT(CASE WHEN s.origin_warehouse_id = w.warehouse_id THEN 1 END) AS outbound_count,
-        COUNT(CASE WHEN s.destination_warehouse_id = w.warehouse_id THEN 1 END) AS inbound_count,
-        AVG(CASE WHEN s.origin_warehouse_id = w.warehouse_id 
-            THEN EXTRACT(EPOCH FROM (s.ship_date - s.order_received_date)) / 3600 END) AS avg_processing_hours
-    FROM warehouses w
-    LEFT JOIN shipments s ON w.warehouse_id IN (s.origin_warehouse_id, s.destination_warehouse_id)
-    WHERE s.ship_date >= CURRENT_DATE - INTERVAL '30 days'
-    GROUP BY w.warehouse_id, w.warehouse_name, w.city
+        v.vehicle_id,
+        v.vehicle_type,
+        v.capacity_lbs,
+        COUNT(DISTINCT t.trip_id) AS total_trips,
+        SUM(t.distance_miles) AS total_miles,
+        SUM(t.load_weight_lbs) AS total_weight_hauled,
+        SUM(TIMESTAMPDIFF(HOUR, t.departure_time, t.arrival_time)) AS total_hours_used
+    FROM vehicles v
+    LEFT JOIN trips t ON v.vehicle_id = t.vehicle_id
+    WHERE t.trip_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+    GROUP BY v.vehicle_id, v.vehicle_type, v.capacity_lbs
 )
 SELECT 
-    warehouse_id,
-    warehouse_name,
-    city,
-    outbound_count,
-    inbound_count,
-    outbound_count + inbound_count AS total_throughput,
-    ROUND(avg_processing_hours, 2) AS avg_processing_hours,
-    CASE 
-        WHEN avg_processing_hours > 48 THEN 'BOTTLENECK'
-        WHEN avg_processing_hours > 24 THEN 'SLOW'
-        ELSE 'EFFICIENT'
-    END AS efficiency_status
-FROM location_throughput
-ORDER BY avg_processing_hours DESC;
+    vehicle_id,
+    vehicle_type,
+    capacity_lbs,
+    total_trips,
+    total_miles,
+    total_weight_hauled,
+    total_hours_used,
+    ROUND(100.0 * total_weight_hauled / NULLIF(total_trips * capacity_lbs, 0), 2) AS avg_load_utilization_pct,
+    ROUND(100.0 * total_hours_used / (30 * 24), 2) AS time_utilization_pct
+FROM vehicle_usage
+ORDER BY avg_load_utilization_pct DESC;
 
--- ============================================
--- QUESTION 175: Calculate fuel cost analysis
--- ============================================
--- Scenario: Fleet fuel management
 
-SELECT 
-    v.vehicle_type,
-    COUNT(DISTINCT t.trip_id) AS total_trips,
-    SUM(t.distance_miles) AS total_miles,
-    SUM(t.fuel_used) AS total_gallons,
-    SUM(t.fuel_cost) AS total_fuel_cost,
-    ROUND(SUM(t.distance_miles) / NULLIF(SUM(t.fuel_used), 0), 2) AS fleet_mpg,
-    ROUND(SUM(t.fuel_cost) / SUM(t.distance_miles), 4) AS cost_per_mile,
-    ROUND(AVG(t.fuel_price_per_gallon), 2) AS avg_fuel_price
-FROM vehicles v
-JOIN trips t ON v.vehicle_id = t.vehicle_id
-WHERE t.trip_date >= CURRENT_DATE - INTERVAL '30 days'
-GROUP BY v.vehicle_type
-ORDER BY cost_per_mile;
-
--- ============================================
--- QUESTION 176: Analyze delivery time windows
--- ============================================
--- Scenario: Customer service optimization
-
-SELECT 
-    CASE 
-        WHEN EXTRACT(HOUR FROM actual_delivery) BETWEEN 8 AND 11 THEN 'Morning (8-12)'
-        WHEN EXTRACT(HOUR FROM actual_delivery) BETWEEN 12 AND 16 THEN 'Afternoon (12-5)'
-        WHEN EXTRACT(HOUR FROM actual_delivery) BETWEEN 17 AND 20 THEN 'Evening (5-9)'
-        ELSE 'Off-hours'
-    END AS delivery_window,
-    COUNT(*) AS delivery_count,
-    ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 2) AS pct_of_deliveries,
-    COUNT(CASE WHEN first_attempt_success = TRUE THEN 1 END) AS successful_first_attempts,
-    ROUND(100.0 * COUNT(CASE WHEN first_attempt_success = TRUE THEN 1 END) / COUNT(*), 2) AS first_attempt_success_rate
-FROM shipments
-WHERE actual_delivery IS NOT NULL
-AND ship_date >= CURRENT_DATE - INTERVAL '30 days'
-GROUP BY CASE 
-    WHEN EXTRACT(HOUR FROM actual_delivery) BETWEEN 8 AND 11 THEN 'Morning (8-12)'
-    WHEN EXTRACT(HOUR FROM actual_delivery) BETWEEN 12 AND 16 THEN 'Afternoon (12-5)'
-    WHEN EXTRACT(HOUR FROM actual_delivery) BETWEEN 17 AND 20 THEN 'Evening (5-9)'
-    ELSE 'Off-hours'
-END
-ORDER BY delivery_count DESC;
-
--- ============================================
--- QUESTION 177: Calculate carrier rate comparison
--- ============================================
--- Scenario: Carrier selection optimization
-
-WITH shipment_costs AS (
-    SELECT 
-        s.shipment_id,
-        s.weight,
-        r.distance_miles,
-        c.carrier_id,
-        c.carrier_name,
-        c.base_rate + (r.distance_miles * c.per_mile_rate) + 
-            (s.weight * c.per_lb_rate) AS calculated_cost
-    FROM shipments s
-    JOIN routes r ON s.origin_warehouse_id = r.origin_id 
-        AND s.destination_address_id = r.destination_id
-    CROSS JOIN carriers c
-    WHERE s.ship_date >= CURRENT_DATE - INTERVAL '30 days'
-)
-SELECT 
-    sc.shipment_id,
-    sc.weight,
-    sc.distance_miles,
-    MIN(sc.calculated_cost) AS lowest_cost,
-    MAX(sc.calculated_cost) AS highest_cost,
-    MAX(sc.calculated_cost) - MIN(sc.calculated_cost) AS potential_savings,
-    (SELECT carrier_name FROM shipment_costs WHERE shipment_id = sc.shipment_id ORDER BY calculated_cost LIMIT 1) AS cheapest_carrier
-FROM shipment_costs sc
-GROUP BY sc.shipment_id, sc.weight, sc.distance_miles
-HAVING MAX(sc.calculated_cost) - MIN(sc.calculated_cost) > 10
-ORDER BY potential_savings DESC;
-
--- ============================================
--- QUESTION 178: Track inventory in transit
--- ============================================
--- Scenario: Supply chain visibility
-
-SELECT 
-    p.product_id,
-    p.product_name,
-    SUM(CASE WHEN s.status = 'IN_TRANSIT' THEN si.quantity ELSE 0 END) AS in_transit_qty,
-    SUM(CASE WHEN s.status = 'AT_WAREHOUSE' THEN si.quantity ELSE 0 END) AS at_warehouse_qty,
-    SUM(CASE WHEN s.status = 'OUT_FOR_DELIVERY' THEN si.quantity ELSE 0 END) AS out_for_delivery_qty,
-    MIN(CASE WHEN s.status = 'IN_TRANSIT' THEN s.expected_delivery END) AS earliest_arrival,
-    SUM(si.quantity * p.unit_cost) AS total_value_in_transit
-FROM products p
-JOIN shipment_items si ON p.product_id = si.product_id
-JOIN shipments s ON si.shipment_id = s.shipment_id
-WHERE s.status NOT IN ('DELIVERED', 'CANCELLED')
-GROUP BY p.product_id, p.product_name
-HAVING SUM(CASE WHEN s.status = 'IN_TRANSIT' THEN si.quantity ELSE 0 END) > 0
-ORDER BY total_value_in_transit DESC;
-
--- ============================================
--- QUESTION 179: Analyze seasonal shipping patterns
--- ============================================
--- Scenario: Capacity planning for peak seasons
-
-SELECT 
-    EXTRACT(MONTH FROM ship_date) AS month,
-    EXTRACT(YEAR FROM ship_date) AS year,
-    COUNT(*) AS shipment_count,
-    SUM(weight) AS total_weight,
-    AVG(EXTRACT(DAYS FROM (actual_delivery - ship_date))) AS avg_delivery_days,
-    COUNT(CASE WHEN actual_delivery > expected_delivery THEN 1 END) AS late_deliveries,
-    ROUND(100.0 * COUNT(CASE WHEN actual_delivery > expected_delivery THEN 1 END) / COUNT(*), 2) AS late_pct
-FROM shipments
-WHERE ship_date >= CURRENT_DATE - INTERVAL '2 years'
-AND actual_delivery IS NOT NULL
-GROUP BY EXTRACT(MONTH FROM ship_date), EXTRACT(YEAR FROM ship_date)
-ORDER BY year, month;
-
--- ============================================
--- QUESTION 180: Generate carrier scorecard
--- ============================================
--- Scenario: Vendor performance management
-
-SELECT 
-    c.carrier_id,
-    c.carrier_name,
-    c.service_type,
-    COUNT(*) AS total_shipments,
-    ROUND(100.0 * COUNT(CASE WHEN s.actual_delivery <= s.expected_delivery THEN 1 END) / COUNT(*), 2) AS on_time_score,
-    ROUND(100.0 * COUNT(CASE WHEN s.status NOT IN ('LOST', 'DAMAGED') THEN 1 END) / COUNT(*), 2) AS damage_free_score,
-    ROUND(AVG(s.customer_rating) * 20, 2) AS customer_score,
-    ROUND(100.0 - (AVG(ABS(s.actual_weight - s.declared_weight) / s.declared_weight) * 100), 2) AS billing_accuracy_score,
-    ROUND((
-        (100.0 * COUNT(CASE WHEN s.actual_delivery <= s.expected_delivery THEN 1 END) / COUNT(*)) * 0.4 +
-        (100.0 * COUNT(CASE WHEN s.status NOT IN ('LOST', 'DAMAGED') THEN 1 END) / COUNT(*)) * 0.3 +
-        (AVG(s.customer_rating) * 20) * 0.2 +
-        (100.0 - (AVG(ABS(s.actual_weight - s.declared_weight) / s.declared_weight) * 100)) * 0.1
-    ), 2) AS overall_score
-FROM carriers c
-JOIN shipments s ON c.carrier_id = s.carrier_id
-WHERE s.ship_date >= CURRENT_DATE - INTERVAL '90 days'
-GROUP BY c.carrier_id, c.carrier_name, c.service_type
-ORDER BY overall_score DESC;
+-- ============================================================================
+-- END OF LOGISTICS QUESTIONS (Q161-Q180)
+-- ============================================================================
